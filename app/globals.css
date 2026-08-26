@@ -1,0 +1,95 @@
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background: #f6f6f3;
+  color: #14140f;
+  font-family: var(--font-archivo), Archivo, Helvetica, Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+input,
+button {
+  font-family: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+a {
+  color: #2b34ee;
+  text-decoration: none;
+}
+
+a:hover {
+  color: #1b22b4;
+}
+
+::placeholder {
+  color: #a5a59d;
+}
+
+/* Interaction states — ported 1:1 from the design prototype's `style-hover`
+   rules. Inline styles set the resting look; these classes (with
+   !important, since a stylesheet rule beats an inline style only that way)
+   set the hover look on top of it. */
+.mb-donebtn:hover {
+  border-color: #2b34ee !important;
+  background: #e3e5fd !important;
+}
+.mb-iconbtn:hover {
+  background: #f1f1ec !important;
+  color: #14140f !important;
+}
+.mb-iconbtn-danger:hover {
+  background: #f1f1ec !important;
+  color: #c4372b !important;
+}
+.mb-chip:hover {
+  opacity: 0.85;
+}
+.mb-cancel:hover {
+  color: #14140f !important;
+}
+.mb-addbtn:hover {
+  opacity: 0.88;
+}
+.mb-quickadd-rest:hover {
+  background: #ffffff !important;
+  border-color: #14140f !important;
+  border-style: solid !important;
+}
+.mb-listadd-rest:hover {
+  border-color: #14140f !important;
+  color: #14140f !important;
+  background: #ffffff !important;
+}
+.mb-sectionbox:hover {
+  border-color: #14140f !important;
+  transform: translateY(-2px);
+}
+.mb-addlist:hover {
+  border-color: #14140f !important;
+  color: #14140f !important;
+  background: #efefeb !important;
+}
+.mb-backbtn:hover {
+  border-color: #14140f !important;
+  background: #ffffff !important;
+}
+.mb-urgpill:hover {
+  opacity: 0.82;
+}
+.mb-menuitem:hover {
+  background: #f3f3ef !important;
+}
