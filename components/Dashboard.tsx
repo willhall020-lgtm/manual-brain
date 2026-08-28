@@ -252,6 +252,22 @@ export default function Dashboard({
     }
   }
 
+  async function setTaskDuration(id: string, minutes: number | null) {
+    const prev = tasks.find((t) => t.id === id)?.durationMinutes ?? null;
+    patchTaskLocal(id, { durationMinutes: minutes });
+    try {
+      const res = await fetch(`/api/tasks/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ durationMinutes: minutes }),
+      });
+      if (!res.ok) throw new Error();
+    } catch {
+      patchTaskLocal(id, { durationMinutes: prev });
+      setActionError("Couldn't save that duration — try again.");
+    }
+  }
+
   async function markDone(id: string) {
     patchTaskLocal(id, { doneAt: new Date().toISOString() });
     setMenuFor(null);
@@ -480,12 +496,14 @@ export default function Dashboard({
                       key={t.id}
                       name={t.name}
                       sectionName={sectionName(t.sectionId)}
+                      durationMinutes={t.durationMinutes}
                       editing={editing === t.id}
                       editVal={editVal}
                       onDone={() => markDone(t.id)}
                       onEdit={() => startEdit(t.id, t.name)}
                       onDelete={() => del(t.id)}
                       onEditChange={setEditVal}
+                      onDurationCommit={(m) => setTaskDuration(t.id, m)}
                       onEditKeyDown={makeEditKeyHandler(saveEdit)}
                       onEditBlur={saveEdit}
                     />
@@ -685,6 +703,7 @@ export default function Dashboard({
                       urgency={t.urgency}
                       customLabel={t.customLabel}
                       urgencyDisplay={URGENCY_DISPLAY}
+                      durationMinutes={t.durationMinutes}
                       editing={editing === t.id}
                       editVal={editVal}
                       menuOpen={menuFor === t.id}
@@ -696,6 +715,7 @@ export default function Dashboard({
                       onEditBlur={saveEdit}
                       onToggleMenu={() => setMenuFor((m) => (m === t.id ? null : t.id))}
                       onPickUrgency={(k) => setUrg(t.id, k)}
+                      onDurationCommit={(m) => setTaskDuration(t.id, m)}
                     />
                   ))}
 

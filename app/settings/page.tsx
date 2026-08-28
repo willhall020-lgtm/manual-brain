@@ -1,5 +1,7 @@
 import Link from "next/link";
 import { isGoogleCalendarConnected, isGoogleOAuthConfigured } from "@/lib/google-auth";
+import { DEFAULT_PLANNING_RULES, getPlanningRules } from "@/lib/preferences";
+import PreferencesForm from "@/components/PreferencesForm";
 
 export const dynamic = "force-dynamic";
 
@@ -21,6 +23,7 @@ export default async function SettingsPage({
   const params = await searchParams;
   const configured = isGoogleOAuthConfigured();
   const connected = configured ? await isGoogleCalendarConnected().catch(() => false) : false;
+  const planningRules = await getPlanningRules().catch(() => DEFAULT_PLANNING_RULES);
 
   return (
     <div style={{ maxWidth: 640, margin: "0 auto", padding: "34px 36px", display: "flex", flexDirection: "column", gap: 20 }}>
@@ -94,6 +97,18 @@ export default async function SettingsPage({
             </a>
           </div>
         )}
+      </div>
+
+      <div style={card}>
+        <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: ".14em", color: "#8E8E85" }}>
+          PLANNING RULES
+        </span>
+        <p style={{ margin: 0, fontSize: 13.5, fontWeight: 500, color: "#5E5E56", lineHeight: 1.5 }}>
+          How the chat decides what to book and when — both the interactive chat and the 09:15 BST
+          morning run. Free text, read by the model rather than parsed, so write it however makes
+          sense to you.
+        </p>
+        <PreferencesForm initialValue={planningRules} defaultValue={DEFAULT_PLANNING_RULES} />
       </div>
     </div>
   );

@@ -26,16 +26,24 @@ design exported from Claude Design — see that project's `README.md` and
   otherwise.
 - **Chat** — a Claude tool-use loop (`lib/chat-loop.ts`, Anthropic Messages
   API, `claude-opus-5`, manual loop — not the beta tool runner, this needs
-  no more than a single-request loop) with four tools: `list_tasks`,
+  no more than a single-request loop) with five tools: `list_tasks`,
   `add_task` (name, list, urgency, and an optional `duration_minutes`),
+  `list_calendar_events` (existing bookings in a range, for seeing gaps),
   `schedule_task` (books a real Google Calendar event sized off
   `duration_minutes` — the task's own if set, else the model's estimate,
-  computed server-side rather than trusting the model's date math — and
-  tags the task with the resulting `calendar_event_id` so it isn't
-  rebooked), `mark_task_done`. Replaces the old Slack-routine handoff
-  entirely — needs `ANTHROPIC_API_KEY`. `duration_minutes` is also a
-  plain optional field on task creation in the dashboard UI itself
-  (`QuickAddBox.tsx` / `TaskAddBox.tsx`), not just a chat concept. Chat
+  computed server-side rather than trusting the model's date math — tags
+  the task with the resulting `calendar_event_id` so it isn't rebooked,
+  and refuses server-side if the slot overlaps an existing event unless
+  `force: true`), `mark_task_done`. Replaces the old Slack-routine
+  handoff entirely — needs `ANTHROPIC_API_KEY`. `duration_minutes` is
+  also a plain field on every task in the dashboard UI itself — visible
+  and editable inline (not just at creation), always shown even when
+  unset, saves on blur (`DurationInput.tsx`, used from `QuickAddBox`,
+  `TaskAddBox`, `TodayTaskRow`, `ListTaskRow`) — not just a chat concept.
+  The system prompt also injects the user's free-text planning rules from
+  `/settings` (`lib/preferences.ts` — work hours, lunch, deep-work
+  window, block length, buffering, etc.) so the model's own time choices
+  follow them; an explicit time the user gives directly still wins. Chat
   is reachable two ways:
   - `app/api/chat/route.ts` — the interactive box on the dashboard.
   - `app/api/cron/morning-schedule/route.ts` — a Vercel Cron hit at 08:15
@@ -109,13 +117,14 @@ app/
   layout.tsx            Archivo font, page metadata
   globals.css           base styles + hover-state classes
   login/page.tsx         password gate form
-  settings/page.tsx       Google Calendar connect/status
+  settings/page.tsx       Google Calendar connect/status + planning rules
   chat/page.tsx           chat page shell (renders ChatPanel)
   api/
     state/route.ts      GET  — full sections+tasks read
     sections/route.ts   POST — create a list
     tasks/route.ts      POST — create a task
-    tasks/[id]/route.ts PATCH (edit name / urgency / done) and DELETE
+    tasks/[id]/route.ts PATCH (edit name / urgency / done / duration) and DELETE
+    preferences/route.ts POST — save planning rules
     chat/route.ts        POST — the interactive chat, wraps lib/chat-loop.ts
     cron/morning-schedule/route.ts  GET — daily 08:15 UTC auto-schedule run
     auth/login|logout/route.ts       password gate session cookie
@@ -124,21 +133,26 @@ components/
   Dashboard.tsx          all state + interaction logic
   TodayTaskRow.tsx        row used in the home "for today" block
   ListTaskRow.tsx         row used inside a list view (urgency pill/dot + menu)
+  DurationInput.tsx       always-visible minutes input, save-on-blur — shared
+                           by both add boxes and both task rows
   QuickAddBox.tsx         home's quick-add (adds to a chosen list)
   TaskAddBox.tsx          list view's add-task box
   DonePanel.tsx           collapsible done list with undo
   CalendarPanel.tsx       live, read-only Google Calendar sidebar
   ChatPanel.tsx           chat UI — client-side message history + send loop
+  PreferencesForm.tsx     planning-rules textarea, save-on-blur, reset-to-default
   UrgencyChipRow.tsx      shared urgency picker used by both add boxes
 lib/
   db.ts        lazy Neon client (reads DATABASE_URL)
   data.ts      shared "load everything" query, used by the page and /api/state
   gcal.ts      fetches + parses GCAL_ICS_URL, expands recurring events (read-only)
   google-auth.ts      Google OAuth token exchange/refresh/storage (write access)
-  google-calendar.ts  createCalendarEvent() — the chat's booking tool
+  google-calendar.ts  createCalendarEvent() + listCalendarEvents() — the
+                       chat's booking + conflict-check tools
   chat-tools.ts        tool definitions + execution for the chat loop
   chat-loop.ts          the tool-use loop itself, shared by the
                          interactive chat and the morning cron
+  preferences.ts        planning-rules get/save, with a hardcoded default
   auth.ts       SITE_PASSWORD session cookie logic
   urgency.ts   the fixed set of urgency labels + colors
   types.ts     shared Section/Task shapes

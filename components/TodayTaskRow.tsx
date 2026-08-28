@@ -1,10 +1,12 @@
 "use client";
 
 import type { KeyboardEvent } from "react";
+import DurationInput from "@/components/DurationInput";
 
 interface Props {
   name: string;
   sectionName: string;
+  durationMinutes: number | null;
   editing: boolean;
   editVal: string;
   onDone: () => void;
@@ -13,11 +15,13 @@ interface Props {
   onEditChange: (v: string) => void;
   onEditKeyDown: (e: KeyboardEvent<HTMLInputElement>) => void;
   onEditBlur: () => void;
+  onDurationCommit: (minutes: number | null) => void;
 }
 
 export default function TodayTaskRow({
   name,
   sectionName,
+  durationMinutes,
   editing,
   editVal,
   onDone,
@@ -26,6 +30,7 @@ export default function TodayTaskRow({
   onEditChange,
   onEditKeyDown,
   onEditBlur,
+  onDurationCommit,
 }: Props) {
   return (
     <div
@@ -99,6 +104,7 @@ export default function TodayTaskRow({
       >
         {sectionName}
       </span>
+      <DurationInput minutes={durationMinutes} onCommit={onDurationCommit} />
       <div style={{ flex: "none", display: "flex", alignItems: "center", gap: 2 }}>
         <button
           onClick={onEdit}

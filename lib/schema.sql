@@ -41,6 +41,18 @@ ALTER TABLE tasks ADD COLUMN IF NOT EXISTS duration_minutes integer;
 CREATE INDEX IF NOT EXISTS tasks_section_id_idx ON tasks (section_id);
 CREATE INDEX IF NOT EXISTS tasks_done_at_idx ON tasks (done_at);
 
+-- Free-text planning rules the chat follows when deciding what to book and
+-- when (see lib/preferences.ts) — set on /settings, read by
+-- lib/chat-loop.ts's system prompt. Single-user app, one row, same
+-- 'default'-id pattern as google_auth below. No seed row: lib/preferences.ts
+-- falls back to a hardcoded default whenever this table is empty, so the
+-- app works before anyone's ever saved a preference.
+CREATE TABLE IF NOT EXISTS preferences (
+  id text PRIMARY KEY DEFAULT 'default',
+  planning_rules text NOT NULL,
+  updated_at timestamptz NOT NULL DEFAULT now()
+);
+
 -- Single-row table holding the Google OAuth refresh/access token pair for
 -- writing to the calendar (booking events). Single-user app — one row,
 -- id is always 'default'. Read-only calendar display still uses the iCal

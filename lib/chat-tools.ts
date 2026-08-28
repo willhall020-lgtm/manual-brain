@@ -1,7 +1,7 @@
 import type Anthropic from "@anthropic-ai/sdk";
 import { sql } from "./db";
 import { getState } from "./data";
-import { createCalendarEvent } from "./google-calendar";
+import { createCalendarEvent, listCalendarEvents } from "./google-calendar";
 import { isGoogleCalendarConnected } from "./google-auth";
 import { URGENCY_KEYS } from "./urgency";
 
@@ -45,9 +45,23 @@ export const CHAT_TOOLS: Anthropic.Tool[] = [
     },
   },
   {
+    name: "list_calendar_events",
+    description:
+      "Lists events already on the calendar within a time range — use this to see gaps and existing commitments before proposing times, e.g. for planning a whole day. Not strictly required before every schedule_task call: that tool checks for a conflict on the exact slot itself and refuses to double-book without it. This is for seeing the shape of a day, not just checking one slot.",
+    input_schema: {
+      type: "object",
+      properties: {
+        start_iso: { type: "string", description: "RFC3339 start of the range, with UTC offset." },
+        end_iso: { type: "string", description: "RFC3339 end of the range, with UTC offset." },
+      },
+      required: ["start_iso", "end_iso"],
+      additionalProperties: false,
+    },
+  },
+  {
     name: "schedule_task",
     description:
-      "Books a task onto the user's Google Calendar as an event. Use the task's own name as the event title unless the user asks for something else. start_iso must be RFC3339 with a UTC offset, e.g. \"2026-08-28T15:00:00+10:00\" — ask the user for their timezone if it's genuinely ambiguous, otherwise infer from context. For how long the event runs, give EITHER end_iso (only when the user's stated an exact end time themselves) OR duration_minutes (preferred otherwise) — and when passing duration_minutes, use the task's own duration_minutes from list_tasks if it has one, or your own realistic estimate of how long the task actually takes if it doesn't. If you pass neither, the task's own duration is used automatically, falling back to 30 minutes.",
+      "Books a task onto the user's Google Calendar as an event. Use the task's own name as the event title unless the user asks for something else. start_iso must be RFC3339 with a UTC offset, e.g. \"2026-08-28T15:00:00+10:00\" — ask the user for their timezone if it's genuinely ambiguous, otherwise infer from context. For how long the event runs, give EITHER end_iso (only when the user's stated an exact end time themselves) OR duration_minutes (preferred otherwise) — and when passing duration_minutes, use the task's own duration_minutes from list_tasks if it has one, or your own realistic estimate of how long the task actually takes if it doesn't. If you pass neither, the task's own duration is used automatically, falling back to 30 minutes. Refuses (with an error naming the conflicting event) if the proposed slot overlaps something already on the calendar — pick a different time, or pass force: true only if the user explicitly wants to double-book anyway.",
     input_schema: {
       type: "object",
       properties: {
@@ -55,6 +69,7 @@ export const CHAT_TOOLS: Anthropic.Tool[] = [
         start_iso: { type: "string", description: "RFC3339 start datetime with UTC offset." },
         end_iso: { type: "string", description: "RFC3339 end datetime with UTC offset — only when the user gave an exact end time." },
         duration_minutes: { type: "integer", description: "How long to block, in minutes — preferred over end_iso." },
+        force: { type: "boolean", description: "Only set true if the user explicitly wants to double-book despite a conflict." },
       },
       required: ["task_id", "start_iso"],
       additionalProperties: false,
@@ -131,12 +146,24 @@ export async function runChatTool(name: string, input: unknown): Promise<string>
       return JSON.stringify({ ok: true, id, list: section.name });
     }
 
+    case "list_calendar_events": {
+      const { start_iso, end_iso } = input as { start_iso: string; end_iso: string };
+      if (!(await isGoogleCalendarConnected())) {
+        return JSON.stringify({
+          error: "Google Calendar isn't connected yet. Tell the user to connect it at /settings first.",
+        });
+      }
+      const events = await listCalendarEvents(start_iso, end_iso);
+      return JSON.stringify({ events });
+    }
+
     case "schedule_task": {
-      const { task_id, start_iso, end_iso, duration_minutes } = input as {
+      const { task_id, start_iso, end_iso, duration_minutes, force } = input as {
         task_id: string;
         start_iso: string;
         end_iso?: string;
         duration_minutes?: number;
+        force?: boolean;
       };
       if (!(await isGoogleCalendarConnected())) {
         return JSON.stringify({
@@ -145,8 +172,8 @@ export async function runChatTool(name: string, input: unknown): Promise<string>
       }
       const db = sql();
       const rows = (await db`
-        SELECT name, duration_minutes FROM tasks WHERE id = ${task_id}
-      `) as { name: string; duration_minutes: number | null }[];
+        SELECT name, duration_minutes, calendar_event_id FROM tasks WHERE id = ${task_id}
+      `) as { name: string; duration_minutes: number | null; calendar_event_id: string | null }[];
       if (!rows.length) return JSON.stringify({ error: `No task with id ${task_id}.` });
 
       // end_iso wins if the model gave one (the user stated an exact end
@@ -161,6 +188,23 @@ export async function runChatTool(name: string, input: unknown): Promise<string>
         }
         const minutes = duration_minutes ?? rows[0].duration_minutes ?? 30;
         endISO = new Date(start.getTime() + minutes * 60000).toISOString();
+      }
+
+      // Planning rules say "protect existing events" — enforced here, not
+      // just requested in the system prompt. Google's timeMin/timeMax
+      // already returns only genuinely-overlapping events; excluding this
+      // task's own prior booking lets rescheduling the same task work.
+      if (!force) {
+        const overlapping = (await listCalendarEvents(start_iso, endISO)).filter(
+          (e) => e.id !== rows[0].calendar_event_id
+        );
+        if (overlapping.length) {
+          return JSON.stringify({
+            error: `That overlaps ${overlapping.length === 1 ? "an existing event" : "existing events"}: ${overlapping
+              .map((e) => `"${e.title}" (${e.startISO}–${e.endISO})`)
+              .join(", ")}. Pick a different time, or pass force: true to double-book anyway.`,
+          });
+        }
       }
 
       const event = await createCalendarEvent({

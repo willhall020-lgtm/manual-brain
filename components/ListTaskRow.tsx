@@ -2,12 +2,14 @@
 
 import type { KeyboardEvent } from "react";
 import { URGENCY, UrgencyKey, urgencyLabel, urgencyMeta } from "@/lib/urgency";
+import DurationInput from "@/components/DurationInput";
 
 interface Props {
   name: string;
   urgency: UrgencyKey;
   customLabel: string | null;
   urgencyDisplay: "pill" | "dot";
+  durationMinutes: number | null;
   editing: boolean;
   editVal: string;
   menuOpen: boolean;
@@ -19,6 +21,7 @@ interface Props {
   onEditBlur: () => void;
   onToggleMenu: () => void;
   onPickUrgency: (k: UrgencyKey) => void;
+  onDurationCommit: (minutes: number | null) => void;
 }
 
 export default function ListTaskRow({
@@ -26,6 +29,7 @@ export default function ListTaskRow({
   urgency,
   customLabel,
   urgencyDisplay,
+  durationMinutes,
   editing,
   editVal,
   menuOpen,
@@ -37,6 +41,7 @@ export default function ListTaskRow({
   onEditBlur,
   onToggleMenu,
   onPickUrgency,
+  onDurationCommit,
 }: Props) {
   const meta = urgencyMeta(urgency);
   const label = urgencyLabel(urgency, customLabel);
@@ -187,6 +192,8 @@ export default function ListTaskRow({
           </div>
         )}
       </div>
+
+      <DurationInput minutes={durationMinutes} onCommit={onDurationCommit} />
 
       <div style={{ flex: "none", display: "flex", alignItems: "center", gap: 2 }}>
         <button
