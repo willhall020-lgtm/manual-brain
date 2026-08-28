@@ -48,6 +48,10 @@ export default function DueDatePicker({ value, todayKey, editing, onChange }: Pr
     <div style={{ flex: "none", display: "flex", alignItems: "center", gap: 5 }}>
       <button
         type="button"
+        // See TimeOfDayPicker's onMouseDown for why: Safari doesn't focus
+        // buttons on tap, which lets the row's group-blur handler close
+        // edit mode (and unmount this button) before the tap's click fires.
+        onMouseDown={(e) => e.preventDefault()}
         onClick={() => onChange(todayKey)}
         className="mb-chip"
         style={{
@@ -80,6 +84,7 @@ export default function DueDatePicker({ value, todayKey, editing, onChange }: Pr
       {value && (
         <button
           type="button"
+          onMouseDown={(e) => e.preventDefault()}
           onClick={() => onChange(null)}
           title="Clear due date"
           style={{ background: "transparent", border: 0, fontSize: 13, fontWeight: 700, color: "#B0B0A7", padding: "0 2px" }}

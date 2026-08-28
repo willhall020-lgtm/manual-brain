@@ -41,6 +41,14 @@ export default function TimeOfDayPicker({ value, editing, onChange }: Props) {
           <button
             key={opt}
             type="button"
+            // Safari doesn't focus <button>s on tap, so without this the
+            // row's group-blur handler (which closes edit mode when focus
+            // leaves the group) sees a null relatedTarget on the name
+            // input's blur and closes the row before the tap's click event
+            // fires — the button unmounts mid-tap and the press is a no-op.
+            // Blocking the mousedown/touch focus-shift keeps focus on the
+            // input, so blur never fires and the click lands normally.
+            onMouseDown={(e) => e.preventDefault()}
             onClick={() => onChange(on ? null : opt)}
             className="mb-chip"
             style={{
