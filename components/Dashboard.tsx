@@ -426,7 +426,17 @@ export default function Dashboard({
   const isHome = view === "home";
   const activeSection = sections.find((s) => s.id === view) ?? null;
   const activeSectionTasks = useMemo(
-    () => (activeSection ? activeTasks.filter((t) => t.sectionId === activeSection.id) : []),
+    () =>
+      activeSection
+        ? activeTasks
+            .filter((t) => t.sectionId === activeSection.id)
+            .sort((a, b) => {
+              if (!a.dueDate && !b.dueDate) return 0;
+              if (!a.dueDate) return 1;
+              if (!b.dueDate) return -1;
+              return a.dueDate < b.dueDate ? -1 : a.dueDate > b.dueDate ? 1 : 0;
+            })
+        : [],
     [activeTasks, activeSection]
   );
 
