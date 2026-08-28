@@ -11,9 +11,10 @@ interface Props {
   open: boolean;
   onToggle: () => void;
   onUndo: (id: string) => void;
+  onDelete: (id: string) => void;
 }
 
-export default function DonePanel({ items, open, onToggle, onUndo }: Props) {
+export default function DonePanel({ items, open, onToggle, onUndo, onDelete }: Props) {
   return (
     <div style={{ background: "#EEEEEA", borderRadius: 22, padding: 6 }}>
       <button
@@ -122,6 +123,24 @@ export default function DonePanel({ items, open, onToggle, onUndo }: Props) {
                 }}
               >
                 ↺
+              </button>
+              <button
+                onClick={() => onDelete(d.id)}
+                title="Delete"
+                className="mb-iconbtn-danger"
+                style={{
+                  flex: "none",
+                  width: 24,
+                  height: 24,
+                  padding: 0,
+                  border: 0,
+                  borderRadius: 8,
+                  background: "transparent",
+                  color: "#A3A39A",
+                  fontSize: 12,
+                }}
+              >
+                ✕
               </button>
             </div>
           ))}

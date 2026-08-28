@@ -13,7 +13,7 @@ body {
 body {
   background: #f6f6f3;
   color: #14140f;
-  font-family: var(--font-archivo), Archivo, Helvetica, Arial, sans-serif;
+  font-family: var(--font-manrope), Manrope, Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
 }
 

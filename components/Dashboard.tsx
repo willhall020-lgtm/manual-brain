@@ -9,6 +9,7 @@ import QuickAddBox from "@/components/QuickAddBox";
 import TaskAddBox from "@/components/TaskAddBox";
 import DonePanel from "@/components/DonePanel";
 import CalendarPanel from "@/components/CalendarPanel";
+import ChatPanel from "@/components/ChatPanel";
 import { SOON_KEYS, UrgencyKey } from "@/lib/urgency";
 import type { Section, StateResponse, Task } from "@/lib/types";
 import type { CalendarEvent } from "@/lib/gcal";
@@ -195,6 +196,26 @@ export default function Dashboard({
     } catch {
       setSections((prev) => prev.filter((s) => s.id !== tempId));
       setActionError("Couldn't create that list — try again.");
+    }
+  }
+
+  async function delSection(id: string) {
+    const name = sections.find((s) => s.id === id)?.name ?? "this list";
+    if (!window.confirm(`Delete "${name}" and all its tasks? This can't be undone.`)) return;
+
+    const prevSections = sections;
+    const prevTasks = tasks;
+    setSections((prev) => prev.filter((s) => s.id !== id));
+    setTasks((prev) => prev.filter((t) => t.sectionId !== id));
+    setView("home");
+
+    try {
+      const res = await fetch(`/api/sections/${id}`, { method: "DELETE" });
+      if (!res.ok) throw new Error();
+    } catch {
+      setSections(prevSections);
+      setTasks(prevTasks);
+      setActionError("Couldn't delete that list — try again.");
     }
   }
 
@@ -414,9 +435,6 @@ export default function Dashboard({
                     </span>
                   </div>
                   <div style={{ display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
-                    <span style={{ fontSize: 13, fontWeight: 600, color: "#41470F" }}>
-                      Pick one and start there. Everything else is tucked away below.
-                    </span>
                     <button
                       onClick={() => router.push("/chat")}
                       style={{
@@ -455,7 +473,7 @@ export default function Dashboard({
 
                   {todayTasks.length === 0 && (
                     <div style={{ background: "#FFFFFF", borderRadius: 14, padding: 16, fontSize: 14, fontWeight: 600, color: "#93938A" }}>
-                      Nothing marked for today. That&apos;s allowed.
+                      No tasks for today yet.
                     </div>
                   )}
 
@@ -485,7 +503,7 @@ export default function Dashboard({
 
               <div style={{ display: "flex", flexDirection: "column", gap: 11 }}>
                 <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: ".14em", color: "#8E8E85", paddingLeft: 4 }}>
-                  THE REST — OPEN WHEN YOU&apos;RE READY
+                  TASK LISTS
                 </span>
                 <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(232px, 1fr))", gap: 14 }}>
                   {sections.map((s) => {
@@ -594,6 +612,14 @@ export default function Dashboard({
                   <span style={{ fontSize: 12.5, fontWeight: 700, color: "#93938A" }}>
                     {activeSectionTasks.length === 1 ? "1 task" : `${activeSectionTasks.length} tasks`}
                   </span>
+                  <button
+                    onClick={() => delSection(activeSection.id)}
+                    title="Delete list"
+                    className="mb-iconbtn-danger"
+                    style={{ marginLeft: "auto", background: "transparent", border: "1.5px solid #DCDCD5", borderRadius: 99, padding: "8px 15px", fontSize: 12, fontWeight: 700, color: "#93938A" }}
+                  >
+                    Delete list
+                  </button>
                 </div>
 
                 <div style={{ background: "#EEEEEA", borderRadius: 22, padding: 14, display: "flex", flexDirection: "column", gap: 8 }}>
@@ -652,6 +678,7 @@ export default function Dashboard({
             open={doneOpen}
             onToggle={() => setDoneOpen((v) => !v)}
             onUndo={undo}
+            onDelete={del}
           />
         </div>
 
