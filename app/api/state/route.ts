@@ -16,6 +16,7 @@ export async function GET() {
         urgency: t.urgency,
         customLabel: t.customLabel,
         doneAt: t.doneAt,
+        calendarEventId: t.calendarEventId,
       });
     }
     return NextResponse.json({ sections: Array.from(bySectionId.values()) });

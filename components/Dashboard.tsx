@@ -116,6 +116,7 @@ export default function Dashboard({
           urgency: t.urgency,
           customLabel: t.customLabel,
           doneAt: t.doneAt,
+          calendarEventId: t.calendarEventId,
         });
       }
     }
@@ -153,7 +154,7 @@ export default function Dashboard({
 
     setTasks((prev) => [
       ...prev,
-      { id: tempId, sectionId, name: text, urgency: d.urgency, customLabel, doneAt: null },
+      { id: tempId, sectionId, name: text, urgency: d.urgency, customLabel, doneAt: null, calendarEventId: null },
     ]);
     setDrafts((prev) => ({ ...prev, [key]: { text: "", urgency: d.urgency, custom: "" } }));
 

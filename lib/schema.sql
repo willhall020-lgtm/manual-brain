@@ -25,6 +25,14 @@ CREATE TABLE IF NOT EXISTS tasks (
   created_at timestamptz NOT NULL DEFAULT now()
 );
 
+-- Set by the chat's schedule_task tool once a task is booked onto Google
+-- Calendar. Lets both the chat and the morning cron (see
+-- app/api/cron/morning-schedule) tell an already-booked task apart from
+-- one that still needs a slot, so the daily run doesn't rebook the same
+-- task every morning. CREATE TABLE above predates this column, hence the
+-- separate ALTER — both are safe to re-run.
+ALTER TABLE tasks ADD COLUMN IF NOT EXISTS calendar_event_id text;
+
 CREATE INDEX IF NOT EXISTS tasks_section_id_idx ON tasks (section_id);
 CREATE INDEX IF NOT EXISTS tasks_done_at_idx ON tasks (done_at);
 

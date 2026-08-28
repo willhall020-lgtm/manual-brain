@@ -7,6 +7,7 @@ export interface Task {
   urgency: UrgencyKey;
   customLabel: string | null;
   doneAt: string | null;
+  calendarEventId: string | null;
 }
 
 export interface Section {

@@ -14,7 +14,7 @@ export const CHAT_TOOLS: Anthropic.Tool[] = [
   {
     name: "list_tasks",
     description:
-      "Lists every list name and all not-done tasks across every list, with each task's id, name, list name, and urgency (Today / 2–3 days / End of this week / This month / Custom). Call this first in any conversation about what's outstanding, what to schedule, or before adding a task (to get valid list names).",
+      "Lists every list name and all not-done tasks across every list, with each task's id, name, list name, urgency (Today / 2–3 days / End of this week / This month / Custom), and whether it's already booked on the calendar (scheduled: true/false). Call this first in any conversation about what's outstanding, what to schedule, or before adding a task (to get valid list names) — and always before booking anything, to avoid double-booking a task that's already scheduled.",
     input_schema: { type: "object", properties: {}, additionalProperties: false },
   },
   {
@@ -82,6 +82,7 @@ export async function runChatTool(name: string, input: unknown): Promise<string>
           name: t.name,
           list: sectionName(t.sectionId),
           urgency: t.urgency === "Custom" ? t.customLabel || "Custom" : t.urgency,
+          scheduled: !!t.calendarEventId,
         }));
       return JSON.stringify({ lists: sections.map((s) => s.name), tasks: active });
     }
@@ -139,6 +140,10 @@ export async function runChatTool(name: string, input: unknown): Promise<string>
         startISO: start_iso,
         endISO: end_iso,
       });
+      // Records the booking so list_tasks can flag this task as already
+      // scheduled — the morning cron relies on that to avoid rebooking the
+      // same task every day.
+      await db`UPDATE tasks SET calendar_event_id = ${event.id} WHERE id = ${task_id}`;
       return JSON.stringify({ ok: true, eventLink: event.htmlLink });
     }
 

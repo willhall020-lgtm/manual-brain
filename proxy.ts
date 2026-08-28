@@ -23,8 +23,12 @@ export function proxy(request: NextRequest) {
 
 export const config = {
   matcher: [
-    // Everything except the login page itself, its login API, and static
-    // assets — those must stay reachable to log in at all.
-    "/((?!login|api/auth/login|_next/static|_next/image|favicon.ico).*)",
+    // Everything except the login page itself, its login API, static
+    // assets, and the cron endpoint — those must stay reachable without a
+    // session cookie: the first three to let someone log in at all, the
+    // last because Vercel's cron invocation carries no cookie, only its
+    // own Authorization: Bearer CRON_SECRET (checked independently inside
+    // that route, so this isn't opening it up unauthenticated).
+    "/((?!login|api/auth/login|api/cron|_next/static|_next/image|favicon.ico).*)",
   ],
 };

@@ -24,11 +24,21 @@ design exported from Claude Design — see that project's `README.md` and
   expanded via `lib/gcal.ts`; `next.config.ts` marks `node-ical` as a
   server-external package because Turbopack breaks its Temporal polyfill
   otherwise.
-- **Chat** (`/chat`) — a Claude tool-use loop (`app/api/chat/route.ts`,
-  Anthropic Messages API, `claude-opus-5`, manual loop) with three tools:
-  `list_tasks`, `schedule_task` (books a real Google Calendar event),
-  `mark_task_done`. Replaces the old Slack-routine handoff entirely —
-  needs `ANTHROPIC_API_KEY`.
+- **Chat** — a Claude tool-use loop (`lib/chat-loop.ts`, Anthropic Messages
+  API, `claude-opus-5`, manual loop — not the beta tool runner, this needs
+  no more than a single-request loop) with four tools: `list_tasks`,
+  `add_task`, `schedule_task` (books a real Google Calendar event, and
+  tags the task with the resulting `calendar_event_id` so it isn't
+  rebooked), `mark_task_done`. Replaces the old Slack-routine handoff
+  entirely — needs `ANTHROPIC_API_KEY`. Reachable two ways:
+  - `app/api/chat/route.ts` — the interactive box on the dashboard.
+  - `app/api/cron/morning-schedule/route.ts` — a Vercel Cron hit at 08:15
+    UTC daily (09:15 BST — see that file's own comment for the DST
+    caveat), same loop, started by a fixed "book today's outstanding
+    tasks" prompt instead of the user typing one. Needs `CRON_SECRET`,
+    which Vercel sends back as the request's bearer token automatically
+    once the var exists; the route 401s without a match, including on
+    Vercel's own request if the var is unset.
 - **Google Calendar write access** (`/settings`) — separate OAuth flow
   from the read-only sidebar; see `lib/google-auth.ts` /
   `lib/google-calendar.ts`. Needs `GOOGLE_CLIENT_ID` /
@@ -36,7 +46,9 @@ design exported from Claude Design — see that project's `README.md` and
 - **Password gate** — the whole site sits behind one shared password
   (`SITE_PASSWORD`), enforced in `proxy.ts` (Next 16 renamed
   `middleware.ts` to this). Added once the chat started spending API
-  budget and writing to the calendar.
+  budget and writing to the calendar. `/api/cron/*` is carved out of the
+  gate's matcher — Vercel's cron request carries no session cookie, only
+  its own `CRON_SECRET` bearer token, which that route checks itself.
 
 ## Local setup
 
@@ -98,7 +110,8 @@ app/
     sections/route.ts   POST — create a list
     tasks/route.ts      POST — create a task
     tasks/[id]/route.ts PATCH (edit name / urgency / done) and DELETE
-    chat/route.ts        POST — the tool-use loop (list/schedule/mark done)
+    chat/route.ts        POST — the interactive chat, wraps lib/chat-loop.ts
+    cron/morning-schedule/route.ts  GET — daily 08:15 UTC auto-schedule run
     auth/login|logout/route.ts       password gate session cookie
     auth/google/start|callback/route.ts  Google Calendar OAuth handshake
 components/
@@ -118,6 +131,8 @@ lib/
   google-auth.ts      Google OAuth token exchange/refresh/storage (write access)
   google-calendar.ts  createCalendarEvent() — the chat's booking tool
   chat-tools.ts        tool definitions + execution for the chat loop
+  chat-loop.ts          the tool-use loop itself, shared by the
+                         interactive chat and the morning cron
   auth.ts       SITE_PASSWORD session cookie logic
   urgency.ts   the fixed set of urgency labels + colors
   types.ts     shared Section/Task shapes
