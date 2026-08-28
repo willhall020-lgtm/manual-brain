@@ -86,7 +86,6 @@ export default function Dashboard({
   const [addingSection, setAddingSection] = useState(false);
   const [newSectionName, setNewSectionName] = useState("");
   const [actionError, setActionError] = useState<string | null>(null);
-  const [chatOpen, setChatOpen] = useState(false);
 
   // A plain counter (not Math.random/Date.now) for optimistic temp ids —
   // swapped for the server's real id once a create request resolves.
@@ -435,24 +434,9 @@ export default function Dashboard({
                       for today
                     </span>
                   </div>
-                  <div style={{ display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
-                    <button
-                      onClick={() => setChatOpen(true)}
-                      style={{
-                        flex: "none",
-                        background: "#14140F",
-                        color: "#FFFFFF",
-                        border: 0,
-                        borderRadius: 99,
-                        padding: "7px 13px",
-                        fontSize: 11,
-                        fontWeight: 800,
-                        letterSpacing: ".04em",
-                      }}
-                    >
-                      CHAT → SCHEDULE TODAY
-                    </button>
-                  </div>
+                  <span style={{ fontSize: 13, fontWeight: 600, color: "#41470F" }}>
+                    Pick one and start there, or ask the chat below to sort it out.
+                  </span>
                 </div>
 
                 <div style={{ display: "flex", flexDirection: "column", gap: 7 }}>
@@ -499,6 +483,26 @@ export default function Dashboard({
                       onAdd={() => addTask("quick", quickSection)}
                     />
                   )}
+                </div>
+              </div>
+
+              <div
+                style={{
+                  background: "#FFFFFF",
+                  border: "1px solid #E6E6E0",
+                  borderRadius: 22,
+                  padding: "18px 16px",
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: 10,
+                  height: 420,
+                }}
+              >
+                <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: ".14em", color: "#8E8E85", padding: "0 2px" }}>
+                  CHAT
+                </span>
+                <div style={{ flex: 1, minHeight: 0 }}>
+                  <ChatPanel />
                 </div>
               </div>
 
@@ -690,48 +694,6 @@ export default function Dashboard({
           loadError={calendarError}
         />
       </div>
-
-      {chatOpen && (
-        <div
-          onClick={() => setChatOpen(false)}
-          style={{
-            position: "fixed",
-            inset: 0,
-            background: "rgba(20,20,15,.32)",
-            zIndex: 40,
-            display: "flex",
-            justifyContent: "flex-end",
-          }}
-        >
-          <div
-            onClick={(e) => e.stopPropagation()}
-            style={{
-              width: "min(440px, 100vw)",
-              height: "100vh",
-              background: "#F7F7F3",
-              padding: 16,
-              display: "flex",
-              flexDirection: "column",
-              gap: 12,
-              boxShadow: "-8px 0 32px rgba(0,0,0,.12)",
-            }}
-          >
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-              <span style={{ fontSize: 15, fontWeight: 800, letterSpacing: "-.02em" }}>Chat</span>
-              <button
-                onClick={() => setChatOpen(false)}
-                style={{ background: "transparent", border: 0, fontSize: 20, lineHeight: 1, color: "#8E8E85", cursor: "pointer", padding: 4 }}
-                aria-label="Close chat"
-              >
-                ×
-              </button>
-            </div>
-            <div style={{ flex: 1, minHeight: 0 }}>
-              <ChatPanel />
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

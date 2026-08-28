@@ -93,9 +93,9 @@ export default function ChatPanel() {
         display: "flex",
         flexDirection: "column",
         height: "100%",
-        background: "#FFFFFF",
-        border: "1px solid #E6E6E0",
-        borderRadius: 22,
+        background: "#FBFBF9",
+        border: "1px solid #EDEDE7",
+        borderRadius: 14,
         overflow: "hidden",
       }}
     >
