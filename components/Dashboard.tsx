@@ -419,7 +419,10 @@ export default function Dashboard({
   // Due today, or overdue (rolled forward from an earlier day it wasn't
   // finished on) — the actual due date still shows on the row either way.
   const todayTasks = useMemo(
-    () => activeTasks.filter((t) => isDueOrOverdue(t.dueDate, todayKey)),
+    () =>
+      activeTasks
+        .filter((t) => isDueOrOverdue(t.dueDate, todayKey))
+        .sort((a, b) => (a.dueDate! < b.dueDate! ? -1 : a.dueDate! > b.dueDate! ? 1 : 0)),
     [activeTasks, todayKey]
   );
 
