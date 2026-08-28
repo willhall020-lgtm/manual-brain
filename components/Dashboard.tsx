@@ -513,26 +513,6 @@ export default function Dashboard({
                 </div>
               </div>
 
-              <div
-                style={{
-                  background: "#FFFFFF",
-                  border: "1px solid #E6E6E0",
-                  borderRadius: 22,
-                  padding: "18px 16px",
-                  display: "flex",
-                  flexDirection: "column",
-                  gap: 10,
-                  height: 420,
-                }}
-              >
-                <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: ".14em", color: "#8E8E85", padding: "0 2px" }}>
-                  CHAT
-                </span>
-                <div style={{ flex: 1, minHeight: 0 }}>
-                  <ChatPanel />
-                </div>
-              </div>
-
               <div style={{ display: "flex", flexDirection: "column", gap: 11 }}>
                 <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: ".14em", color: "#8E8E85", paddingLeft: 4 }}>
                   TASK LISTS
@@ -745,6 +725,26 @@ export default function Dashboard({
             onUndo={undo}
             onDelete={del}
           />
+
+          <div
+            style={{
+              background: "#FFFFFF",
+              border: "1px solid #E6E6E0",
+              borderRadius: 22,
+              padding: "18px 16px",
+              display: "flex",
+              flexDirection: "column",
+              gap: 10,
+              height: 420,
+            }}
+          >
+            <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: ".14em", color: "#8E8E85", padding: "0 2px" }}>
+              CHAT
+            </span>
+            <div style={{ flex: 1, minHeight: 0 }}>
+              <ChatPanel />
+            </div>
+          </div>
         </div>
 
         <CalendarPanel
