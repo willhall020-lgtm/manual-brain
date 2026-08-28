@@ -111,4 +111,16 @@ a:hover {
   .mb-title {
     font-size: 30px !important;
   }
+  /* Task rows pack name + badges (list, due date, duration, time-of-day,
+     book/edit/delete) into one flex line. At this width they don't all
+     fit, and without wrap the name's own text wraps inside its box while
+     the badges stay put — overlapping the wrapped second line. Wrapping
+     the row and forcing the name onto its own full-width line fixes it. */
+  .mb-taskrow {
+    flex-wrap: wrap !important;
+    row-gap: 6px !important;
+  }
+  .mb-taskrow-name {
+    flex-basis: 100% !important;
+  }
 }

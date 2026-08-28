@@ -54,6 +54,7 @@ export default function TodayTaskRow({
 }: Props) {
   return (
     <div
+      className="mb-taskrow"
       style={{
         display: "flex",
         alignItems: "center",
@@ -88,7 +89,7 @@ export default function TodayTaskRow({
           }
         }}
       >
-        <div style={{ flex: 1, minWidth: 0, display: "flex", alignItems: "center" }}>
+        <div className="mb-taskrow-name" style={{ flex: 1, minWidth: 0, display: "flex", alignItems: "center" }}>
           {editing ? (
             <input
               value={editVal}
