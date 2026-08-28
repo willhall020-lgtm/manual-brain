@@ -380,6 +380,7 @@ export default function Dashboard({
 
   return (
     <div
+      className="mb-shell"
       style={{
         display: "flex",
         flexDirection: "column",
@@ -395,6 +396,7 @@ export default function Dashboard({
             {dateLabel}
           </span>
           <h1
+            className="mb-title"
             style={{
               margin: 0,
               fontSize: 40,
@@ -447,7 +449,7 @@ export default function Dashboard({
         </button>
       )}
 
-      <div style={{ display: "flex", alignItems: "flex-start", gap: 22 }}>
+      <div className="mb-mainrow" style={{ display: "flex", alignItems: "flex-start", gap: 22 }}>
         <div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", gap: 22 }}>
           {isHome ? (
             <div style={{ display: "flex", flexDirection: "column", gap: 22 }}>

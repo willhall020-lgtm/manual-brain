@@ -86,6 +86,7 @@ export default function CalendarPanel({ today, events, configured, loadError }: 
 
   return (
     <div
+      className="mb-calendar"
       style={{
         flex: "none",
         width: 326,

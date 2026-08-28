@@ -93,3 +93,28 @@ a:hover {
 .mb-menuitem:hover {
   background: #f3f3ef !important;
 }
+
+/* Mobile layout — inline styles can't carry @media, so the handful of
+   containers that need to reflow at narrow widths get a class here
+   (with !important, same reason as the hover rules above: a stylesheet
+   rule only beats an inline style that way). Everything else on the
+   page stays inline, unchanged. */
+@media (max-width: 860px) {
+  .mb-mainrow {
+    flex-direction: column !important;
+    align-items: stretch !important;
+  }
+  .mb-calendar {
+    width: 100% !important;
+    position: static !important;
+  }
+}
+
+@media (max-width: 560px) {
+  .mb-shell {
+    padding: 20px 14px 56px !important;
+  }
+  .mb-title {
+    font-size: 30px !important;
+  }
+}

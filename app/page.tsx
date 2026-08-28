@@ -38,7 +38,7 @@ export default async function Page() {
 
   if (loadError) {
     return (
-      <div style={{ maxWidth: 640, margin: "0 auto", padding: "34px 36px" }}>
+      <div className="mb-shell" style={{ maxWidth: 640, margin: "0 auto", padding: "34px 36px" }}>
         <div
           style={{
             background: "#FFFFFF",
