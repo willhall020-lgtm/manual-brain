@@ -106,7 +106,7 @@ a:hover {
 
 @media (max-width: 560px) {
   .mb-shell {
-    padding: 20px 14px 56px !important;
+    padding: 20px 20px 56px !important;
   }
   .mb-title {
     font-size: 30px !important;
