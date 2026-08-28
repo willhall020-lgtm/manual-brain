@@ -8,6 +8,7 @@ export interface Task {
   customLabel: string | null;
   doneAt: string | null;
   calendarEventId: string | null;
+  durationMinutes: number | null;
 }
 
 export interface Section {

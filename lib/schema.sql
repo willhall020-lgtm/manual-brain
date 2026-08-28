@@ -33,6 +33,11 @@ CREATE TABLE IF NOT EXISTS tasks (
 -- separate ALTER — both are safe to re-run.
 ALTER TABLE tasks ADD COLUMN IF NOT EXISTS calendar_event_id text;
 
+-- Optional, user-set estimate of how long a task takes — surfaced to the
+-- chat (list_tasks) so schedule_task can size the calendar event off a
+-- real number instead of guessing, when the user bothered to set one.
+ALTER TABLE tasks ADD COLUMN IF NOT EXISTS duration_minutes integer;
+
 CREATE INDEX IF NOT EXISTS tasks_section_id_idx ON tasks (section_id);
 CREATE INDEX IF NOT EXISTS tasks_done_at_idx ON tasks (done_at);
 

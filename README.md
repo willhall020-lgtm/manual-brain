@@ -27,10 +27,16 @@ design exported from Claude Design — see that project's `README.md` and
 - **Chat** — a Claude tool-use loop (`lib/chat-loop.ts`, Anthropic Messages
   API, `claude-opus-5`, manual loop — not the beta tool runner, this needs
   no more than a single-request loop) with four tools: `list_tasks`,
-  `add_task`, `schedule_task` (books a real Google Calendar event, and
+  `add_task` (name, list, urgency, and an optional `duration_minutes`),
+  `schedule_task` (books a real Google Calendar event sized off
+  `duration_minutes` — the task's own if set, else the model's estimate,
+  computed server-side rather than trusting the model's date math — and
   tags the task with the resulting `calendar_event_id` so it isn't
   rebooked), `mark_task_done`. Replaces the old Slack-routine handoff
-  entirely — needs `ANTHROPIC_API_KEY`. Reachable two ways:
+  entirely — needs `ANTHROPIC_API_KEY`. `duration_minutes` is also a
+  plain optional field on task creation in the dashboard UI itself
+  (`QuickAddBox.tsx` / `TaskAddBox.tsx`), not just a chat concept. Chat
+  is reachable two ways:
   - `app/api/chat/route.ts` — the interactive box on the dashboard.
   - `app/api/cron/morning-schedule/route.ts` — a Vercel Cron hit at 08:15
     UTC daily (09:15 BST — see that file's own comment for the DST

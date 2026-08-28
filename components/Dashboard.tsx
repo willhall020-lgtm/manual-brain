@@ -24,8 +24,9 @@ interface Draft {
   text: string;
   urgency: UrgencyKey;
   custom: string;
+  duration: string; // free-text minutes, kept as a string while typing — parsed on submit
 }
-const emptyDraft = (): Draft => ({ text: "", urgency: "Today", custom: "" });
+const emptyDraft = (): Draft => ({ text: "", urgency: "Today", custom: "", duration: "" });
 
 const WEEKDAYS = [
   "SUNDAY",
@@ -117,6 +118,7 @@ export default function Dashboard({
           customLabel: t.customLabel,
           doneAt: t.doneAt,
           calendarEventId: t.calendarEventId,
+          durationMinutes: t.durationMinutes,
         });
       }
     }
@@ -150,13 +152,15 @@ export default function Dashboard({
     const text = d.text.trim();
     if (!text || !sectionId) return;
     const customLabel = d.urgency === "Custom" ? d.custom.trim() || "Custom" : null;
+    const parsedDuration = parseInt(d.duration, 10);
+    const durationMinutes = d.duration.trim() && parsedDuration > 0 ? parsedDuration : null;
     const tempId = nextTempId("tmp-task");
 
     setTasks((prev) => [
       ...prev,
-      { id: tempId, sectionId, name: text, urgency: d.urgency, customLabel, doneAt: null, calendarEventId: null },
+      { id: tempId, sectionId, name: text, urgency: d.urgency, customLabel, doneAt: null, calendarEventId: null, durationMinutes },
     ]);
-    setDrafts((prev) => ({ ...prev, [key]: { text: "", urgency: d.urgency, custom: "" } }));
+    setDrafts((prev) => ({ ...prev, [key]: { text: "", urgency: d.urgency, custom: "", duration: "" } }));
 
     try {
       const res = await fetch("/api/tasks", {
@@ -167,6 +171,7 @@ export default function Dashboard({
           name: text,
           urgency: d.urgency,
           customLabel: customLabel ?? undefined,
+          durationMinutes: durationMinutes ?? undefined,
         }),
       });
       if (!res.ok) throw new Error();
@@ -498,12 +503,14 @@ export default function Dashboard({
                       text={draft("quick").text}
                       urgency={draft("quick").urgency}
                       custom={draft("quick").custom}
+                      duration={draft("quick").duration}
                       sections={sections}
                       selectedSectionId={quickSection}
                       onOpen={() => setActiveAdd("quick")}
                       onCancel={() => setActiveAdd(null)}
                       onTextChange={(v) => setDraft("quick", { text: v })}
                       onCustomChange={(v) => setDraft("quick", { custom: v })}
+                      onDurationChange={(v) => setDraft("quick", { duration: v })}
                       onUrgencyChange={(k) => setDraft("quick", { urgency: k })}
                       onSectionPick={setQuickSection}
                       onKeyDown={(e) => {
@@ -704,10 +711,12 @@ export default function Dashboard({
                       text={draft(`sec:${activeSection.id}`).text}
                       urgency={draft(`sec:${activeSection.id}`).urgency}
                       custom={draft(`sec:${activeSection.id}`).custom}
+                      duration={draft(`sec:${activeSection.id}`).duration}
                       onOpen={() => setActiveAdd(`sec:${activeSection.id}`)}
                       onCancel={() => setActiveAdd(null)}
                       onTextChange={(v) => setDraft(`sec:${activeSection.id}`, { text: v })}
                       onCustomChange={(v) => setDraft(`sec:${activeSection.id}`, { custom: v })}
+                      onDurationChange={(v) => setDraft(`sec:${activeSection.id}`, { duration: v })}
                       onUrgencyChange={(k) => setDraft(`sec:${activeSection.id}`, { urgency: k })}
                       onKeyDown={(e) => {
                         if (e.key === "Enter") addTask(`sec:${activeSection.id}`, activeSection.id);

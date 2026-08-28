@@ -17,6 +17,7 @@ export async function GET() {
         customLabel: t.customLabel,
         doneAt: t.doneAt,
         calendarEventId: t.calendarEventId,
+        durationMinutes: t.durationMinutes,
       });
     }
     return NextResponse.json({ sections: Array.from(bySectionId.values()) });

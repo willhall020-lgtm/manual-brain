@@ -9,10 +9,12 @@ interface Props {
   text: string;
   urgency: UrgencyKey;
   custom: string;
+  duration: string;
   onOpen: () => void;
   onCancel: () => void;
   onTextChange: (v: string) => void;
   onCustomChange: (v: string) => void;
+  onDurationChange: (v: string) => void;
   onUrgencyChange: (k: UrgencyKey) => void;
   onKeyDown: (e: KeyboardEvent<HTMLInputElement>) => void;
   onAdd: () => void;
@@ -23,10 +25,12 @@ export default function TaskAddBox({
   text,
   urgency,
   custom,
+  duration,
   onOpen,
   onCancel,
   onTextChange,
   onCustomChange,
+  onDurationChange,
   onUrgencyChange,
   onKeyDown,
   onAdd,
@@ -114,6 +118,35 @@ export default function TaskAddBox({
             }}
           />
         )}
+      </div>
+
+      <div style={{ display: "flex", flexDirection: "column", gap: 7 }}>
+        <span style={{ fontSize: 10, fontWeight: 800, letterSpacing: ".14em", color: "#A3A39A" }}>
+          HOW LONG? (OPTIONAL)
+        </span>
+        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          <input
+            type="number"
+            min={1}
+            step={5}
+            inputMode="numeric"
+            value={duration}
+            onChange={(e) => onDurationChange(e.target.value)}
+            onKeyDown={onKeyDown}
+            placeholder="e.g. 20"
+            style={{
+              width: 84,
+              border: "1px solid #DFDFD8",
+              borderRadius: 10,
+              padding: "7px 10px",
+              fontSize: 12.5,
+              fontWeight: 600,
+              outline: "none",
+              background: "#FFFFFF",
+            }}
+          />
+          <span style={{ fontSize: 11.5, fontWeight: 600, color: "#A3A39A" }}>minutes</span>
+        </div>
       </div>
 
       <div style={{ display: "flex", alignItems: "center", gap: 10 }}>

@@ -43,8 +43,18 @@ export async function PATCH(
       `;
     }
 
+    if (body?.durationMinutes !== undefined) {
+      const durationMinutes =
+        typeof body.durationMinutes === "number" &&
+        Number.isFinite(body.durationMinutes) &&
+        body.durationMinutes > 0
+          ? Math.round(body.durationMinutes)
+          : null;
+      await db`UPDATE tasks SET duration_minutes = ${durationMinutes} WHERE id = ${id}`;
+    }
+
     const rows = (await db`
-      SELECT id, section_id, name, urgency, custom_label, done_at
+      SELECT id, section_id, name, urgency, custom_label, done_at, duration_minutes
       FROM tasks WHERE id = ${id}
     `) as {
       id: string;
@@ -53,6 +63,7 @@ export async function PATCH(
       urgency: string;
       custom_label: string | null;
       done_at: string | null;
+      duration_minutes: number | null;
     }[];
 
     if (!rows.length) {
@@ -66,6 +77,7 @@ export async function PATCH(
       urgency: t.urgency,
       customLabel: t.custom_label,
       doneAt: t.done_at,
+      durationMinutes: t.duration_minutes,
     });
   } catch (err) {
     console.error(err);

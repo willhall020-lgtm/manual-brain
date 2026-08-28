@@ -10,7 +10,7 @@ export async function getState(): Promise<{ sections: Section[]; tasks: Task[] }
     SELECT id, name FROM sections ORDER BY position ASC
   `) as { id: string; name: string }[];
   const taskRows = (await db`
-    SELECT id, section_id, name, urgency, custom_label, done_at, calendar_event_id
+    SELECT id, section_id, name, urgency, custom_label, done_at, calendar_event_id, duration_minutes
     FROM tasks
     ORDER BY position ASC
   `) as {
@@ -21,6 +21,7 @@ export async function getState(): Promise<{ sections: Section[]; tasks: Task[] }
     custom_label: string | null;
     done_at: string | null;
     calendar_event_id: string | null;
+    duration_minutes: number | null;
   }[];
 
   const tasks: Task[] = taskRows.map((t) => ({
@@ -31,6 +32,7 @@ export async function getState(): Promise<{ sections: Section[]; tasks: Task[] }
     customLabel: t.custom_label,
     doneAt: t.done_at,
     calendarEventId: t.calendar_event_id,
+    durationMinutes: t.duration_minutes,
   }));
 
   return { sections: sections.map((s) => ({ id: s.id, name: s.name })), tasks };

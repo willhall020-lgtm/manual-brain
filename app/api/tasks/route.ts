@@ -24,6 +24,18 @@ export async function POST(req: Request) {
       );
     }
 
+    // Optional — how long the task is expected to take, in minutes. Lets
+    // the chat size the calendar event off a real number instead of
+    // guessing (lib/chat-tools.ts's schedule_task). Any non-positive or
+    // non-numeric value is treated as "not set" rather than a 400 — this
+    // field is a courtesy, not something worth failing task creation over.
+    const durationMinutes =
+      typeof body?.durationMinutes === "number" &&
+      Number.isFinite(body.durationMinutes) &&
+      body.durationMinutes > 0
+        ? Math.round(body.durationMinutes)
+        : null;
+
     const db = sql();
     const [{ next_pos }] = (await db`
       SELECT COALESCE(MAX(position), -1) + 1 AS next_pos
@@ -32,12 +44,12 @@ export async function POST(req: Request) {
 
     const id = "task_" + crypto.randomUUID().slice(0, 8);
     await db`
-      INSERT INTO tasks (id, section_id, name, urgency, custom_label, position)
-      VALUES (${id}, ${sectionId}, ${name}, ${urgency}, ${customLabel}, ${next_pos})
+      INSERT INTO tasks (id, section_id, name, urgency, custom_label, position, duration_minutes)
+      VALUES (${id}, ${sectionId}, ${name}, ${urgency}, ${customLabel}, ${next_pos}, ${durationMinutes})
     `;
 
     return NextResponse.json(
-      { id, sectionId, name, urgency, customLabel, doneAt: null },
+      { id, sectionId, name, urgency, customLabel, doneAt: null, durationMinutes },
       { status: 201 }
     );
   } catch (err) {
