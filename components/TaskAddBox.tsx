@@ -1,21 +1,19 @@
 "use client";
 
 import type { KeyboardEvent } from "react";
-import UrgencyChipRow from "./UrgencyChipRow";
-import { UrgencyKey } from "@/lib/urgency";
+import DueDatePicker from "./DueDatePicker";
 
 interface Props {
   open: boolean;
   text: string;
-  urgency: UrgencyKey;
-  custom: string;
+  dueDate: string | null;
+  todayKey: string;
   duration: string;
   onOpen: () => void;
   onCancel: () => void;
   onTextChange: (v: string) => void;
-  onCustomChange: (v: string) => void;
   onDurationChange: (v: string) => void;
-  onUrgencyChange: (k: UrgencyKey) => void;
+  onDueDateChange: (v: string | null) => void;
   onKeyDown: (e: KeyboardEvent<HTMLInputElement>) => void;
   onAdd: () => void;
 }
@@ -23,15 +21,14 @@ interface Props {
 export default function TaskAddBox({
   open,
   text,
-  urgency,
-  custom,
+  dueDate,
+  todayKey,
   duration,
   onOpen,
   onCancel,
   onTextChange,
-  onCustomChange,
   onDurationChange,
-  onUrgencyChange,
+  onDueDateChange,
   onKeyDown,
   onAdd,
 }: Props) {
@@ -97,27 +94,9 @@ export default function TaskAddBox({
 
       <div style={{ display: "flex", flexDirection: "column", gap: 7 }}>
         <span style={{ fontSize: 10, fontWeight: 800, letterSpacing: ".14em", color: "#A3A39A" }}>
-          HOW URGENT?
+          DUE WHEN?
         </span>
-        <UrgencyChipRow value={urgency} onChange={onUrgencyChange} />
-        {urgency === "Custom" && (
-          <input
-            value={custom}
-            onChange={(e) => onCustomChange(e.target.value)}
-            onKeyDown={onKeyDown}
-            placeholder="Type your own — e.g. before Sam visits"
-            style={{
-              width: "100%",
-              border: "1px dashed #A9A99F",
-              borderRadius: 10,
-              padding: "7px 10px",
-              fontSize: 12,
-              fontWeight: 600,
-              outline: "none",
-              background: "#FBFBF8",
-            }}
-          />
-        )}
+        <DueDatePicker value={dueDate} todayKey={todayKey} editing onChange={onDueDateChange} />
       </div>
 
       <div style={{ display: "flex", flexDirection: "column", gap: 7 }}>

@@ -2,11 +2,14 @@
 
 import type { KeyboardEvent } from "react";
 import DurationInput from "@/components/DurationInput";
+import DueDatePicker from "@/components/DueDatePicker";
 import BookButton from "@/components/BookButton";
 
 interface Props {
   name: string;
   sectionName: string;
+  dueDate: string | null;
+  todayKey: string;
   durationMinutes: number | null;
   booked: boolean;
   booking: boolean;
@@ -19,12 +22,15 @@ interface Props {
   onEditKeyDown: (e: KeyboardEvent<HTMLInputElement>) => void;
   onEditBlur: () => void;
   onDurationCommit: (minutes: number | null) => void;
+  onDueDateChange: (v: string | null) => void;
   onBook: () => void;
 }
 
 export default function TodayTaskRow({
   name,
   sectionName,
+  dueDate,
+  todayKey,
   durationMinutes,
   booked,
   booking,
@@ -37,6 +43,7 @@ export default function TodayTaskRow({
   onEditKeyDown,
   onEditBlur,
   onDurationCommit,
+  onDueDateChange,
   onBook,
 }: Props) {
   return (
@@ -121,6 +128,7 @@ export default function TodayTaskRow({
         >
           {sectionName}
         </span>
+        <DueDatePicker value={dueDate} todayKey={todayKey} editing={editing} onChange={onDueDateChange} />
         <DurationInput minutes={durationMinutes} editing={editing} onCommit={onDurationCommit} />
       </div>
       <BookButton booked={booked} booking={booking} onBook={onBook} />

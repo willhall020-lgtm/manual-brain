@@ -19,30 +19,38 @@ if (!url) {
   process.exit(1);
 }
 
+// The old prototype seeded relative urgency buckets (Today / 2-3 days /
+// etc.) — the app now uses real due dates, so this seeds actual dates
+// computed from today instead. `null` (a handful of "This month"-ish and
+// the one "Custom" item) is a genuine, common case: someday/backlog tasks
+// with no firm date, not a placeholder for a missing value.
+function daysFromNow(n) {
+  const d = new Date();
+  d.setDate(d.getDate() + n);
+  return d.toISOString().slice(0, 10);
+}
+
 const SECTIONS = [
   {
     id: "s1",
     name: "Delight",
     tasks: [
-      { name: "Book tickets for the Sunday film", urgency: "Today" },
-      { name: "Plan Sam's birthday dinner", urgency: "2–3 days" },
-      { name: "Look up the pottery class", urgency: "This month" },
+      { name: "Book tickets for the Sunday film", dueDate: daysFromNow(0) },
+      { name: "Plan Sam's birthday dinner", dueDate: daysFromNow(3) },
+      { name: "Look up the pottery class", dueDate: null },
     ],
   },
   {
     id: "s2",
     name: "Work",
     tasks: [
-      { name: "Send revised client deck to Priya", urgency: "Today" },
-      { name: "Fix the numbers on slide 12", urgency: "Today" },
-      {
-        name: "Book a room for the Thursday workshop",
-        urgency: "End of this week",
-      },
-      { name: "Draft Q4 resourcing note", urgency: "This month" },
+      { name: "Send revised client deck to Priya", dueDate: daysFromNow(0) },
+      { name: "Fix the numbers on slide 12", dueDate: daysFromNow(0) },
+      { name: "Book a room for the Thursday workshop", dueDate: daysFromNow(6) },
+      { name: "Draft Q4 resourcing note", dueDate: null },
       {
         name: "Post standup notes",
-        urgency: "Today",
+        dueDate: daysFromNow(0),
         done: true,
       },
     ],
@@ -51,34 +59,30 @@ const SECTIONS = [
     id: "s3",
     name: "Personal Project",
     tasks: [
-      { name: "Wire up login on the side project", urgency: "2–3 days" },
-      {
-        name: "Print the zine draft",
-        urgency: "Custom",
-        customLabel: "before Sam visits",
-      },
-      { name: "Write up reading notes", urgency: "This month" },
+      { name: "Wire up login on the side project", dueDate: daysFromNow(3) },
+      { name: "Print the zine draft — before Sam visits", dueDate: null },
+      { name: "Write up reading notes", dueDate: null },
     ],
   },
   {
     id: "s4",
     name: "Life",
     tasks: [
-      { name: "Call the dentist back", urgency: "Today" },
-      { name: "Cancel the gym trial", urgency: "2–3 days" },
-      { name: "Swap the winter clothes over", urgency: "This month" },
+      { name: "Call the dentist back", dueDate: daysFromNow(0) },
+      { name: "Cancel the gym trial", dueDate: daysFromNow(3) },
+      { name: "Swap the winter clothes over", dueDate: null },
     ],
   },
   {
     id: "s5",
     name: "Admin",
     tasks: [
-      { name: "Submit timesheet for last week", urgency: "2–3 days" },
-      { name: "Renew car rego", urgency: "End of this week" },
-      { name: "Chase the insurance refund", urgency: "This month" },
+      { name: "Submit timesheet for last week", dueDate: daysFromNow(-1) },
+      { name: "Renew car rego", dueDate: daysFromNow(6) },
+      { name: "Chase the insurance refund", dueDate: null },
       {
         name: "Pay electricity bill",
-        urgency: "2–3 days",
+        dueDate: daysFromNow(3),
         done: true,
       },
     ],
@@ -102,14 +106,13 @@ try {
         const t = s.tasks[j];
         const id = "t" + taskN++;
         await pool.query(
-          `INSERT INTO tasks (id, section_id, name, urgency, custom_label, position, done_at)
-           VALUES ($1, $2, $3, $4, $5, $6, $7)`,
+          `INSERT INTO tasks (id, section_id, name, due_date, position, done_at)
+           VALUES ($1, $2, $3, $4, $5, $6)`,
           [
             id,
             s.id,
             t.name,
-            t.urgency,
-            t.customLabel ?? null,
+            t.dueDate,
             j,
             t.done ? new Date() : null,
           ]

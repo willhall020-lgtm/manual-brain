@@ -1,52 +1,42 @@
 "use client";
 
 import type { KeyboardEvent } from "react";
-import { URGENCY, UrgencyKey, urgencyLabel, urgencyMeta } from "@/lib/urgency";
 import DurationInput from "@/components/DurationInput";
+import DueDatePicker from "@/components/DueDatePicker";
 
 interface Props {
   name: string;
-  urgency: UrgencyKey;
-  customLabel: string | null;
-  urgencyDisplay: "pill" | "dot";
+  dueDate: string | null;
+  todayKey: string;
   durationMinutes: number | null;
   editing: boolean;
   editVal: string;
-  menuOpen: boolean;
   onDone: () => void;
   onEdit: () => void;
   onDelete: () => void;
   onEditChange: (v: string) => void;
   onEditKeyDown: (e: KeyboardEvent<HTMLInputElement>) => void;
   onEditBlur: () => void;
-  onToggleMenu: () => void;
-  onPickUrgency: (k: UrgencyKey) => void;
   onDurationCommit: (minutes: number | null) => void;
+  onDueDateChange: (v: string | null) => void;
 }
 
 export default function ListTaskRow({
   name,
-  urgency,
-  customLabel,
-  urgencyDisplay,
+  dueDate,
+  todayKey,
   durationMinutes,
   editing,
   editVal,
-  menuOpen,
   onDone,
   onEdit,
   onDelete,
   onEditChange,
   onEditKeyDown,
   onEditBlur,
-  onToggleMenu,
-  onPickUrgency,
   onDurationCommit,
+  onDueDateChange,
 }: Props) {
-  const meta = urgencyMeta(urgency);
-  const label = urgencyLabel(urgency, customLabel);
-  const asDot = urgencyDisplay === "dot";
-
   return (
     <div
       style={{
@@ -76,135 +66,41 @@ export default function ListTaskRow({
       <div
         style={{ display: "contents" }}
         onBlur={(e) => {
-          // The name input and the duration input are two separate fields
-          // in the same edit group — tabbing between them (or clicking the
-          // urgency pill) shouldn't close the group, only losing focus to
-          // something outside it should.
+          // The name, due-date, and duration fields are one edit group —
+          // tabbing/clicking between them shouldn't close the group, only
+          // losing focus to something outside it should.
           if (editing && !e.currentTarget.contains(e.relatedTarget as Node)) {
             onEditBlur();
           }
         }}
       >
-      <div style={{ flex: 1, minWidth: 0, display: "flex", alignItems: "center" }}>
-        {editing ? (
-          <input
-            value={editVal}
-            onChange={(e) => onEditChange(e.target.value)}
-            onKeyDown={onEditKeyDown}
-            autoFocus
-            style={{
-              width: "100%",
-              fontSize: 14.5,
-              fontWeight: 600,
-              border: 0,
-              borderBottom: "2px solid #2B34EE",
-              background: "transparent",
-              outline: "none",
-              padding: "1px 0",
-            }}
-          />
-        ) : (
-          <span style={{ fontSize: 14.5, fontWeight: 600, letterSpacing: "-.01em", lineHeight: 1.3 }}>
-            {name}
-          </span>
-        )}
-      </div>
+        <div style={{ flex: 1, minWidth: 0, display: "flex", alignItems: "center" }}>
+          {editing ? (
+            <input
+              value={editVal}
+              onChange={(e) => onEditChange(e.target.value)}
+              onKeyDown={onEditKeyDown}
+              autoFocus
+              style={{
+                width: "100%",
+                fontSize: 14.5,
+                fontWeight: 600,
+                border: 0,
+                borderBottom: "2px solid #2B34EE",
+                background: "transparent",
+                outline: "none",
+                padding: "1px 0",
+              }}
+            />
+          ) : (
+            <span style={{ fontSize: 14.5, fontWeight: 600, letterSpacing: "-.01em", lineHeight: 1.3 }}>
+              {name}
+            </span>
+          )}
+        </div>
 
-      <div className="mb-menu-anchor" style={{ flex: "none", position: "relative" }}>
-        {asDot ? (
-          <button
-            onClick={onToggleMenu}
-            title={label}
-            className="mb-urgpill"
-            style={{
-              width: 13,
-              height: 13,
-              padding: 0,
-              borderRadius: 99,
-              background: meta.bg,
-              border: meta.bd,
-              display: "block",
-            }}
-          />
-        ) : (
-          <button
-            onClick={onToggleMenu}
-            className="mb-urgpill"
-            style={{
-              background: meta.bg,
-              color: meta.fg,
-              border: meta.bd,
-              borderRadius: 99,
-              padding: "4px 10px",
-              fontSize: 11,
-              fontWeight: 700,
-              letterSpacing: ".02em",
-              whiteSpace: "nowrap",
-              maxWidth: 150,
-              overflow: "hidden",
-              textOverflow: "ellipsis",
-            }}
-          >
-            {label}
-          </button>
-        )}
-
-        {menuOpen && (
-          <div
-            style={{
-              position: "absolute",
-              top: "calc(100% + 7px)",
-              right: 0,
-              zIndex: 30,
-              width: 186,
-              background: "#FFFFFF",
-              border: "1px solid #E4E4DE",
-              borderRadius: 13,
-              padding: 6,
-              boxShadow: "0 14px 34px rgba(20,20,15,.14)",
-              display: "flex",
-              flexDirection: "column",
-              gap: 1,
-            }}
-          >
-            {URGENCY.map((u) => (
-              <button
-                key={u.k}
-                onClick={() => onPickUrgency(u.k)}
-                className="mb-menuitem"
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 9,
-                  width: "100%",
-                  padding: "7px 8px",
-                  border: 0,
-                  borderRadius: 9,
-                  background: "transparent",
-                  fontSize: 12.5,
-                  fontWeight: 600,
-                  color: "#14140F",
-                  textAlign: "left",
-                }}
-              >
-                <span
-                  style={{
-                    flex: "none",
-                    width: 10,
-                    height: 10,
-                    borderRadius: 99,
-                    background: u.bg,
-                    border: u.bd,
-                  }}
-                />
-                {u.k}
-              </button>
-            ))}
-          </div>
-        )}
-      </div>
-
-      <DurationInput minutes={durationMinutes} editing={editing} onCommit={onDurationCommit} />
+        <DueDatePicker value={dueDate} todayKey={todayKey} editing={editing} onChange={onDueDateChange} />
+        <DurationInput minutes={durationMinutes} editing={editing} onCommit={onDurationCommit} />
       </div>
 
       <div style={{ flex: "none", display: "flex", alignItems: "center", gap: 2 }}>

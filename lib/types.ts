@@ -1,11 +1,8 @@
-import type { UrgencyKey } from "./urgency";
-
 export interface Task {
   id: string;
   sectionId: string;
   name: string;
-  urgency: UrgencyKey;
-  customLabel: string | null;
+  dueDate: string | null; // "YYYY-MM-DD", or null for no due date
   doneAt: string | null;
   calendarEventId: string | null;
   durationMinutes: number | null;

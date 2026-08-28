@@ -13,8 +13,7 @@ export async function GET() {
       sec.tasks.push({
         id: t.id,
         name: t.name,
-        urgency: t.urgency,
-        customLabel: t.customLabel,
+        dueDate: t.dueDate,
         doneAt: t.doneAt,
         calendarEventId: t.calendarEventId,
         durationMinutes: t.durationMinutes,

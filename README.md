@@ -1,11 +1,13 @@
 # Manual Brain
 
 A low-friction, high-contrast task tracker built for an ADHD brain: three
-default lists, a fixed set of relative urgency labels (no calendar-date
-picking), a "for today" view so you never have to see the whole backlog at
-once, a live read-only Google Calendar sidebar, and an in-site chat that
-does what a Slack routine used to — reads your tasks, decides what to book
-today, and puts it on the calendar itself.
+default lists, real due dates (a one-click "Today", or pick any date — see
+`lib/due-date.ts`), a "for today" view so you never have to see the whole
+backlog at once — driven entirely by due date, so an unfinished task rolls
+forward on its own each day rather than needing to be re-triaged, still
+showing its real (now past) due date — a live read-only Google Calendar
+sidebar, and an in-site chat that does what a Slack routine used to — reads
+your tasks, decides what to book today, and puts it on the calendar itself.
 
 This is the real implementation of the `Manual Brain Dashboard.dc.html`
 design exported from Claude Design — see that project's `README.md` and
@@ -19,6 +21,24 @@ design exported from Claude Design — see that project's `README.md` and
   talks to a small set of API routes for every mutation.
 - **Neon Postgres** — two tables (`sections`, `tasks`); see
   [`lib/schema.sql`](lib/schema.sql) for the full shape and reasoning.
+- **Due dates** (`lib/due-date.ts`, `DueDatePicker.tsx`) — replaced the
+  original fixed relative-urgency buckets (Today / 2–3 days / End of this
+  week / This month / Custom). A one-click "Today" chip plus a native
+  `<input type="date">` (a real calendar picker on every modern
+  browser/OS — no date-picker library needed) either on task creation or,
+  on an existing task, behind the same pencil-edit toggle the name uses.
+  `tasks.due_date` is nullable — no date at all is a normal, common state
+  (a someday/backlog item), not a placeholder. The "for today" box is
+  every not-done task with `due_date <= today`: nothing to update
+  overnight, a task just keeps showing up — with its real, now-past due
+  date still visible — until it's done or its date is moved. Comparisons
+  use plain string ordering on `"YYYY-MM-DD"` rather than parsing a
+  `Date`, since that format sorts lexicographically the same as
+  chronologically; this also sidesteps a real bug hit during the
+  migration — the `neon()` HTTP client parses a bare `date` column into a
+  JS `Date` client-side, which shifts it by the local UTC offset and
+  corrupts the calendar day, not just the format, so every query reading
+  `due_date` casts it to `text` in SQL instead (see `lib/data.ts`).
 - **Calendar sidebar** — reads a Google Calendar private iCal feed
   (`GCAL_ICS_URL`), read-only, refreshed on demand. Recurring events are
   expanded via `lib/gcal.ts`; `next.config.ts` marks `node-ical` as a
@@ -26,8 +46,12 @@ design exported from Claude Design — see that project's `README.md` and
   otherwise.
 - **Chat** — a Claude tool-use loop (`lib/chat-loop.ts`, Anthropic Messages
   API, `claude-opus-5`, manual loop — not the beta tool runner, this needs
-  no more than a single-request loop) with five tools: `list_tasks`,
-  `add_task` (name, list, urgency, and an optional `duration_minutes`),
+  no more than a single-request loop) with five tools: `list_tasks`
+  (surfaces each task's due_date and a computed overdue flag),
+  `add_task` (name, list, an optional due_date, and an optional
+  `duration_minutes` — due_date is left unset rather than defaulted to
+  today when the user doesn't imply one; someday/backlog items with no
+  firm date are a real, common state, not a gap to fill in),
   `list_calendar_events` (existing bookings in a range, for seeing gaps),
   `schedule_task` (books a real Google Calendar event sized off
   `duration_minutes` — the task's own if set, else the model's estimate,
@@ -114,7 +138,7 @@ Environment Variables.
 ```
 app/
   page.tsx              Server Component — loads initial state, renders Dashboard
-  layout.tsx            Archivo font, page metadata
+  layout.tsx            Manrope font, page metadata
   globals.css           base styles + hover-state classes
   login/page.tsx         password gate form
   settings/page.tsx       Google Calendar connect/status + planning rules
@@ -123,7 +147,9 @@ app/
     state/route.ts      GET  — full sections+tasks read
     sections/route.ts   POST — create a list
     tasks/route.ts      POST — create a task
-    tasks/[id]/route.ts PATCH (edit name / urgency / done / duration) and DELETE
+    tasks/[id]/route.ts PATCH (edit name / due date / done / duration) and DELETE
+    tasks/[id]/book/route.ts  POST — BookButton's one-task shortcut into
+                               the chat loop
     preferences/route.ts POST — save planning rules
     chat/route.ts        POST — the interactive chat, wraps lib/chat-loop.ts
     cron/morning-schedule/route.ts  GET — daily 08:15 UTC auto-schedule run
@@ -132,16 +158,18 @@ app/
 components/
   Dashboard.tsx          all state + interaction logic
   TodayTaskRow.tsx        row used in the home "for today" block
-  ListTaskRow.tsx         row used inside a list view (urgency pill/dot + menu)
-  DurationInput.tsx       always-visible minutes input, save-on-blur — shared
-                           by both add boxes and both task rows
+  ListTaskRow.tsx         row used inside a list view
+  DueDatePicker.tsx       "Today" chip + native date input; plain text
+                           until the row's pencil toggles edit mode
+  DurationInput.tsx       same plain-text/pencil-edit pattern, for minutes
+  BookButton.tsx          "BOOKED" tag, or a "BOOK" button that hands the
+                           task to the chat loop to book on its own
   QuickAddBox.tsx         home's quick-add (adds to a chosen list)
   TaskAddBox.tsx          list view's add-task box
   DonePanel.tsx           collapsible done list with undo
   CalendarPanel.tsx       live, read-only Google Calendar sidebar
   ChatPanel.tsx           chat UI — client-side message history + send loop
   PreferencesForm.tsx     planning-rules textarea, save-on-blur, reset-to-default
-  UrgencyChipRow.tsx      shared urgency picker used by both add boxes
 lib/
   db.ts        lazy Neon client (reads DATABASE_URL)
   data.ts      shared "load everything" query, used by the page and /api/state
@@ -154,7 +182,8 @@ lib/
                          interactive chat and the morning cron
   preferences.ts        planning-rules get/save, with a hardcoded default
   auth.ts       SITE_PASSWORD session cookie logic
-  urgency.ts   the fixed set of urgency labels + colors
+  due-date.ts  "YYYY-MM-DD" helpers — dateKey, isOverdue, isDueOrOverdue,
+               formatDueDate; see the Stack section above for why
   types.ts     shared Section/Task shapes
   schema.sql   table definitions
 proxy.ts       site-wide password gate (Next 16's replacement for middleware.ts)
@@ -166,6 +195,5 @@ scripts/
 ## Deliberately out of scope (V1, per spec.md)
 
 - Email integration.
-- Deleting a list (matches the original design — you can only add lists).
 - Per-user accounts — `SITE_PASSWORD` is one shared password for the whole
   site, not a real auth system.

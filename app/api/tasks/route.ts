@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { sql } from "@/lib/db";
-import { isUrgencyKey } from "@/lib/urgency";
+import { isDueDateString } from "@/lib/due-date";
 
 export const dynamic = "force-dynamic";
 
@@ -10,12 +10,6 @@ export async function POST(req: Request) {
     const sectionId =
       typeof body?.sectionId === "string" ? body.sectionId : "";
     const name = typeof body?.name === "string" ? body.name.trim() : "";
-    const urgency = isUrgencyKey(body?.urgency) ? body.urgency : "Today";
-    const customLabel =
-      urgency === "Custom"
-        ? (typeof body?.customLabel === "string" && body.customLabel.trim()) ||
-          "Custom"
-        : null;
 
     if (!sectionId || !name) {
       return NextResponse.json(
@@ -23,6 +17,12 @@ export async function POST(req: Request) {
         { status: 400 }
       );
     }
+
+    // Optional "YYYY-MM-DD" — no due date at all is a valid, common case
+    // (someday/backlog items), so an invalid value is treated as "not set"
+    // rather than a 400; this field is a courtesy, not something worth
+    // failing task creation over.
+    const dueDate = isDueDateString(body?.dueDate) ? body.dueDate : null;
 
     // Optional — how long the task is expected to take, in minutes. Lets
     // the chat size the calendar event off a real number instead of
@@ -44,12 +44,12 @@ export async function POST(req: Request) {
 
     const id = "task_" + crypto.randomUUID().slice(0, 8);
     await db`
-      INSERT INTO tasks (id, section_id, name, urgency, custom_label, position, duration_minutes)
-      VALUES (${id}, ${sectionId}, ${name}, ${urgency}, ${customLabel}, ${next_pos}, ${durationMinutes})
+      INSERT INTO tasks (id, section_id, name, due_date, position, duration_minutes)
+      VALUES (${id}, ${sectionId}, ${name}, ${dueDate}, ${next_pos}, ${durationMinutes})
     `;
 
     return NextResponse.json(
-      { id, sectionId, name, urgency, customLabel, doneAt: null, durationMinutes },
+      { id, sectionId, name, dueDate, doneAt: null, durationMinutes },
       { status: 201 }
     );
   } catch (err) {

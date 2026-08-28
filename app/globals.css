@@ -87,12 +87,6 @@ a:hover {
   border-color: #14140f !important;
   background: #ffffff !important;
 }
-.mb-urgpill:hover {
-  opacity: 0.82;
-}
-.mb-menuitem:hover {
-  background: #f3f3ef !important;
-}
 
 /* Mobile layout — inline styles can't carry @media, so the handful of
    containers that need to reflow at narrow widths get a class here

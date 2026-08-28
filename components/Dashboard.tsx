@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
 import type { KeyboardEvent } from "react";
 import { useRouter } from "next/navigation";
 import TodayTaskRow from "@/components/TodayTaskRow";
@@ -10,23 +10,21 @@ import TaskAddBox from "@/components/TaskAddBox";
 import DonePanel from "@/components/DonePanel";
 import CalendarPanel from "@/components/CalendarPanel";
 import ChatPanel from "@/components/ChatPanel";
-import { SOON_KEYS, UrgencyKey } from "@/lib/urgency";
+import { dateKey, isDueOrOverdue } from "@/lib/due-date";
 import type { Section, StateResponse, Task } from "@/lib/types";
 import type { CalendarEvent } from "@/lib/gcal";
 
 // Config that lived as editable `props` on the design-tool artboard —
 // fixed here since there's no visual editor around this build, but kept as
 // named constants in case they need to become real settings later.
-const URGENCY_DISPLAY: "pill" | "dot" = "pill";
 const SHOW_QUICK_ADD = true;
 
 interface Draft {
   text: string;
-  urgency: UrgencyKey;
-  custom: string;
+  dueDate: string | null;
   duration: string; // free-text minutes, kept as a string while typing — parsed on submit
 }
-const emptyDraft = (): Draft => ({ text: "", urgency: "Today", custom: "", duration: "" });
+const emptyDraft = (todayKey: string): Draft => ({ text: "", dueDate: todayKey, duration: "" });
 
 const WEEKDAYS = [
   "SUNDAY",
@@ -71,6 +69,7 @@ export default function Dashboard({
 }: Props) {
   const router = useRouter();
   const [today] = useState(() => new Date(todayISO));
+  const todayKey = useMemo(() => dateKey(today), [today]);
   const [sections, setSections] = useState<Section[]>(initialSections);
   const [tasks, setTasks] = useState<Task[]>(initialTasks);
 
@@ -83,7 +82,6 @@ export default function Dashboard({
   );
   const [editing, setEditing] = useState<string | null>(null);
   const [editVal, setEditVal] = useState("");
-  const [menuFor, setMenuFor] = useState<string | null>(null);
   const [addingSection, setAddingSection] = useState(false);
   const [newSectionName, setNewSectionName] = useState("");
   const [editingSectionName, setEditingSectionName] = useState(false);
@@ -115,8 +113,7 @@ export default function Dashboard({
           id: t.id,
           sectionId: s.id,
           name: t.name,
-          urgency: t.urgency,
-          customLabel: t.customLabel,
+          dueDate: t.dueDate,
           doneAt: t.doneAt,
           calendarEventId: t.calendarEventId,
           durationMinutes: t.durationMinutes,
@@ -127,19 +124,8 @@ export default function Dashboard({
     setTasks(flat);
   }, []);
 
-  // Close an open urgency dropdown on outside click.
-  useEffect(() => {
-    if (!menuFor) return;
-    function onDocClick(e: MouseEvent) {
-      const target = e.target as HTMLElement;
-      if (!target.closest(".mb-menu-anchor")) setMenuFor(null);
-    }
-    document.addEventListener("mousedown", onDocClick);
-    return () => document.removeEventListener("mousedown", onDocClick);
-  }, [menuFor]);
-
   function draft(key: string): Draft {
-    return drafts[key] ?? emptyDraft();
+    return drafts[key] ?? emptyDraft(todayKey);
   }
   function setDraft(key: string, patch: Partial<Draft>) {
     setDrafts((prev) => ({ ...prev, [key]: { ...draft(key), ...patch } }));
@@ -152,16 +138,15 @@ export default function Dashboard({
     const d = draft(key);
     const text = d.text.trim();
     if (!text || !sectionId) return;
-    const customLabel = d.urgency === "Custom" ? d.custom.trim() || "Custom" : null;
     const parsedDuration = parseInt(d.duration, 10);
     const durationMinutes = d.duration.trim() && parsedDuration > 0 ? parsedDuration : null;
     const tempId = nextTempId("tmp-task");
 
     setTasks((prev) => [
       ...prev,
-      { id: tempId, sectionId, name: text, urgency: d.urgency, customLabel, doneAt: null, calendarEventId: null, durationMinutes },
+      { id: tempId, sectionId, name: text, dueDate: d.dueDate, doneAt: null, calendarEventId: null, durationMinutes },
     ]);
-    setDrafts((prev) => ({ ...prev, [key]: { text: "", urgency: d.urgency, custom: "", duration: "" } }));
+    setDrafts((prev) => ({ ...prev, [key]: emptyDraft(todayKey) }));
 
     try {
       const res = await fetch("/api/tasks", {
@@ -170,8 +155,7 @@ export default function Dashboard({
         body: JSON.stringify({
           sectionId,
           name: text,
-          urgency: d.urgency,
-          customLabel: customLabel ?? undefined,
+          dueDate: d.dueDate ?? undefined,
           durationMinutes: durationMinutes ?? undefined,
         }),
       });
@@ -294,7 +278,6 @@ export default function Dashboard({
 
   async function markDone(id: string) {
     patchTaskLocal(id, { doneAt: new Date().toISOString() });
-    setMenuFor(null);
     setEditing(null);
     try {
       const res = await fetch(`/api/tasks/${id}`, {
@@ -327,7 +310,6 @@ export default function Dashboard({
   async function del(id: string) {
     const prevTasks = tasks;
     setTasks((prev) => prev.filter((t) => t.id !== id));
-    setMenuFor(null);
     setEditing(null);
     try {
       const res = await fetch(`/api/tasks/${id}`, { method: "DELETE" });
@@ -338,28 +320,25 @@ export default function Dashboard({
     }
   }
 
-  async function setUrg(id: string, k: UrgencyKey) {
-    const task = tasks.find((t) => t.id === id);
-    const customLabel = k === "Custom" ? task?.customLabel || "Custom" : null;
-    patchTaskLocal(id, { urgency: k, customLabel });
-    setMenuFor(null);
+  async function setTaskDueDate(id: string, dueDate: string | null) {
+    const prev = tasks.find((t) => t.id === id)?.dueDate ?? null;
+    patchTaskLocal(id, { dueDate });
     try {
       const res = await fetch(`/api/tasks/${id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ urgency: k, customLabel: customLabel ?? undefined }),
+        body: JSON.stringify({ dueDate }),
       });
       if (!res.ok) throw new Error();
     } catch {
-      setActionError("Couldn't sync that — refreshing.");
-      refetchAll().catch(() => {});
+      patchTaskLocal(id, { dueDate: prev });
+      setActionError("Couldn't save that due date — try again.");
     }
   }
 
   function startEdit(id: string, name: string) {
     setEditing(id);
     setEditVal(name);
-    setMenuFor(null);
     setActiveAdd(null);
   }
 
@@ -408,9 +387,11 @@ export default function Dashboard({
     (id: string) => sections.find((s) => s.id === id)?.name ?? "",
     [sections]
   );
+  // Due today, or overdue (rolled forward from an earlier day it wasn't
+  // finished on) — the actual due date still shows on the row either way.
   const todayTasks = useMemo(
-    () => activeTasks.filter((t) => t.urgency === "Today"),
-    [activeTasks]
+    () => activeTasks.filter((t) => isDueOrOverdue(t.dueDate, todayKey)),
+    [activeTasks, todayKey]
   );
 
   const isHome = view === "home";
@@ -517,6 +498,8 @@ export default function Dashboard({
                       key={t.id}
                       name={t.name}
                       sectionName={sectionName(t.sectionId)}
+                      dueDate={t.dueDate}
+                      todayKey={todayKey}
                       durationMinutes={t.durationMinutes}
                       booked={!!t.calendarEventId}
                       booking={bookingIds.has(t.id)}
@@ -527,6 +510,7 @@ export default function Dashboard({
                       onDelete={() => del(t.id)}
                       onEditChange={setEditVal}
                       onDurationCommit={(m) => setTaskDuration(t.id, m)}
+                      onDueDateChange={(d) => setTaskDueDate(t.id, d)}
                       onBook={() => bookTask(t.id)}
                       onEditKeyDown={makeEditKeyHandler(saveEdit)}
                       onEditBlur={saveEdit}
@@ -543,17 +527,16 @@ export default function Dashboard({
                     <QuickAddBox
                       open={activeAdd === "quick"}
                       text={draft("quick").text}
-                      urgency={draft("quick").urgency}
-                      custom={draft("quick").custom}
+                      dueDate={draft("quick").dueDate}
+                      todayKey={todayKey}
                       duration={draft("quick").duration}
                       sections={sections}
                       selectedSectionId={quickSection}
                       onOpen={() => setActiveAdd("quick")}
                       onCancel={() => setActiveAdd(null)}
                       onTextChange={(v) => setDraft("quick", { text: v })}
-                      onCustomChange={(v) => setDraft("quick", { custom: v })}
                       onDurationChange={(v) => setDraft("quick", { duration: v })}
-                      onUrgencyChange={(k) => setDraft("quick", { urgency: k })}
+                      onDueDateChange={(v) => setDraft("quick", { dueDate: v })}
                       onSectionPick={setQuickSection}
                       onKeyDown={(e) => {
                         if (e.key === "Enter") addTask("quick", quickSection);
@@ -572,15 +555,13 @@ export default function Dashboard({
                 <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(232px, 1fr))", gap: 14 }}>
                   {sections.map((s) => {
                     const secTasks = activeTasks.filter((t) => t.sectionId === s.id);
-                    const todayN = secTasks.filter((t) => t.urgency === "Today").length;
-                    const soonN = secTasks.filter((t) => (SOON_KEYS as string[]).includes(t.urgency)).length;
+                    const dueN = secTasks.filter((t) => isDueOrOverdue(t.dueDate, todayKey)).length;
                     return (
                       <button
                         key={s.id}
                         onClick={() => {
                           setView(s.id);
                           setActiveAdd(null);
-                          setMenuFor(null);
                           setEditing(null);
                           setEditingSectionName(false);
                         }}
@@ -607,14 +588,9 @@ export default function Dashboard({
                           <span style={{ fontSize: 12.5, fontWeight: 700, color: "#8E8E85" }}>
                             {secTasks.length === 1 ? "1 task" : `${secTasks.length} tasks`}
                           </span>
-                          {todayN > 0 && (
+                          {dueN > 0 && (
                             <span style={{ background: "#D6EC3C", color: "#14140F", borderRadius: 99, padding: "3px 9px", fontSize: 10.5, fontWeight: 800, letterSpacing: ".03em" }}>
-                              {todayN} today
-                            </span>
-                          )}
-                          {soonN > 0 && (
-                            <span style={{ background: "#E3E5FD", color: "#2B34EE", borderRadius: 99, padding: "3px 9px", fontSize: 10.5, fontWeight: 800, letterSpacing: ".03em" }}>
-                              {soonN} soon
+                              {dueN} due
                             </span>
                           )}
                         </div>
@@ -665,7 +641,6 @@ export default function Dashboard({
                     onClick={() => {
                       setView("home");
                       setActiveAdd(null);
-                      setMenuFor(null);
                       setEditing(null);
                       setEditingSectionName(false);
                     }}
@@ -724,22 +699,19 @@ export default function Dashboard({
                     <ListTaskRow
                       key={t.id}
                       name={t.name}
-                      urgency={t.urgency}
-                      customLabel={t.customLabel}
-                      urgencyDisplay={URGENCY_DISPLAY}
+                      dueDate={t.dueDate}
+                      todayKey={todayKey}
                       durationMinutes={t.durationMinutes}
                       editing={editing === t.id}
                       editVal={editVal}
-                      menuOpen={menuFor === t.id}
                       onDone={() => markDone(t.id)}
                       onEdit={() => startEdit(t.id, t.name)}
                       onDelete={() => del(t.id)}
                       onEditChange={setEditVal}
                       onEditKeyDown={makeEditKeyHandler(saveEdit)}
                       onEditBlur={saveEdit}
-                      onToggleMenu={() => setMenuFor((m) => (m === t.id ? null : t.id))}
-                      onPickUrgency={(k) => setUrg(t.id, k)}
                       onDurationCommit={(m) => setTaskDuration(t.id, m)}
+                      onDueDateChange={(d) => setTaskDueDate(t.id, d)}
                     />
                   ))}
 
@@ -753,15 +725,14 @@ export default function Dashboard({
                     <TaskAddBox
                       open={activeAdd === `sec:${activeSection.id}`}
                       text={draft(`sec:${activeSection.id}`).text}
-                      urgency={draft(`sec:${activeSection.id}`).urgency}
-                      custom={draft(`sec:${activeSection.id}`).custom}
+                      dueDate={draft(`sec:${activeSection.id}`).dueDate}
+                      todayKey={todayKey}
                       duration={draft(`sec:${activeSection.id}`).duration}
                       onOpen={() => setActiveAdd(`sec:${activeSection.id}`)}
                       onCancel={() => setActiveAdd(null)}
                       onTextChange={(v) => setDraft(`sec:${activeSection.id}`, { text: v })}
-                      onCustomChange={(v) => setDraft(`sec:${activeSection.id}`, { custom: v })}
                       onDurationChange={(v) => setDraft(`sec:${activeSection.id}`, { duration: v })}
-                      onUrgencyChange={(k) => setDraft(`sec:${activeSection.id}`, { urgency: k })}
+                      onDueDateChange={(v) => setDraft(`sec:${activeSection.id}`, { dueDate: v })}
                       onKeyDown={(e) => {
                         if (e.key === "Enter") addTask(`sec:${activeSection.id}`, activeSection.id);
                         if (e.key === "Escape") setActiveAdd(null);

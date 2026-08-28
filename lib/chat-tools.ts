@@ -3,7 +3,7 @@ import { sql } from "./db";
 import { getState } from "./data";
 import { createCalendarEvent, listCalendarEvents } from "./google-calendar";
 import { isGoogleCalendarConnected } from "./google-auth";
-import { URGENCY_KEYS } from "./urgency";
+import { isDueDateString, isOverdue } from "./due-date";
 
 // The tools the chat needs to do what the Slack routine used to do — see
 // what's outstanding, add to it, book it on the calendar, and mark it done
@@ -14,7 +14,7 @@ export const CHAT_TOOLS: Anthropic.Tool[] = [
   {
     name: "list_tasks",
     description:
-      "Lists every list name and all not-done tasks across every list, with each task's id, name, list name, urgency (Today / 2–3 days / End of this week / This month / Custom), whether it's already booked on the calendar (scheduled: true/false), and duration_minutes if the user set one when creating it (null if not — estimate it yourself when booking). Call this first in any conversation about what's outstanding, what to schedule, or before adding a task (to get valid list names) — and always before booking anything, to avoid double-booking a task that's already scheduled.",
+      "Lists every list name and all not-done tasks across every list, with each task's id, name, list name, due_date (\"YYYY-MM-DD\", or null for no due date), overdue (true if due_date is before today and it's still not done), whether it's already booked on the calendar (scheduled: true/false), and duration_minutes if the user set one when creating it (null if not — estimate it yourself when booking). Call this first in any conversation about what's outstanding, what to schedule, or before adding a task (to get valid list names) — and always before booking anything, to avoid double-booking a task that's already scheduled.",
     input_schema: { type: "object", properties: {}, additionalProperties: false },
   },
   {
@@ -26,14 +26,9 @@ export const CHAT_TOOLS: Anthropic.Tool[] = [
       properties: {
         list_name: { type: "string", description: "Exact list name, from list_tasks." },
         name: { type: "string", description: "The task's text." },
-        urgency: {
+        due_date: {
           type: "string",
-          enum: URGENCY_KEYS,
-          description: "Defaults to \"Today\" if not specified by the user.",
-        },
-        custom_label: {
-          type: "string",
-          description: "Only used when urgency is \"Custom\" — the free-text label to show instead.",
+          description: "Optional \"YYYY-MM-DD\". Use today's date (see current time above) for something due today, a specific date if one's implied, or leave this unset entirely for a someday/backlog item with no firm date — don't default to today just because none was mentioned.",
         },
         duration_minutes: {
           type: "integer",
@@ -95,13 +90,15 @@ export async function runChatTool(name: string, input: unknown): Promise<string>
     case "list_tasks": {
       const { sections, tasks } = await getState();
       const sectionName = (id: string) => sections.find((s) => s.id === id)?.name ?? "";
+      const todayKey = new Date().toISOString().slice(0, 10);
       const active = tasks
         .filter((t) => !t.doneAt)
         .map((t) => ({
           id: t.id,
           name: t.name,
           list: sectionName(t.sectionId),
-          urgency: t.urgency === "Custom" ? t.customLabel || "Custom" : t.urgency,
+          due_date: t.dueDate,
+          overdue: t.dueDate !== null && isOverdue(t.dueDate, todayKey),
           scheduled: !!t.calendarEventId,
           duration_minutes: t.durationMinutes,
         }));
@@ -109,11 +106,10 @@ export async function runChatTool(name: string, input: unknown): Promise<string>
     }
 
     case "add_task": {
-      const { list_name, name, urgency, custom_label, duration_minutes } = input as {
+      const { list_name, name, due_date, duration_minutes } = input as {
         list_name: string;
         name: string;
-        urgency?: string;
-        custom_label?: string;
+        due_date?: string;
         duration_minutes?: number;
       };
       const { sections } = await getState();
@@ -126,8 +122,7 @@ export async function runChatTool(name: string, input: unknown): Promise<string>
       const trimmedName = name.trim();
       if (!trimmedName) return JSON.stringify({ error: "name cannot be empty." });
 
-      const resolvedUrgency = urgency && (URGENCY_KEYS as string[]).includes(urgency) ? urgency : "Today";
-      const resolvedCustomLabel = resolvedUrgency === "Custom" ? custom_label?.trim() || "Custom" : null;
+      const resolvedDueDate = isDueDateString(due_date) ? due_date : null;
       const resolvedDuration =
         typeof duration_minutes === "number" && Number.isFinite(duration_minutes) && duration_minutes > 0
           ? Math.round(duration_minutes)
@@ -140,8 +135,8 @@ export async function runChatTool(name: string, input: unknown): Promise<string>
       `) as { next_pos: number }[];
       const id = "task_" + crypto.randomUUID().slice(0, 8);
       await db`
-        INSERT INTO tasks (id, section_id, name, urgency, custom_label, position, duration_minutes)
-        VALUES (${id}, ${section.id}, ${trimmedName}, ${resolvedUrgency}, ${resolvedCustomLabel}, ${next_pos}, ${resolvedDuration})
+        INSERT INTO tasks (id, section_id, name, due_date, position, duration_minutes)
+        VALUES (${id}, ${section.id}, ${trimmedName}, ${resolvedDueDate}, ${next_pos}, ${resolvedDuration})
       `;
       return JSON.stringify({ ok: true, id, list: section.name });
     }

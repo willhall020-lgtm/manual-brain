@@ -38,6 +38,16 @@ ALTER TABLE tasks ADD COLUMN IF NOT EXISTS calendar_event_id text;
 -- real number instead of guessing, when the user bothered to set one.
 ALTER TABLE tasks ADD COLUMN IF NOT EXISTS duration_minutes integer;
 
+-- Real due dates replaced the old fixed urgency buckets (Today / 2-3 days /
+-- End of this week / This month / Custom) — see lib/due-date.ts. `urgency`
+-- and `custom_label` above are kept rather than dropped (just unused by the
+-- app now) so no data is lost; nothing reads them any more. One-time
+-- backfill maps the one bucket with an unambiguous date (Today) across;
+-- everything else is genuinely ambiguous (which day in "this month"?) so
+-- it's left for the user to set for real rather than guessed at.
+ALTER TABLE tasks ADD COLUMN IF NOT EXISTS due_date date;
+UPDATE tasks SET due_date = CURRENT_DATE WHERE urgency = 'Today' AND due_date IS NULL;
+
 CREATE INDEX IF NOT EXISTS tasks_section_id_idx ON tasks (section_id);
 CREATE INDEX IF NOT EXISTS tasks_done_at_idx ON tasks (done_at);
 
