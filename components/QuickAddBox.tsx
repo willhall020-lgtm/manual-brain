@@ -4,6 +4,7 @@ import type { KeyboardEvent } from "react";
 import DueDatePicker from "./DueDatePicker";
 import TimeOfDayPicker from "./TimeOfDayPicker";
 import type { TimeOfDay } from "@/lib/time-of-day";
+import type { RepeatFrequency } from "@/lib/repeat";
 
 interface SectionOption {
   id: string;
@@ -17,6 +18,7 @@ interface Props {
   todayKey: string;
   duration: string;
   timeOfDay: TimeOfDay | null;
+  repeatFrequency: RepeatFrequency | null;
   sections: SectionOption[];
   selectedSectionId: string;
   onOpen: () => void;
@@ -25,6 +27,7 @@ interface Props {
   onDurationChange: (v: string) => void;
   onDueDateChange: (v: string | null) => void;
   onTimeOfDayChange: (v: TimeOfDay | null) => void;
+  onRepeatChange: (v: RepeatFrequency | null) => void;
   onSectionPick: (id: string) => void;
   onKeyDown: (e: KeyboardEvent<HTMLInputElement>) => void;
   onAdd: () => void;
@@ -37,6 +40,7 @@ export default function QuickAddBox({
   todayKey,
   duration,
   timeOfDay,
+  repeatFrequency,
   sections,
   selectedSectionId,
   onOpen,
@@ -45,6 +49,7 @@ export default function QuickAddBox({
   onDurationChange,
   onDueDateChange,
   onTimeOfDayChange,
+  onRepeatChange,
   onSectionPick,
   onKeyDown,
   onAdd,
@@ -140,7 +145,14 @@ export default function QuickAddBox({
         <span style={{ fontSize: 10, fontWeight: 800, letterSpacing: ".14em", color: "#A3A39A" }}>
           DUE WHEN?
         </span>
-        <DueDatePicker value={dueDate} todayKey={todayKey} editing onChange={onDueDateChange} />
+        <DueDatePicker
+          value={dueDate}
+          todayKey={todayKey}
+          editing
+          onChange={onDueDateChange}
+          repeatFrequency={repeatFrequency}
+          onRepeatChange={onRepeatChange}
+        />
       </div>
 
       <div style={{ display: "flex", flexDirection: "column", gap: 7 }}>

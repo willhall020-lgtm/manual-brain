@@ -14,6 +14,7 @@ import { dateKey, isDueOrOverdue } from "@/lib/due-date";
 import type { Section, StateResponse, Task } from "@/lib/types";
 import type { CalendarEvent } from "@/lib/gcal";
 import type { TimeOfDay } from "@/lib/time-of-day";
+import { advanceDueDate, type RepeatFrequency } from "@/lib/repeat";
 
 // Config that lived as editable `props` on the design-tool artboard —
 // fixed here since there's no visual editor around this build, but kept as
@@ -25,8 +26,15 @@ interface Draft {
   dueDate: string | null;
   duration: string; // free-text minutes, kept as a string while typing — parsed on submit
   timeOfDay: TimeOfDay | null;
+  repeatFrequency: RepeatFrequency | null; // only meaningful alongside dueDate
 }
-const emptyDraft = (todayKey: string): Draft => ({ text: "", dueDate: todayKey, duration: "", timeOfDay: null });
+const emptyDraft = (todayKey: string): Draft => ({
+  text: "",
+  dueDate: todayKey,
+  duration: "",
+  timeOfDay: null,
+  repeatFrequency: null,
+});
 
 const WEEKDAYS = [
   "SUNDAY",
@@ -129,6 +137,7 @@ export default function Dashboard({
           calendarEventId: t.calendarEventId,
           durationMinutes: t.durationMinutes,
           timeOfDay: t.timeOfDay,
+          repeatFrequency: t.repeatFrequency,
         });
       }
     }
@@ -154,6 +163,11 @@ export default function Dashboard({
     const durationMinutes = d.duration.trim() && parsedDuration > 0 ? parsedDuration : null;
     const tempId = nextTempId("tmp-task");
 
+    // A repeat rule only makes sense alongside a due date — dropped here
+    // too (not just server-side) so the optimistic row can't show a repeat
+    // badge the create actually ignored.
+    const repeatFrequency = d.dueDate ? d.repeatFrequency : null;
+
     setTasks((prev) => [
       ...prev,
       {
@@ -165,6 +179,7 @@ export default function Dashboard({
         calendarEventId: null,
         durationMinutes,
         timeOfDay: d.timeOfDay,
+        repeatFrequency,
       },
     ]);
     setDrafts((prev) => ({ ...prev, [key]: emptyDraft(todayKey) }));
@@ -179,6 +194,7 @@ export default function Dashboard({
           dueDate: d.dueDate ?? undefined,
           durationMinutes: durationMinutes ?? undefined,
           timeOfDay: d.timeOfDay ?? undefined,
+          repeatFrequency: repeatFrequency ?? undefined,
         }),
       });
       if (!res.ok) throw new Error();
@@ -315,7 +331,17 @@ export default function Dashboard({
   }
 
   async function markDone(id: string) {
-    patchTaskLocal(id, { doneAt: new Date().toISOString() });
+    // Mirrors the API's repeat handling (app/api/tasks/[id]/route.ts): a
+    // repeating task doesn't move into the Done panel — it rolls its due
+    // date forward to the next occurrence and stays active. Computed the
+    // same way here so the optimistic update doesn't show it vanishing
+    // into Done for a moment before the response corrects it.
+    const task = tasks.find((t) => t.id === id);
+    if (task?.dueDate && task.repeatFrequency) {
+      patchTaskLocal(id, { dueDate: advanceDueDate(task.dueDate, task.repeatFrequency), doneAt: null });
+    } else {
+      patchTaskLocal(id, { doneAt: new Date().toISOString() });
+    }
     setEditing(null);
     try {
       const res = await fetch(`/api/tasks/${id}`, {
@@ -359,8 +385,13 @@ export default function Dashboard({
   }
 
   async function setTaskDueDate(id: string, dueDate: string | null) {
-    const prev = tasks.find((t) => t.id === id)?.dueDate ?? null;
-    patchTaskLocal(id, { dueDate });
+    const existing = tasks.find((t) => t.id === id);
+    const prevDueDate = existing?.dueDate ?? null;
+    const prevRepeat = existing?.repeatFrequency ?? null;
+    // Mirrors the API's cascade (app/api/tasks/[id]/route.ts): a repeat
+    // rule only makes sense alongside a due date, so clearing the date
+    // clears the repeat rule with it rather than leaving a stale badge.
+    patchTaskLocal(id, dueDate === null ? { dueDate, repeatFrequency: null } : { dueDate });
     try {
       const res = await fetch(`/api/tasks/${id}`, {
         method: "PATCH",
@@ -369,8 +400,24 @@ export default function Dashboard({
       });
       if (!res.ok) throw new Error();
     } catch {
-      patchTaskLocal(id, { dueDate: prev });
+      patchTaskLocal(id, { dueDate: prevDueDate, repeatFrequency: prevRepeat });
       setActionError("Couldn't save that due date — try again.");
+    }
+  }
+
+  async function setTaskRepeat(id: string, repeatFrequency: RepeatFrequency | null) {
+    const prev = tasks.find((t) => t.id === id)?.repeatFrequency ?? null;
+    patchTaskLocal(id, { repeatFrequency });
+    try {
+      const res = await fetch(`/api/tasks/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ repeatFrequency }),
+      });
+      if (!res.ok) throw new Error();
+    } catch {
+      patchTaskLocal(id, { repeatFrequency: prev });
+      setActionError("Couldn't save that repeat setting — try again.");
     }
   }
 
@@ -553,6 +600,7 @@ export default function Dashboard({
                       todayKey={todayKey}
                       durationMinutes={t.durationMinutes}
                       timeOfDay={t.timeOfDay}
+                      repeatFrequency={t.repeatFrequency}
                       booked={!!t.calendarEventId}
                       booking={bookingIds.has(t.id)}
                       editing={editing === t.id}
@@ -564,6 +612,7 @@ export default function Dashboard({
                       onDurationCommit={(m) => setTaskDuration(t.id, m)}
                       onDueDateChange={(d) => setTaskDueDate(t.id, d)}
                       onTimeOfDayChange={(v) => setTaskTimeOfDay(t.id, v)}
+                      onRepeatChange={(v) => setTaskRepeat(t.id, v)}
                       onBook={() => bookTask(t.id)}
                       onEditKeyDown={makeEditKeyHandler(saveEdit)}
                       onEditBlur={saveEdit}
@@ -584,6 +633,7 @@ export default function Dashboard({
                       todayKey={todayKey}
                       duration={draft("quick").duration}
                       timeOfDay={draft("quick").timeOfDay}
+                      repeatFrequency={draft("quick").repeatFrequency}
                       sections={sections}
                       selectedSectionId={quickSection}
                       onOpen={() => setActiveAdd("quick")}
@@ -592,6 +642,7 @@ export default function Dashboard({
                       onDurationChange={(v) => setDraft("quick", { duration: v })}
                       onDueDateChange={(v) => setDraft("quick", { dueDate: v })}
                       onTimeOfDayChange={(v) => setDraft("quick", { timeOfDay: v })}
+                      onRepeatChange={(v) => setDraft("quick", { repeatFrequency: v })}
                       onSectionPick={setQuickSection}
                       onKeyDown={(e) => {
                         if (e.key === "Enter") addTask("quick", quickSection);
@@ -758,6 +809,7 @@ export default function Dashboard({
                       todayKey={todayKey}
                       durationMinutes={t.durationMinutes}
                       timeOfDay={t.timeOfDay}
+                      repeatFrequency={t.repeatFrequency}
                       editing={editing === t.id}
                       editVal={editVal}
                       onDone={() => markDone(t.id)}
@@ -769,6 +821,7 @@ export default function Dashboard({
                       onDurationCommit={(m) => setTaskDuration(t.id, m)}
                       onDueDateChange={(d) => setTaskDueDate(t.id, d)}
                       onTimeOfDayChange={(v) => setTaskTimeOfDay(t.id, v)}
+                      onRepeatChange={(v) => setTaskRepeat(t.id, v)}
                     />
                   ))}
 
@@ -786,12 +839,14 @@ export default function Dashboard({
                       todayKey={todayKey}
                       duration={draft(`sec:${activeSection.id}`).duration}
                       timeOfDay={draft(`sec:${activeSection.id}`).timeOfDay}
+                      repeatFrequency={draft(`sec:${activeSection.id}`).repeatFrequency}
                       onOpen={() => setActiveAdd(`sec:${activeSection.id}`)}
                       onCancel={() => setActiveAdd(null)}
                       onTextChange={(v) => setDraft(`sec:${activeSection.id}`, { text: v })}
                       onDurationChange={(v) => setDraft(`sec:${activeSection.id}`, { duration: v })}
                       onDueDateChange={(v) => setDraft(`sec:${activeSection.id}`, { dueDate: v })}
                       onTimeOfDayChange={(v) => setDraft(`sec:${activeSection.id}`, { timeOfDay: v })}
+                      onRepeatChange={(v) => setDraft(`sec:${activeSection.id}`, { repeatFrequency: v })}
                       onKeyDown={(e) => {
                         if (e.key === "Enter") addTask(`sec:${activeSection.id}`, activeSection.id);
                         if (e.key === "Escape") setActiveAdd(null);

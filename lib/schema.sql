@@ -55,6 +55,12 @@ UPDATE tasks SET due_date = CURRENT_DATE WHERE urgency = 'Today' AND due_date IS
 -- themselves. See lib/time-of-day.ts.
 ALTER TABLE tasks ADD COLUMN IF NOT EXISTS time_of_day text;
 
+-- Optional repeat rule ('daily' / 'weekly' / 'monthly', or null for a
+-- one-off task) — only meaningful alongside due_date; see lib/repeat.ts.
+-- Completing a repeating task rolls due_date forward instead of setting
+-- done_at, so there's no separate history of past occurrences to store.
+ALTER TABLE tasks ADD COLUMN IF NOT EXISTS repeat_frequency text;
+
 CREATE INDEX IF NOT EXISTS tasks_section_id_idx ON tasks (section_id);
 CREATE INDEX IF NOT EXISTS tasks_done_at_idx ON tasks (done_at);
 

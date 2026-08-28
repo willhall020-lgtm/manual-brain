@@ -18,6 +18,7 @@ export async function GET() {
         calendarEventId: t.calendarEventId,
         durationMinutes: t.durationMinutes,
         timeOfDay: t.timeOfDay,
+        repeatFrequency: t.repeatFrequency,
       });
     }
     return NextResponse.json({ sections: Array.from(bySectionId.values()) });

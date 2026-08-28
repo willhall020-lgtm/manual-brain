@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { sql } from "@/lib/db";
 import { isDueDateString } from "@/lib/due-date";
 import { isTimeOfDay } from "@/lib/time-of-day";
+import { advanceDueDate, isRepeatFrequency } from "@/lib/repeat";
 
 export const dynamic = "force-dynamic";
 
@@ -31,13 +32,47 @@ export async function PATCH(
         return NextResponse.json({ error: "dueDate must be YYYY-MM-DD or null" }, { status: 400 });
       }
       await db`UPDATE tasks SET due_date = ${body.dueDate} WHERE id = ${id}`;
+      // A repeat rule only makes sense alongside a due date — clearing the
+      // date clears any repeat rule with it rather than leaving it orphaned.
+      if (body.dueDate === null) {
+        await db`UPDATE tasks SET repeat_frequency = NULL WHERE id = ${id}`;
+      }
+    }
+
+    if (body?.repeatFrequency !== undefined) {
+      // null explicitly clears the repeat rule; anything else that isn't a
+      // real frequency is rejected — same reasoning as dueDate/timeOfDay
+      // above: a deliberate edit deserves a 400, unlike creation's
+      // silent-ignore.
+      if (body.repeatFrequency !== null && !isRepeatFrequency(body.repeatFrequency)) {
+        return NextResponse.json(
+          { error: "repeatFrequency must be 'daily', 'weekly', 'monthly', or null" },
+          { status: 400 }
+        );
+      }
+      await db`UPDATE tasks SET repeat_frequency = ${body.repeatFrequency} WHERE id = ${id}`;
     }
 
     if (typeof body?.done === "boolean") {
-      await db`
-        UPDATE tasks SET done_at = ${body.done ? new Date().toISOString() : null}
-        WHERE id = ${id}
-      `;
+      if (body.done) {
+        // A repeating task doesn't move into the Done panel — completing
+        // it rolls due_date forward to its next occurrence and stays
+        // active instead, same pattern as Things/Todoist. Only a task
+        // that has both a due date and a repeat rule qualifies; anything
+        // else completes normally.
+        const [current] = (await db`
+          SELECT due_date::text AS due_date, repeat_frequency FROM tasks WHERE id = ${id}
+        `) as { due_date: string | null; repeat_frequency: string | null }[];
+
+        if (current?.due_date && isRepeatFrequency(current.repeat_frequency)) {
+          const nextDueDate = advanceDueDate(current.due_date, current.repeat_frequency);
+          await db`UPDATE tasks SET due_date = ${nextDueDate}, done_at = NULL WHERE id = ${id}`;
+        } else {
+          await db`UPDATE tasks SET done_at = ${new Date().toISOString()} WHERE id = ${id}`;
+        }
+      } else {
+        await db`UPDATE tasks SET done_at = NULL WHERE id = ${id}`;
+      }
     }
 
     if (body?.durationMinutes !== undefined) {
@@ -67,7 +102,7 @@ export async function PATCH(
     // client turns a bare `date` column into a JS Date and shifts it by
     // the local UTC offset in the process, corrupting the calendar day.
     const rows = (await db`
-      SELECT id, section_id, name, due_date::text AS due_date, done_at, duration_minutes, time_of_day
+      SELECT id, section_id, name, due_date::text AS due_date, done_at, duration_minutes, time_of_day, repeat_frequency
       FROM tasks WHERE id = ${id}
     `) as {
       id: string;
@@ -77,6 +112,7 @@ export async function PATCH(
       done_at: string | null;
       duration_minutes: number | null;
       time_of_day: string | null;
+      repeat_frequency: string | null;
     }[];
 
     if (!rows.length) {
@@ -91,6 +127,7 @@ export async function PATCH(
       doneAt: t.done_at,
       durationMinutes: t.duration_minutes,
       timeOfDay: isTimeOfDay(t.time_of_day) ? t.time_of_day : null,
+      repeatFrequency: isRepeatFrequency(t.repeat_frequency) ? t.repeat_frequency : null,
     });
   } catch (err) {
     console.error(err);

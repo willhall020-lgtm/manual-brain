@@ -5,6 +5,7 @@ import { createCalendarEvent, listCalendarEvents } from "./google-calendar";
 import { isGoogleCalendarConnected } from "./google-auth";
 import { isDueDateString, isOverdue } from "./due-date";
 import { isTimeOfDay } from "./time-of-day";
+import { advanceDueDate, isRepeatFrequency } from "./repeat";
 
 // The tools the chat needs to do what the Slack routine used to do — see
 // what's outstanding, add to it, book it on the calendar, and mark it done
@@ -39,6 +40,11 @@ export const CHAT_TOOLS: Anthropic.Tool[] = [
           type: "string",
           enum: ["morning", "afternoon", "evening"],
           description: "Optional — roughly when in the day this should be booked, only if the user actually said so (e.g. \"sometime in the morning\"). Leave unset otherwise; don't guess at a preference nobody stated.",
+        },
+        repeat_frequency: {
+          type: "string",
+          enum: ["daily", "weekly", "monthly"],
+          description: "Optional — only if the user asked for a recurring task (e.g. \"every week\", \"daily\"). Requires due_date to also be set (a repeat rule with no date to repeat from is ignored); ask for a date if the user wants repetition but hasn't given one.",
         },
       },
       required: ["list_name", "name"],
@@ -108,17 +114,19 @@ export async function runChatTool(name: string, input: unknown): Promise<string>
           scheduled: !!t.calendarEventId,
           duration_minutes: t.durationMinutes,
           time_of_day: t.timeOfDay,
+          repeats: t.repeatFrequency,
         }));
       return JSON.stringify({ lists: sections.map((s) => s.name), tasks: active });
     }
 
     case "add_task": {
-      const { list_name, name, due_date, duration_minutes, time_of_day } = input as {
+      const { list_name, name, due_date, duration_minutes, time_of_day, repeat_frequency } = input as {
         list_name: string;
         name: string;
         due_date?: string;
         duration_minutes?: number;
         time_of_day?: string;
+        repeat_frequency?: string;
       };
       const { sections } = await getState();
       const section = sections.find((s) => s.name.toLowerCase() === list_name.toLowerCase());
@@ -136,6 +144,9 @@ export async function runChatTool(name: string, input: unknown): Promise<string>
           ? Math.round(duration_minutes)
           : null;
       const resolvedTimeOfDay = isTimeOfDay(time_of_day) ? time_of_day : null;
+      // Only meaningful alongside a due date — same courtesy-field
+      // treatment as the dashboard's create endpoint (app/api/tasks/route.ts).
+      const resolvedRepeat = resolvedDueDate && isRepeatFrequency(repeat_frequency) ? repeat_frequency : null;
 
       const db = sql();
       const [{ next_pos }] = (await db`
@@ -144,8 +155,8 @@ export async function runChatTool(name: string, input: unknown): Promise<string>
       `) as { next_pos: number }[];
       const id = "task_" + crypto.randomUUID().slice(0, 8);
       await db`
-        INSERT INTO tasks (id, section_id, name, due_date, position, duration_minutes, time_of_day)
-        VALUES (${id}, ${section.id}, ${trimmedName}, ${resolvedDueDate}, ${next_pos}, ${resolvedDuration}, ${resolvedTimeOfDay})
+        INSERT INTO tasks (id, section_id, name, due_date, position, duration_minutes, time_of_day, repeat_frequency)
+        VALUES (${id}, ${section.id}, ${trimmedName}, ${resolvedDueDate}, ${next_pos}, ${resolvedDuration}, ${resolvedTimeOfDay}, ${resolvedRepeat})
       `;
       return JSON.stringify({ ok: true, id, list: section.name });
     }
@@ -226,11 +237,22 @@ export async function runChatTool(name: string, input: unknown): Promise<string>
     case "mark_task_done": {
       const { task_id } = input as { task_id: string };
       const db = sql();
-      const rows = (await db`
-        UPDATE tasks SET done_at = now() WHERE id = ${task_id}
-        RETURNING id
-      `) as { id: string }[];
-      if (!rows.length) return JSON.stringify({ error: `No task with id ${task_id}.` });
+
+      // Same repeat handling as the dashboard's PATCH endpoint (see
+      // app/api/tasks/[id]/route.ts) — a repeating task rolls its due date
+      // forward and stays active instead of completing, so this tool has
+      // to check that here rather than just setting done_at directly.
+      const [current] = (await db`
+        SELECT due_date::text AS due_date, repeat_frequency FROM tasks WHERE id = ${task_id}
+      `) as { due_date: string | null; repeat_frequency: string | null }[];
+      if (!current) return JSON.stringify({ error: `No task with id ${task_id}.` });
+
+      if (current.due_date && isRepeatFrequency(current.repeat_frequency)) {
+        const nextDueDate = advanceDueDate(current.due_date, current.repeat_frequency);
+        await db`UPDATE tasks SET due_date = ${nextDueDate}, done_at = NULL WHERE id = ${task_id}`;
+        return JSON.stringify({ ok: true, repeats: true, next_due_date: nextDueDate });
+      }
+      await db`UPDATE tasks SET done_at = now() WHERE id = ${task_id}`;
       return JSON.stringify({ ok: true });
     }
 

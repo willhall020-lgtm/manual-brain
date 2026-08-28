@@ -6,6 +6,7 @@ import DueDatePicker from "@/components/DueDatePicker";
 import TimeOfDayPicker from "@/components/TimeOfDayPicker";
 import BookButton from "@/components/BookButton";
 import type { TimeOfDay } from "@/lib/time-of-day";
+import type { RepeatFrequency } from "@/lib/repeat";
 
 interface Props {
   name: string;
@@ -14,6 +15,7 @@ interface Props {
   todayKey: string;
   durationMinutes: number | null;
   timeOfDay: TimeOfDay | null;
+  repeatFrequency: RepeatFrequency | null;
   booked: boolean;
   booking: boolean;
   editing: boolean;
@@ -27,6 +29,7 @@ interface Props {
   onDurationCommit: (minutes: number | null) => void;
   onDueDateChange: (v: string | null) => void;
   onTimeOfDayChange: (v: TimeOfDay | null) => void;
+  onRepeatChange: (v: RepeatFrequency | null) => void;
   onBook: () => void;
 }
 
@@ -37,6 +40,7 @@ export default function TodayTaskRow({
   todayKey,
   durationMinutes,
   timeOfDay,
+  repeatFrequency,
   booked,
   booking,
   editing,
@@ -50,6 +54,7 @@ export default function TodayTaskRow({
   onDurationCommit,
   onDueDateChange,
   onTimeOfDayChange,
+  onRepeatChange,
   onBook,
 }: Props) {
   return (
@@ -135,7 +140,14 @@ export default function TodayTaskRow({
         >
           {sectionName}
         </span>
-        <DueDatePicker value={dueDate} todayKey={todayKey} editing={editing} onChange={onDueDateChange} />
+        <DueDatePicker
+          value={dueDate}
+          todayKey={todayKey}
+          editing={editing}
+          onChange={onDueDateChange}
+          repeatFrequency={repeatFrequency}
+          onRepeatChange={onRepeatChange}
+        />
         <DurationInput minutes={durationMinutes} editing={editing} onCommit={onDurationCommit} />
         <TimeOfDayPicker value={timeOfDay} editing={editing} onChange={onTimeOfDayChange} />
       </div>

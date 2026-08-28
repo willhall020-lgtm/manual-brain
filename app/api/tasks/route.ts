@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { sql } from "@/lib/db";
 import { isDueDateString } from "@/lib/due-date";
 import { isTimeOfDay } from "@/lib/time-of-day";
+import { isRepeatFrequency } from "@/lib/repeat";
 
 export const dynamic = "force-dynamic";
 
@@ -42,6 +43,11 @@ export async function POST(req: Request) {
     // preference" rather than a 400, same treatment as dueDate above.
     const timeOfDay = isTimeOfDay(body?.timeOfDay) ? body.timeOfDay : null;
 
+    // Optional 'daily' | 'weekly' | 'monthly' — only meaningful alongside a
+    // due date, so a repeat rule given without one is dropped rather than
+    // stored orphaned; same courtesy-field treatment as duration/timeOfDay.
+    const repeatFrequency = dueDate && isRepeatFrequency(body?.repeatFrequency) ? body.repeatFrequency : null;
+
     const db = sql();
     const [{ next_pos }] = (await db`
       SELECT COALESCE(MAX(position), -1) + 1 AS next_pos
@@ -50,12 +56,12 @@ export async function POST(req: Request) {
 
     const id = "task_" + crypto.randomUUID().slice(0, 8);
     await db`
-      INSERT INTO tasks (id, section_id, name, due_date, position, duration_minutes, time_of_day)
-      VALUES (${id}, ${sectionId}, ${name}, ${dueDate}, ${next_pos}, ${durationMinutes}, ${timeOfDay})
+      INSERT INTO tasks (id, section_id, name, due_date, position, duration_minutes, time_of_day, repeat_frequency)
+      VALUES (${id}, ${sectionId}, ${name}, ${dueDate}, ${next_pos}, ${durationMinutes}, ${timeOfDay}, ${repeatFrequency})
     `;
 
     return NextResponse.json(
-      { id, sectionId, name, dueDate, doneAt: null, durationMinutes, timeOfDay },
+      { id, sectionId, name, dueDate, doneAt: null, durationMinutes, timeOfDay, repeatFrequency },
       { status: 201 }
     );
   } catch (err) {

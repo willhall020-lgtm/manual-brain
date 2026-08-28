@@ -4,6 +4,7 @@ import type { KeyboardEvent } from "react";
 import DueDatePicker from "./DueDatePicker";
 import TimeOfDayPicker from "./TimeOfDayPicker";
 import type { TimeOfDay } from "@/lib/time-of-day";
+import type { RepeatFrequency } from "@/lib/repeat";
 
 interface Props {
   open: boolean;
@@ -12,12 +13,14 @@ interface Props {
   todayKey: string;
   duration: string;
   timeOfDay: TimeOfDay | null;
+  repeatFrequency: RepeatFrequency | null;
   onOpen: () => void;
   onCancel: () => void;
   onTextChange: (v: string) => void;
   onDurationChange: (v: string) => void;
   onDueDateChange: (v: string | null) => void;
   onTimeOfDayChange: (v: TimeOfDay | null) => void;
+  onRepeatChange: (v: RepeatFrequency | null) => void;
   onKeyDown: (e: KeyboardEvent<HTMLInputElement>) => void;
   onAdd: () => void;
 }
@@ -29,12 +32,14 @@ export default function TaskAddBox({
   todayKey,
   duration,
   timeOfDay,
+  repeatFrequency,
   onOpen,
   onCancel,
   onTextChange,
   onDurationChange,
   onDueDateChange,
   onTimeOfDayChange,
+  onRepeatChange,
   onKeyDown,
   onAdd,
 }: Props) {
@@ -102,7 +107,14 @@ export default function TaskAddBox({
         <span style={{ fontSize: 10, fontWeight: 800, letterSpacing: ".14em", color: "#A3A39A" }}>
           DUE WHEN?
         </span>
-        <DueDatePicker value={dueDate} todayKey={todayKey} editing onChange={onDueDateChange} />
+        <DueDatePicker
+          value={dueDate}
+          todayKey={todayKey}
+          editing
+          onChange={onDueDateChange}
+          repeatFrequency={repeatFrequency}
+          onRepeatChange={onRepeatChange}
+        />
       </div>
 
       <div style={{ display: "flex", flexDirection: "column", gap: 7 }}>

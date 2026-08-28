@@ -1,4 +1,5 @@
 import type { TimeOfDay } from "./time-of-day";
+import type { RepeatFrequency } from "./repeat";
 
 export interface Task {
   id: string;
@@ -9,6 +10,7 @@ export interface Task {
   calendarEventId: string | null;
   durationMinutes: number | null;
   timeOfDay: TimeOfDay | null; // preferred rough slot for booking, or null for no preference
+  repeatFrequency: RepeatFrequency | null; // only meaningful alongside dueDate
 }
 
 export interface Section {
