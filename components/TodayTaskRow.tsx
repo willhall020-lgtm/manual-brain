@@ -3,7 +3,9 @@
 import type { KeyboardEvent } from "react";
 import DurationInput from "@/components/DurationInput";
 import DueDatePicker from "@/components/DueDatePicker";
+import TimeOfDayPicker from "@/components/TimeOfDayPicker";
 import BookButton from "@/components/BookButton";
+import type { TimeOfDay } from "@/lib/time-of-day";
 
 interface Props {
   name: string;
@@ -11,6 +13,7 @@ interface Props {
   dueDate: string | null;
   todayKey: string;
   durationMinutes: number | null;
+  timeOfDay: TimeOfDay | null;
   booked: boolean;
   booking: boolean;
   editing: boolean;
@@ -23,6 +26,7 @@ interface Props {
   onEditBlur: () => void;
   onDurationCommit: (minutes: number | null) => void;
   onDueDateChange: (v: string | null) => void;
+  onTimeOfDayChange: (v: TimeOfDay | null) => void;
   onBook: () => void;
 }
 
@@ -32,6 +36,7 @@ export default function TodayTaskRow({
   dueDate,
   todayKey,
   durationMinutes,
+  timeOfDay,
   booked,
   booking,
   editing,
@@ -44,6 +49,7 @@ export default function TodayTaskRow({
   onEditBlur,
   onDurationCommit,
   onDueDateChange,
+  onTimeOfDayChange,
   onBook,
 }: Props) {
   return (
@@ -130,6 +136,7 @@ export default function TodayTaskRow({
         </span>
         <DueDatePicker value={dueDate} todayKey={todayKey} editing={editing} onChange={onDueDateChange} />
         <DurationInput minutes={durationMinutes} editing={editing} onCommit={onDurationCommit} />
+        <TimeOfDayPicker value={timeOfDay} editing={editing} onChange={onTimeOfDayChange} />
       </div>
       <BookButton booked={booked} booking={booking} onBook={onBook} />
       <div style={{ flex: "none", display: "flex", alignItems: "center", gap: 2 }}>

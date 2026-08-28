@@ -48,6 +48,13 @@ ALTER TABLE tasks ADD COLUMN IF NOT EXISTS duration_minutes integer;
 ALTER TABLE tasks ADD COLUMN IF NOT EXISTS due_date date;
 UPDATE tasks SET due_date = CURRENT_DATE WHERE urgency = 'Today' AND due_date IS NULL;
 
+-- Optional, user-set preference for roughly when in the day a task should
+-- be booked ('morning' / 'afternoon' / 'evening', or null for no
+-- preference) — surfaced to the chat (list_tasks) so schedule_task can
+-- pick a slot that matches when the user hasn't given an exact time
+-- themselves. See lib/time-of-day.ts.
+ALTER TABLE tasks ADD COLUMN IF NOT EXISTS time_of_day text;
+
 CREATE INDEX IF NOT EXISTS tasks_section_id_idx ON tasks (section_id);
 CREATE INDEX IF NOT EXISTS tasks_done_at_idx ON tasks (done_at);
 

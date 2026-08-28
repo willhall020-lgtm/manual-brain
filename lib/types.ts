@@ -1,3 +1,5 @@
+import type { TimeOfDay } from "./time-of-day";
+
 export interface Task {
   id: string;
   sectionId: string;
@@ -6,6 +8,7 @@ export interface Task {
   doneAt: string | null;
   calendarEventId: string | null;
   durationMinutes: number | null;
+  timeOfDay: TimeOfDay | null; // preferred rough slot for booking, or null for no preference
 }
 
 export interface Section {

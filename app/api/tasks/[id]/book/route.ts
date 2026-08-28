@@ -3,6 +3,7 @@ import type { MessageParam, TextBlock } from "@anthropic-ai/sdk/resources/messag
 import { sql } from "@/lib/db";
 import { runChatLoop } from "@/lib/chat-loop";
 import { isGoogleCalendarConnected } from "@/lib/google-auth";
+import { isTimeOfDay } from "@/lib/time-of-day";
 
 // The "BOOK" button on a Today task (TodayTaskRow → BookButton) — a
 // one-task shortcut into the same tool-use loop the chat and morning cron
@@ -32,12 +33,18 @@ export async function POST(
   }
 
   const db = sql();
-  const rows = (await db`SELECT id, name FROM tasks WHERE id = ${id}`) as { id: string; name: string }[];
+  const rows = (await db`
+    SELECT id, name, time_of_day FROM tasks WHERE id = ${id}
+  `) as { id: string; name: string; time_of_day: string | null }[];
   if (!rows.length) {
     return NextResponse.json({ error: "Task not found." }, { status: 404 });
   }
+  const timeOfDay = isTimeOfDay(rows[0].time_of_day) ? rows[0].time_of_day : null;
+  const timeOfDayNote = timeOfDay
+    ? ` It has a "${timeOfDay}" time-of-day preference set — book it in that part of the day.`
+    : "";
 
-  const prompt = `Book my task "${rows[0].name}" (task_id: "${id}") onto the calendar — pick the best time yourself, following my planning rules and whatever's already on the calendar. Call schedule_task directly with that task_id; you don't need list_tasks first, you already have the id and name, though list_calendar_events may help you pick a good slot if today's already busy. Reply with one short sentence saying what you booked, or why you couldn't.`;
+  const prompt = `Book my task "${rows[0].name}" (task_id: "${id}") onto the calendar — pick the best time yourself, following my planning rules and whatever's already on the calendar.${timeOfDayNote} Call schedule_task directly with that task_id; you don't need list_tasks first, you already have the id and name, though list_calendar_events may help you pick a good slot if today's already busy. Reply with one short sentence saying what you booked, or why you couldn't.`;
 
   const messages: MessageParam[] = [{ role: "user", content: prompt }];
 

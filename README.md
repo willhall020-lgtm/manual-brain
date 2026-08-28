@@ -48,10 +48,11 @@ design exported from Claude Design — see that project's `README.md` and
   API, `claude-opus-5`, manual loop — not the beta tool runner, this needs
   no more than a single-request loop) with five tools: `list_tasks`
   (surfaces each task's due_date and a computed overdue flag),
-  `add_task` (name, list, an optional due_date, and an optional
-  `duration_minutes` — due_date is left unset rather than defaulted to
-  today when the user doesn't imply one; someday/backlog items with no
-  firm date are a real, common state, not a gap to fill in),
+  `add_task` (name, list, an optional due_date, an optional
+  `duration_minutes`, and an optional `time_of_day` — due_date is left
+  unset rather than defaulted to today when the user doesn't imply one;
+  someday/backlog items with no firm date are a real, common state, not a
+  gap to fill in),
   `list_calendar_events` (existing bookings in a range, for seeing gaps),
   `schedule_task` (books a real Google Calendar event sized off
   `duration_minutes` — the task's own if set, else the model's estimate,
@@ -59,16 +60,21 @@ design exported from Claude Design — see that project's `README.md` and
   the task with the resulting `calendar_event_id` so it isn't rebooked,
   and refuses server-side if the slot overlaps an existing event unless
   `force: true`), `mark_task_done`. Replaces the old Slack-routine
-  handoff entirely — needs `ANTHROPIC_API_KEY`. `duration_minutes` is
-  also a plain field on every task in the dashboard UI itself — visible
-  and editable inline (not just at creation), always shown even when
-  unset, saves on blur (`DurationInput.tsx`, used from `QuickAddBox`,
-  `TaskAddBox`, `TodayTaskRow`, `ListTaskRow`) — not just a chat concept.
-  The system prompt also injects the user's free-text planning rules from
-  `/settings` (`lib/preferences.ts` — work hours, lunch, deep-work
-  window, block length, buffering, etc.) so the model's own time choices
-  follow them; an explicit time the user gives directly still wins. Chat
-  is reachable two ways:
+  handoff entirely — needs `ANTHROPIC_API_KEY`. `duration_minutes` and
+  `time_of_day` (`lib/time-of-day.ts` — "morning"/"afternoon"/"evening",
+  or no preference) are also plain fields on every task in the dashboard
+  UI itself — visible and editable inline (not just at creation), always
+  shown even when unset, saving on blur/click
+  (`DurationInput.tsx`/`TimeOfDayPicker.tsx`, used from `QuickAddBox`,
+  `TaskAddBox`, `TodayTaskRow`, `ListTaskRow`) — not just chat concepts.
+  `schedule_task`'s own tool description and the system prompt both tell
+  the model to book within a task's `time_of_day` window when the user
+  hasn't given schedule_task an exact time itself, ahead of the general
+  planning rules if the two disagree. The system prompt also injects the
+  user's free-text planning rules from `/settings` (`lib/preferences.ts`
+  — work hours, lunch, deep-work window, block length, buffering, etc.)
+  so the model's own time choices follow them; an explicit time the user
+  gives directly still wins. Chat is reachable two ways:
   - `app/api/chat/route.ts` — the interactive box on the dashboard.
   - `app/api/cron/morning-schedule/route.ts` — a Vercel Cron hit at 08:15
     UTC daily (09:15 BST — see that file's own comment for the DST
@@ -147,7 +153,7 @@ app/
     state/route.ts      GET  — full sections+tasks read
     sections/route.ts   POST — create a list
     tasks/route.ts      POST — create a task
-    tasks/[id]/route.ts PATCH (edit name / due date / done / duration) and DELETE
+    tasks/[id]/route.ts PATCH (edit name / due date / done / duration / time of day) and DELETE
     tasks/[id]/book/route.ts  POST — BookButton's one-task shortcut into
                                the chat loop
     preferences/route.ts POST — save planning rules
@@ -162,6 +168,8 @@ components/
   DueDatePicker.tsx       "Today" chip + native date input; plain text
                            until the row's pencil toggles edit mode
   DurationInput.tsx       same plain-text/pencil-edit pattern, for minutes
+  TimeOfDayPicker.tsx     same pattern again, for the morning/afternoon/
+                           evening booking-preference chips
   BookButton.tsx          "BOOKED" tag, or a "BOOK" button that hands the
                            task to the chat loop to book on its own
   QuickAddBox.tsx         home's quick-add (adds to a chosen list)
@@ -184,6 +192,8 @@ lib/
   auth.ts       SITE_PASSWORD session cookie logic
   due-date.ts  "YYYY-MM-DD" helpers — dateKey, isOverdue, isDueOrOverdue,
                formatDueDate; see the Stack section above for why
+  time-of-day.ts  TimeOfDay type + isTimeOfDay validator + display labels
+                  for the morning/afternoon/evening booking preference
   types.ts     shared Section/Task shapes
   schema.sql   table definitions
 proxy.ts       site-wide password gate (Next 16's replacement for middleware.ts)

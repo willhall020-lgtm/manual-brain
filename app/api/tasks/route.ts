@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { sql } from "@/lib/db";
 import { isDueDateString } from "@/lib/due-date";
+import { isTimeOfDay } from "@/lib/time-of-day";
 
 export const dynamic = "force-dynamic";
 
@@ -36,6 +37,11 @@ export async function POST(req: Request) {
         ? Math.round(body.durationMinutes)
         : null;
 
+    // Optional 'morning' | 'afternoon' | 'evening' — a booking hint for the
+    // chat, not a firm value; anything else (including omitted) is "no
+    // preference" rather than a 400, same treatment as dueDate above.
+    const timeOfDay = isTimeOfDay(body?.timeOfDay) ? body.timeOfDay : null;
+
     const db = sql();
     const [{ next_pos }] = (await db`
       SELECT COALESCE(MAX(position), -1) + 1 AS next_pos
@@ -44,12 +50,12 @@ export async function POST(req: Request) {
 
     const id = "task_" + crypto.randomUUID().slice(0, 8);
     await db`
-      INSERT INTO tasks (id, section_id, name, due_date, position, duration_minutes)
-      VALUES (${id}, ${sectionId}, ${name}, ${dueDate}, ${next_pos}, ${durationMinutes})
+      INSERT INTO tasks (id, section_id, name, due_date, position, duration_minutes, time_of_day)
+      VALUES (${id}, ${sectionId}, ${name}, ${dueDate}, ${next_pos}, ${durationMinutes}, ${timeOfDay})
     `;
 
     return NextResponse.json(
-      { id, sectionId, name, dueDate, doneAt: null, durationMinutes },
+      { id, sectionId, name, dueDate, doneAt: null, durationMinutes, timeOfDay },
       { status: 201 }
     );
   } catch (err) {

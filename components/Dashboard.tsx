@@ -13,6 +13,7 @@ import ChatPanel from "@/components/ChatPanel";
 import { dateKey, isDueOrOverdue } from "@/lib/due-date";
 import type { Section, StateResponse, Task } from "@/lib/types";
 import type { CalendarEvent } from "@/lib/gcal";
+import type { TimeOfDay } from "@/lib/time-of-day";
 
 // Config that lived as editable `props` on the design-tool artboard —
 // fixed here since there's no visual editor around this build, but kept as
@@ -23,8 +24,9 @@ interface Draft {
   text: string;
   dueDate: string | null;
   duration: string; // free-text minutes, kept as a string while typing — parsed on submit
+  timeOfDay: TimeOfDay | null;
 }
-const emptyDraft = (todayKey: string): Draft => ({ text: "", dueDate: todayKey, duration: "" });
+const emptyDraft = (todayKey: string): Draft => ({ text: "", dueDate: todayKey, duration: "", timeOfDay: null });
 
 const WEEKDAYS = [
   "SUNDAY",
@@ -117,6 +119,7 @@ export default function Dashboard({
           doneAt: t.doneAt,
           calendarEventId: t.calendarEventId,
           durationMinutes: t.durationMinutes,
+          timeOfDay: t.timeOfDay,
         });
       }
     }
@@ -144,7 +147,16 @@ export default function Dashboard({
 
     setTasks((prev) => [
       ...prev,
-      { id: tempId, sectionId, name: text, dueDate: d.dueDate, doneAt: null, calendarEventId: null, durationMinutes },
+      {
+        id: tempId,
+        sectionId,
+        name: text,
+        dueDate: d.dueDate,
+        doneAt: null,
+        calendarEventId: null,
+        durationMinutes,
+        timeOfDay: d.timeOfDay,
+      },
     ]);
     setDrafts((prev) => ({ ...prev, [key]: emptyDraft(todayKey) }));
 
@@ -157,6 +169,7 @@ export default function Dashboard({
           name: text,
           dueDate: d.dueDate ?? undefined,
           durationMinutes: durationMinutes ?? undefined,
+          timeOfDay: d.timeOfDay ?? undefined,
         }),
       });
       if (!res.ok) throw new Error();
@@ -250,6 +263,22 @@ export default function Dashboard({
     } catch {
       patchTaskLocal(id, { durationMinutes: prev });
       setActionError("Couldn't save that duration — try again.");
+    }
+  }
+
+  async function setTaskTimeOfDay(id: string, timeOfDay: TimeOfDay | null) {
+    const prev = tasks.find((t) => t.id === id)?.timeOfDay ?? null;
+    patchTaskLocal(id, { timeOfDay });
+    try {
+      const res = await fetch(`/api/tasks/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ timeOfDay }),
+      });
+      if (!res.ok) throw new Error();
+    } catch {
+      patchTaskLocal(id, { timeOfDay: prev });
+      setActionError("Couldn't save that preference — try again.");
     }
   }
 
@@ -501,6 +530,7 @@ export default function Dashboard({
                       dueDate={t.dueDate}
                       todayKey={todayKey}
                       durationMinutes={t.durationMinutes}
+                      timeOfDay={t.timeOfDay}
                       booked={!!t.calendarEventId}
                       booking={bookingIds.has(t.id)}
                       editing={editing === t.id}
@@ -511,6 +541,7 @@ export default function Dashboard({
                       onEditChange={setEditVal}
                       onDurationCommit={(m) => setTaskDuration(t.id, m)}
                       onDueDateChange={(d) => setTaskDueDate(t.id, d)}
+                      onTimeOfDayChange={(v) => setTaskTimeOfDay(t.id, v)}
                       onBook={() => bookTask(t.id)}
                       onEditKeyDown={makeEditKeyHandler(saveEdit)}
                       onEditBlur={saveEdit}
@@ -530,6 +561,7 @@ export default function Dashboard({
                       dueDate={draft("quick").dueDate}
                       todayKey={todayKey}
                       duration={draft("quick").duration}
+                      timeOfDay={draft("quick").timeOfDay}
                       sections={sections}
                       selectedSectionId={quickSection}
                       onOpen={() => setActiveAdd("quick")}
@@ -537,6 +569,7 @@ export default function Dashboard({
                       onTextChange={(v) => setDraft("quick", { text: v })}
                       onDurationChange={(v) => setDraft("quick", { duration: v })}
                       onDueDateChange={(v) => setDraft("quick", { dueDate: v })}
+                      onTimeOfDayChange={(v) => setDraft("quick", { timeOfDay: v })}
                       onSectionPick={setQuickSection}
                       onKeyDown={(e) => {
                         if (e.key === "Enter") addTask("quick", quickSection);
@@ -702,6 +735,7 @@ export default function Dashboard({
                       dueDate={t.dueDate}
                       todayKey={todayKey}
                       durationMinutes={t.durationMinutes}
+                      timeOfDay={t.timeOfDay}
                       editing={editing === t.id}
                       editVal={editVal}
                       onDone={() => markDone(t.id)}
@@ -712,6 +746,7 @@ export default function Dashboard({
                       onEditBlur={saveEdit}
                       onDurationCommit={(m) => setTaskDuration(t.id, m)}
                       onDueDateChange={(d) => setTaskDueDate(t.id, d)}
+                      onTimeOfDayChange={(v) => setTaskTimeOfDay(t.id, v)}
                     />
                   ))}
 
@@ -728,11 +763,13 @@ export default function Dashboard({
                       dueDate={draft(`sec:${activeSection.id}`).dueDate}
                       todayKey={todayKey}
                       duration={draft(`sec:${activeSection.id}`).duration}
+                      timeOfDay={draft(`sec:${activeSection.id}`).timeOfDay}
                       onOpen={() => setActiveAdd(`sec:${activeSection.id}`)}
                       onCancel={() => setActiveAdd(null)}
                       onTextChange={(v) => setDraft(`sec:${activeSection.id}`, { text: v })}
                       onDurationChange={(v) => setDraft(`sec:${activeSection.id}`, { duration: v })}
                       onDueDateChange={(v) => setDraft(`sec:${activeSection.id}`, { dueDate: v })}
+                      onTimeOfDayChange={(v) => setDraft(`sec:${activeSection.id}`, { timeOfDay: v })}
                       onKeyDown={(e) => {
                         if (e.key === "Enter") addTask(`sec:${activeSection.id}`, activeSection.id);
                         if (e.key === "Escape") setActiveAdd(null);

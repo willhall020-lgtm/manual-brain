@@ -4,6 +4,7 @@ import { getState } from "./data";
 import { createCalendarEvent, listCalendarEvents } from "./google-calendar";
 import { isGoogleCalendarConnected } from "./google-auth";
 import { isDueDateString, isOverdue } from "./due-date";
+import { isTimeOfDay } from "./time-of-day";
 
 // The tools the chat needs to do what the Slack routine used to do — see
 // what's outstanding, add to it, book it on the calendar, and mark it done
@@ -14,7 +15,7 @@ export const CHAT_TOOLS: Anthropic.Tool[] = [
   {
     name: "list_tasks",
     description:
-      "Lists every list name and all not-done tasks across every list, with each task's id, name, list name, due_date (\"YYYY-MM-DD\", or null for no due date), overdue (true if due_date is before today and it's still not done), whether it's already booked on the calendar (scheduled: true/false), and duration_minutes if the user set one when creating it (null if not — estimate it yourself when booking). Call this first in any conversation about what's outstanding, what to schedule, or before adding a task (to get valid list names) — and always before booking anything, to avoid double-booking a task that's already scheduled.",
+      "Lists every list name and all not-done tasks across every list, with each task's id, name, list name, due_date (\"YYYY-MM-DD\", or null for no due date), overdue (true if due_date is before today and it's still not done), whether it's already booked on the calendar (scheduled: true/false), duration_minutes if the user set one when creating it (null if not — estimate it yourself when booking), and time_of_day (\"morning\", \"afternoon\", \"evening\", or null for no preference — a hint for what part of the day to book it in when schedule_task's start_iso isn't otherwise dictated by the user). Call this first in any conversation about what's outstanding, what to schedule, or before adding a task (to get valid list names) — and always before booking anything, to avoid double-booking a task that's already scheduled.",
     input_schema: { type: "object", properties: {}, additionalProperties: false },
   },
   {
@@ -33,6 +34,11 @@ export const CHAT_TOOLS: Anthropic.Tool[] = [
         duration_minutes: {
           type: "integer",
           description: "Optional — how long the task is expected to take, in minutes, if the user gives one.",
+        },
+        time_of_day: {
+          type: "string",
+          enum: ["morning", "afternoon", "evening"],
+          description: "Optional — roughly when in the day this should be booked, only if the user actually said so (e.g. \"sometime in the morning\"). Leave unset otherwise; don't guess at a preference nobody stated.",
         },
       },
       required: ["list_name", "name"],
@@ -56,7 +62,7 @@ export const CHAT_TOOLS: Anthropic.Tool[] = [
   {
     name: "schedule_task",
     description:
-      "Books a task onto the user's Google Calendar as an event. Use the task's own name as the event title unless the user asks for something else. start_iso must be RFC3339 with a UTC offset, e.g. \"2026-08-28T15:00:00+10:00\" — ask the user for their timezone if it's genuinely ambiguous, otherwise infer from context. For how long the event runs, give EITHER end_iso (only when the user's stated an exact end time themselves) OR duration_minutes (preferred otherwise) — and when passing duration_minutes, use the task's own duration_minutes from list_tasks if it has one, or your own realistic estimate of how long the task actually takes if it doesn't. If you pass neither, the task's own duration is used automatically, falling back to 30 minutes. Refuses (with an error naming the conflicting event) if the proposed slot overlaps something already on the calendar — pick a different time, or pass force: true only if the user explicitly wants to double-book anyway.",
+      "Books a task onto the user's Google Calendar as an event. Use the task's own name as the event title unless the user asks for something else. start_iso must be RFC3339 with a UTC offset, e.g. \"2026-08-28T15:00:00+10:00\" — ask the user for their timezone if it's genuinely ambiguous, otherwise infer from context. If the user hasn't given an exact time themselves and the task has a time_of_day from list_tasks (morning/afternoon/evening), pick start_iso to actually land in that part of the day rather than defaulting to a round number out of habit — it's a real preference the user set, not a suggestion to override without reason. For how long the event runs, give EITHER end_iso (only when the user's stated an exact end time themselves) OR duration_minutes (preferred otherwise) — and when passing duration_minutes, use the task's own duration_minutes from list_tasks if it has one, or your own realistic estimate of how long the task actually takes if it doesn't. If you pass neither, the task's own duration is used automatically, falling back to 30 minutes. Refuses (with an error naming the conflicting event) if the proposed slot overlaps something already on the calendar — pick a different time, or pass force: true only if the user explicitly wants to double-book anyway.",
     input_schema: {
       type: "object",
       properties: {
@@ -101,16 +107,18 @@ export async function runChatTool(name: string, input: unknown): Promise<string>
           overdue: t.dueDate !== null && isOverdue(t.dueDate, todayKey),
           scheduled: !!t.calendarEventId,
           duration_minutes: t.durationMinutes,
+          time_of_day: t.timeOfDay,
         }));
       return JSON.stringify({ lists: sections.map((s) => s.name), tasks: active });
     }
 
     case "add_task": {
-      const { list_name, name, due_date, duration_minutes } = input as {
+      const { list_name, name, due_date, duration_minutes, time_of_day } = input as {
         list_name: string;
         name: string;
         due_date?: string;
         duration_minutes?: number;
+        time_of_day?: string;
       };
       const { sections } = await getState();
       const section = sections.find((s) => s.name.toLowerCase() === list_name.toLowerCase());
@@ -127,6 +135,7 @@ export async function runChatTool(name: string, input: unknown): Promise<string>
         typeof duration_minutes === "number" && Number.isFinite(duration_minutes) && duration_minutes > 0
           ? Math.round(duration_minutes)
           : null;
+      const resolvedTimeOfDay = isTimeOfDay(time_of_day) ? time_of_day : null;
 
       const db = sql();
       const [{ next_pos }] = (await db`
@@ -135,8 +144,8 @@ export async function runChatTool(name: string, input: unknown): Promise<string>
       `) as { next_pos: number }[];
       const id = "task_" + crypto.randomUUID().slice(0, 8);
       await db`
-        INSERT INTO tasks (id, section_id, name, due_date, position, duration_minutes)
-        VALUES (${id}, ${section.id}, ${trimmedName}, ${resolvedDueDate}, ${next_pos}, ${resolvedDuration})
+        INSERT INTO tasks (id, section_id, name, due_date, position, duration_minutes, time_of_day)
+        VALUES (${id}, ${section.id}, ${trimmedName}, ${resolvedDueDate}, ${next_pos}, ${resolvedDuration}, ${resolvedTimeOfDay})
       `;
       return JSON.stringify({ ok: true, id, list: section.name });
     }

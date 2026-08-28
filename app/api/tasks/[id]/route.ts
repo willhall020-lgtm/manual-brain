@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { sql } from "@/lib/db";
 import { isDueDateString } from "@/lib/due-date";
+import { isTimeOfDay } from "@/lib/time-of-day";
 
 export const dynamic = "force-dynamic";
 
@@ -49,11 +50,24 @@ export async function PATCH(
       await db`UPDATE tasks SET duration_minutes = ${durationMinutes} WHERE id = ${id}`;
     }
 
+    if (body?.timeOfDay !== undefined) {
+      // null explicitly clears the preference; anything else that isn't a
+      // real TimeOfDay value is rejected — same reasoning as dueDate above:
+      // a deliberate edit deserves a 400, unlike creation's silent-ignore.
+      if (body.timeOfDay !== null && !isTimeOfDay(body.timeOfDay)) {
+        return NextResponse.json(
+          { error: "timeOfDay must be 'morning', 'afternoon', 'evening', or null" },
+          { status: 400 }
+        );
+      }
+      await db`UPDATE tasks SET time_of_day = ${body.timeOfDay} WHERE id = ${id}`;
+    }
+
     // due_date::text — see lib/data.ts's getState() for why: the neon()
     // client turns a bare `date` column into a JS Date and shifts it by
     // the local UTC offset in the process, corrupting the calendar day.
     const rows = (await db`
-      SELECT id, section_id, name, due_date::text AS due_date, done_at, duration_minutes
+      SELECT id, section_id, name, due_date::text AS due_date, done_at, duration_minutes, time_of_day
       FROM tasks WHERE id = ${id}
     `) as {
       id: string;
@@ -62,6 +76,7 @@ export async function PATCH(
       due_date: string | null;
       done_at: string | null;
       duration_minutes: number | null;
+      time_of_day: string | null;
     }[];
 
     if (!rows.length) {
@@ -75,6 +90,7 @@ export async function PATCH(
       dueDate: t.due_date,
       doneAt: t.done_at,
       durationMinutes: t.duration_minutes,
+      timeOfDay: isTimeOfDay(t.time_of_day) ? t.time_of_day : null,
     });
   } catch (err) {
     console.error(err);

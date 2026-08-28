@@ -3,12 +3,15 @@
 import type { KeyboardEvent } from "react";
 import DurationInput from "@/components/DurationInput";
 import DueDatePicker from "@/components/DueDatePicker";
+import TimeOfDayPicker from "@/components/TimeOfDayPicker";
+import type { TimeOfDay } from "@/lib/time-of-day";
 
 interface Props {
   name: string;
   dueDate: string | null;
   todayKey: string;
   durationMinutes: number | null;
+  timeOfDay: TimeOfDay | null;
   editing: boolean;
   editVal: string;
   onDone: () => void;
@@ -19,6 +22,7 @@ interface Props {
   onEditBlur: () => void;
   onDurationCommit: (minutes: number | null) => void;
   onDueDateChange: (v: string | null) => void;
+  onTimeOfDayChange: (v: TimeOfDay | null) => void;
 }
 
 export default function ListTaskRow({
@@ -26,6 +30,7 @@ export default function ListTaskRow({
   dueDate,
   todayKey,
   durationMinutes,
+  timeOfDay,
   editing,
   editVal,
   onDone,
@@ -36,6 +41,7 @@ export default function ListTaskRow({
   onEditBlur,
   onDurationCommit,
   onDueDateChange,
+  onTimeOfDayChange,
 }: Props) {
   return (
     <div
@@ -101,6 +107,7 @@ export default function ListTaskRow({
 
         <DueDatePicker value={dueDate} todayKey={todayKey} editing={editing} onChange={onDueDateChange} />
         <DurationInput minutes={durationMinutes} editing={editing} onCommit={onDurationCommit} />
+        <TimeOfDayPicker value={timeOfDay} editing={editing} onChange={onTimeOfDayChange} />
       </div>
 
       <div style={{ flex: "none", display: "flex", alignItems: "center", gap: 2 }}>

@@ -21,7 +21,9 @@ const PROMPT =
   "Morning check-in — nobody's here to answer questions, so use your own judgment. " +
   "Look at what's outstanding and book any not-yet-scheduled tasks due today or earlier " +
   "(overdue tasks roll forward until they're done, so treat them the same as today's) onto " +
-  "the calendar for today, spread across sensible working hours per the planning rules. Skip " +
+  "the calendar for today, spread across sensible working hours per the planning rules — and " +
+  "honoring each task's own time_of_day preference (morning/afternoon/evening) from list_tasks " +
+  "where it's set, over the general planning rules if the two pull in different directions. Skip " +
   "anything list_tasks already shows as scheduled. If there's nothing to book, just say so briefly.";
 
 function isTextBlock(b: { type: string }): b is TextBlock {

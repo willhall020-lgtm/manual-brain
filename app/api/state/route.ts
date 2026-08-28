@@ -17,6 +17,7 @@ export async function GET() {
         doneAt: t.doneAt,
         calendarEventId: t.calendarEventId,
         durationMinutes: t.durationMinutes,
+        timeOfDay: t.timeOfDay,
       });
     }
     return NextResponse.json({ sections: Array.from(bySectionId.values()) });

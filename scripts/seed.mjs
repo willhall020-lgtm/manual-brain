@@ -23,7 +23,9 @@ if (!url) {
 // etc.) — the app now uses real due dates, so this seeds actual dates
 // computed from today instead. `null` (a handful of "This month"-ish and
 // the one "Custom" item) is a genuine, common case: someday/backlog tasks
-// with no firm date, not a placeholder for a missing value.
+// with no firm date, not a placeholder for a missing value. A few tasks
+// also seed a timeOfDay ("morning" / "afternoon" / "evening") to show off
+// the booking-preference field; most are left null (no preference).
 function daysFromNow(n) {
   const d = new Date();
   d.setDate(d.getDate() + n);
@@ -36,7 +38,7 @@ const SECTIONS = [
     name: "Delight",
     tasks: [
       { name: "Book tickets for the Sunday film", dueDate: daysFromNow(0) },
-      { name: "Plan Sam's birthday dinner", dueDate: daysFromNow(3) },
+      { name: "Plan Sam's birthday dinner", dueDate: daysFromNow(3), timeOfDay: "evening" },
       { name: "Look up the pottery class", dueDate: null },
     ],
   },
@@ -44,7 +46,7 @@ const SECTIONS = [
     id: "s2",
     name: "Work",
     tasks: [
-      { name: "Send revised client deck to Priya", dueDate: daysFromNow(0) },
+      { name: "Send revised client deck to Priya", dueDate: daysFromNow(0), timeOfDay: "morning" },
       { name: "Fix the numbers on slide 12", dueDate: daysFromNow(0) },
       { name: "Book a room for the Thursday workshop", dueDate: daysFromNow(6) },
       { name: "Draft Q4 resourcing note", dueDate: null },
@@ -68,7 +70,7 @@ const SECTIONS = [
     id: "s4",
     name: "Life",
     tasks: [
-      { name: "Call the dentist back", dueDate: daysFromNow(0) },
+      { name: "Call the dentist back", dueDate: daysFromNow(0), timeOfDay: "afternoon" },
       { name: "Cancel the gym trial", dueDate: daysFromNow(3) },
       { name: "Swap the winter clothes over", dueDate: null },
     ],
@@ -106,8 +108,8 @@ try {
         const t = s.tasks[j];
         const id = "t" + taskN++;
         await pool.query(
-          `INSERT INTO tasks (id, section_id, name, due_date, position, done_at)
-           VALUES ($1, $2, $3, $4, $5, $6)`,
+          `INSERT INTO tasks (id, section_id, name, due_date, position, done_at, time_of_day)
+           VALUES ($1, $2, $3, $4, $5, $6, $7)`,
           [
             id,
             s.id,
@@ -115,6 +117,7 @@ try {
             t.dueDate,
             j,
             t.done ? new Date() : null,
+            t.timeOfDay ?? null,
           ]
         );
       }

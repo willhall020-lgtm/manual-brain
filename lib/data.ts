@@ -1,5 +1,6 @@
 import { sql } from "./db";
 import type { Section, Task } from "./types";
+import { isTimeOfDay } from "./time-of-day";
 
 /** Shared by the initial server-rendered load (app/page.tsx) and the
  * client's error-recovery refetch (GET /api/state) so both read the
@@ -16,7 +17,7 @@ export async function getState(): Promise<{ sections: Section[]; tasks: Task[] }
   // SQL sidesteps that entirely: Postgres hands back the literal
   // "YYYY-MM-DD" text, no Date object ever constructed.
   const taskRows = (await db`
-    SELECT id, section_id, name, due_date::text AS due_date, done_at, calendar_event_id, duration_minutes
+    SELECT id, section_id, name, due_date::text AS due_date, done_at, calendar_event_id, duration_minutes, time_of_day
     FROM tasks
     ORDER BY position ASC
   `) as {
@@ -27,6 +28,7 @@ export async function getState(): Promise<{ sections: Section[]; tasks: Task[] }
     done_at: string | null;
     calendar_event_id: string | null;
     duration_minutes: number | null;
+    time_of_day: string | null;
   }[];
 
   const tasks: Task[] = taskRows.map((t) => ({
@@ -37,6 +39,7 @@ export async function getState(): Promise<{ sections: Section[]; tasks: Task[] }
     doneAt: t.done_at,
     calendarEventId: t.calendar_event_id,
     durationMinutes: t.duration_minutes,
+    timeOfDay: isTimeOfDay(t.time_of_day) ? t.time_of_day : null,
   }));
 
   return { sections: sections.map((s) => ({ id: s.id, name: s.name })), tasks };

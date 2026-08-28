@@ -2,6 +2,8 @@
 
 import type { KeyboardEvent } from "react";
 import DueDatePicker from "./DueDatePicker";
+import TimeOfDayPicker from "./TimeOfDayPicker";
+import type { TimeOfDay } from "@/lib/time-of-day";
 
 interface SectionOption {
   id: string;
@@ -14,6 +16,7 @@ interface Props {
   dueDate: string | null;
   todayKey: string;
   duration: string;
+  timeOfDay: TimeOfDay | null;
   sections: SectionOption[];
   selectedSectionId: string;
   onOpen: () => void;
@@ -21,6 +24,7 @@ interface Props {
   onTextChange: (v: string) => void;
   onDurationChange: (v: string) => void;
   onDueDateChange: (v: string | null) => void;
+  onTimeOfDayChange: (v: TimeOfDay | null) => void;
   onSectionPick: (id: string) => void;
   onKeyDown: (e: KeyboardEvent<HTMLInputElement>) => void;
   onAdd: () => void;
@@ -32,6 +36,7 @@ export default function QuickAddBox({
   dueDate,
   todayKey,
   duration,
+  timeOfDay,
   sections,
   selectedSectionId,
   onOpen,
@@ -39,6 +44,7 @@ export default function QuickAddBox({
   onTextChange,
   onDurationChange,
   onDueDateChange,
+  onTimeOfDayChange,
   onSectionPick,
   onKeyDown,
   onAdd,
@@ -164,6 +170,13 @@ export default function QuickAddBox({
           />
           <span style={{ fontSize: 11.5, fontWeight: 600, color: "#A3A39A" }}>minutes</span>
         </div>
+      </div>
+
+      <div style={{ display: "flex", flexDirection: "column", gap: 7 }}>
+        <span style={{ fontSize: 10, fontWeight: 800, letterSpacing: ".14em", color: "#A3A39A" }}>
+          WHEN IN THE DAY? (OPTIONAL)
+        </span>
+        <TimeOfDayPicker value={timeOfDay} editing onChange={onTimeOfDayChange} />
       </div>
 
       <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
