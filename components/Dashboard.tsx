@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { KeyboardEvent } from "react";
 import { useRouter } from "next/navigation";
 import TodayTaskRow from "@/components/TodayTaskRow";
@@ -76,6 +76,15 @@ export default function Dashboard({
   const [tasks, setTasks] = useState<Task[]>(initialTasks);
 
   const [view, setView] = useState<string>("home"); // "home" | a section id
+
+  // Switching views (home <-> a list) swaps content in place without a
+  // route change, so the browser has no reason to reset scroll — without
+  // this, opening a list from partway down the home screen leaves you
+  // partway down the list instead of at its top.
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [view]);
+
   const [doneOpen, setDoneOpen] = useState(false);
   const [activeAdd, setActiveAdd] = useState<string | null>(null); // "quick" | `sec:${id}` | null
   const [drafts, setDrafts] = useState<Record<string, Draft>>({});
