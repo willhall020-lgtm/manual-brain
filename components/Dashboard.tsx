@@ -10,6 +10,7 @@ import DonePanel from "@/components/DonePanel";
 import CalendarPanel from "@/components/CalendarPanel";
 import { SOON_KEYS, UrgencyKey } from "@/lib/urgency";
 import type { Section, StateResponse, Task } from "@/lib/types";
+import type { CalendarEvent } from "@/lib/gcal";
 
 // Config that lived as editable `props` on the design-tool artboard —
 // fixed here since there's no visual editor around this build, but kept as
@@ -52,9 +53,19 @@ interface Props {
   initialSections: Section[];
   initialTasks: Task[];
   todayISO: string;
+  calendarEvents: CalendarEvent[];
+  calendarConfigured: boolean;
+  calendarError: boolean;
 }
 
-export default function Dashboard({ initialSections, initialTasks, todayISO }: Props) {
+export default function Dashboard({
+  initialSections,
+  initialTasks,
+  todayISO,
+  calendarEvents,
+  calendarConfigured,
+  calendarError,
+}: Props) {
   const [today] = useState(() => new Date(todayISO));
   const [sections, setSections] = useState<Section[]>(initialSections);
   const [tasks, setTasks] = useState<Task[]>(initialTasks);
@@ -72,6 +83,7 @@ export default function Dashboard({ initialSections, initialTasks, todayISO }: P
   const [addingSection, setAddingSection] = useState(false);
   const [newSectionName, setNewSectionName] = useState("");
   const [actionError, setActionError] = useState<string | null>(null);
+  const [slackStatus, setSlackStatus] = useState<"idle" | "sending" | "sent" | "error">("idle");
 
   // A plain counter (not Math.random/Date.now) for optimistic temp ids —
   // swapped for the server's real id once a create request resolves.
@@ -249,6 +261,18 @@ export default function Dashboard({ initialSections, initialTasks, todayISO }: P
     }
   }
 
+  async function sendToSlack() {
+    setSlackStatus("sending");
+    try {
+      const res = await fetch("/api/slack/sync", { method: "POST" });
+      if (!res.ok) throw new Error();
+      setSlackStatus("sent");
+    } catch {
+      setSlackStatus("error");
+    }
+    setTimeout(() => setSlackStatus("idle"), 3000);
+  }
+
   function startEdit(id: string, name: string) {
     setEditing(id);
     setEditVal(name);
@@ -383,9 +407,35 @@ export default function Dashboard({ initialSections, initialTasks, todayISO }: P
                       for today
                     </span>
                   </div>
-                  <span style={{ fontSize: 13, fontWeight: 600, color: "#41470F" }}>
-                    Pick one and start there. Everything else is tucked away below.
-                  </span>
+                  <div style={{ display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
+                    <span style={{ fontSize: 13, fontWeight: 600, color: "#41470F" }}>
+                      Pick one and start there. Everything else is tucked away below.
+                    </span>
+                    <button
+                      onClick={sendToSlack}
+                      disabled={slackStatus === "sending" || todayTasks.length === 0}
+                      style={{
+                        flex: "none",
+                        background: "#14140F",
+                        color: "#FFFFFF",
+                        border: 0,
+                        borderRadius: 99,
+                        padding: "7px 13px",
+                        fontSize: 11,
+                        fontWeight: 800,
+                        letterSpacing: ".04em",
+                        opacity: todayTasks.length === 0 ? 0.5 : 1,
+                      }}
+                    >
+                      {slackStatus === "sending"
+                        ? "SENDING…"
+                        : slackStatus === "sent"
+                        ? "SENT ✓"
+                        : slackStatus === "error"
+                        ? "COULDN'T SEND"
+                        : "SEND TODAY → SLACK"}
+                    </button>
+                  </div>
                 </div>
 
                 <div style={{ display: "flex", flexDirection: "column", gap: 7 }}>
@@ -607,7 +657,12 @@ export default function Dashboard({ initialSections, initialTasks, todayISO }: P
           />
         </div>
 
-        <CalendarPanel today={today} />
+        <CalendarPanel
+          today={today}
+          events={calendarEvents}
+          configured={calendarConfigured}
+          loadError={calendarError}
+        />
       </div>
     </div>
   );

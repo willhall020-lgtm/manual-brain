@@ -1,5 +1,6 @@
 import Dashboard from "@/components/Dashboard";
 import { getState } from "@/lib/data";
+import { getCalendarEvents, type CalendarEvent } from "@/lib/gcal";
 
 // Reads Neon on every request rather than at build time — there is no
 // static content here, it's always someone's live task list.
@@ -14,6 +15,25 @@ export default async function Page() {
     ({ sections, tasks } = await getState());
   } catch (err) {
     loadError = err instanceof Error ? err.message : "Failed to load Manual Brain data.";
+  }
+
+  // Calendar is best-effort: a broken/unset feed shouldn't take the whole
+  // dashboard down, so its failure is kept separate from `loadError` above
+  // and just collapses the sidebar into an inline message instead.
+  const calendarConfigured = !!process.env.GCAL_ICS_URL;
+  let calendarEvents: CalendarEvent[] = [];
+  let calendarError = false;
+  if (calendarConfigured) {
+    const now = new Date();
+    const startOfToday = new Date(now);
+    startOfToday.setHours(0, 0, 0, 0);
+    const rangeEnd = new Date(startOfToday);
+    rangeEnd.setDate(rangeEnd.getDate() + 2);
+    try {
+      calendarEvents = await getCalendarEvents(startOfToday, rangeEnd);
+    } catch {
+      calendarError = true;
+    }
   }
 
   if (loadError) {
@@ -49,6 +69,9 @@ export default async function Page() {
       initialSections={sections!}
       initialTasks={tasks!}
       todayISO={new Date().toISOString()}
+      calendarEvents={calendarEvents}
+      calendarConfigured={calendarConfigured}
+      calendarError={calendarError}
     />
   );
 }
