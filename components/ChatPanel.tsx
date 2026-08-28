@@ -92,8 +92,7 @@ export default function ChatPanel() {
       style={{
         display: "flex",
         flexDirection: "column",
-        height: "calc(100vh - 68px)",
-        maxHeight: 760,
+        height: "100%",
         background: "#FFFFFF",
         border: "1px solid #E6E6E0",
         borderRadius: 22,

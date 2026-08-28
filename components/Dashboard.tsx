@@ -86,6 +86,7 @@ export default function Dashboard({
   const [addingSection, setAddingSection] = useState(false);
   const [newSectionName, setNewSectionName] = useState("");
   const [actionError, setActionError] = useState<string | null>(null);
+  const [chatOpen, setChatOpen] = useState(false);
 
   // A plain counter (not Math.random/Date.now) for optimistic temp ids —
   // swapped for the server's real id once a create request resolves.
@@ -436,7 +437,7 @@ export default function Dashboard({
                   </div>
                   <div style={{ display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
                     <button
-                      onClick={() => router.push("/chat")}
+                      onClick={() => setChatOpen(true)}
                       style={{
                         flex: "none",
                         background: "#14140F",
@@ -689,6 +690,48 @@ export default function Dashboard({
           loadError={calendarError}
         />
       </div>
+
+      {chatOpen && (
+        <div
+          onClick={() => setChatOpen(false)}
+          style={{
+            position: "fixed",
+            inset: 0,
+            background: "rgba(20,20,15,.32)",
+            zIndex: 40,
+            display: "flex",
+            justifyContent: "flex-end",
+          }}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              width: "min(440px, 100vw)",
+              height: "100vh",
+              background: "#F7F7F3",
+              padding: 16,
+              display: "flex",
+              flexDirection: "column",
+              gap: 12,
+              boxShadow: "-8px 0 32px rgba(0,0,0,.12)",
+            }}
+          >
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+              <span style={{ fontSize: 15, fontWeight: 800, letterSpacing: "-.02em" }}>Chat</span>
+              <button
+                onClick={() => setChatOpen(false)}
+                style={{ background: "transparent", border: 0, fontSize: 20, lineHeight: 1, color: "#8E8E85", cursor: "pointer", padding: 4 }}
+                aria-label="Close chat"
+              >
+                ×
+              </button>
+            </div>
+            <div style={{ flex: 1, minHeight: 0 }}>
+              <ChatPanel />
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
