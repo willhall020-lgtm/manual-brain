@@ -377,6 +377,12 @@ export default function Dashboard({
             {activeCount} {activeCount === 1 ? "task" : "tasks"} in total · {doneCount} done
           </span>
           <button
+            onClick={() => router.push("/settings")}
+            style={{ background: "transparent", border: 0, fontSize: 11, fontWeight: 700, color: "#B0B0A7", cursor: "pointer" }}
+          >
+            SETTINGS
+          </button>
+          <button
             onClick={async () => {
               await fetch("/api/auth/logout", { method: "POST" });
               router.push("/login");

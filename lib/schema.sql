@@ -27,3 +27,15 @@ CREATE TABLE IF NOT EXISTS tasks (
 
 CREATE INDEX IF NOT EXISTS tasks_section_id_idx ON tasks (section_id);
 CREATE INDEX IF NOT EXISTS tasks_done_at_idx ON tasks (done_at);
+
+-- Single-row table holding the Google OAuth refresh/access token pair for
+-- writing to the calendar (booking events). Single-user app — one row,
+-- id is always 'default'. Read-only calendar display still uses the iCal
+-- feed (GCAL_ICS_URL); this table is only for the write path.
+CREATE TABLE IF NOT EXISTS google_auth (
+  id text PRIMARY KEY DEFAULT 'default',
+  refresh_token text NOT NULL,
+  access_token text,
+  access_token_expires_at timestamptz,
+  updated_at timestamptz NOT NULL DEFAULT now()
+);
