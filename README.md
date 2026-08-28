@@ -3,9 +3,9 @@
 A low-friction, high-contrast task tracker built for an ADHD brain: three
 default lists, a fixed set of relative urgency labels (no calendar-date
 picking), a "for today" view so you never have to see the whole backlog at
-once, a live read-only Google Calendar sidebar, and a one-click sync that
-pushes today's tasks to a Slack channel a Claude routine watches to book
-them onto the calendar.
+once, a live read-only Google Calendar sidebar, and an in-site chat that
+does what a Slack routine used to — reads your tasks, decides what to book
+today, and puts it on the calendar itself.
 
 This is the real implementation of the `Manual Brain Dashboard.dc.html`
 design exported from Claude Design — see that project's `README.md` and
@@ -24,18 +24,26 @@ design exported from Claude Design — see that project's `README.md` and
   expanded via `lib/gcal.ts`; `next.config.ts` marks `node-ical` as a
   server-external package because Turbopack breaks its Temporal polyfill
   otherwise.
-- **Slack sync** — a "Send today → Slack" button
-  (`app/api/slack/sync/route.ts`) posts today's `Today`-urgency tasks to a
-  Slack Incoming Webhook (`SLACK_WEBHOOK_URL`) for the Claude routine in
-  that channel to pick up and book onto the calendar. The routine itself
-  lives outside this repo.
+- **Chat** (`/chat`) — a Claude tool-use loop (`app/api/chat/route.ts`,
+  Anthropic Messages API, `claude-opus-5`, manual loop) with three tools:
+  `list_tasks`, `schedule_task` (books a real Google Calendar event),
+  `mark_task_done`. Replaces the old Slack-routine handoff entirely —
+  needs `ANTHROPIC_API_KEY`.
+- **Google Calendar write access** (`/settings`) — separate OAuth flow
+  from the read-only sidebar; see `lib/google-auth.ts` /
+  `lib/google-calendar.ts`. Needs `GOOGLE_CLIENT_ID` /
+  `GOOGLE_CLIENT_SECRET` and a one-time Connect click.
+- **Password gate** — the whole site sits behind one shared password
+  (`SITE_PASSWORD`), enforced in `proxy.ts` (Next 16 renamed
+  `middleware.ts` to this). Added once the chat started spending API
+  budget and writing to the calendar.
 
 ## Local setup
 
 ```bash
 npm install
-cp .env.example .env.local   # then fill in DATABASE_URL (and optionally
-                              # GCAL_ICS_URL / SLACK_WEBHOOK_URL)
+cp .env.example .env.local   # then fill in DATABASE_URL — see .env.example
+                              # for the rest (all optional)
 npm run db:migrate           # creates the tables (safe to re-run)
 npm run db:seed              # seeds the same starter content as the design mockup
 npm run dev                  # http://localhost:3000
@@ -43,9 +51,11 @@ npm run dev                  # http://localhost:3000
 
 `DATABASE_URL` is the only *required* environment variable — get it from
 your Neon project dashboard → **Connection Details** → the pooled
-connection string (ends in `?sslmode=require`). `GCAL_ICS_URL` and
-`SLACK_WEBHOOK_URL` are optional; each feature just degrades to an inline
-"not connected" message when its var is unset.
+connection string (ends in `?sslmode=require`). Everything else
+(`GCAL_ICS_URL`, `SITE_PASSWORD`, `GOOGLE_CLIENT_ID`/`SECRET`,
+`ANTHROPIC_API_KEY`) is optional — each feature just degrades to an
+inline "not set up" state when its vars are unset, except `SITE_PASSWORD`,
+which no-ops the whole gate (open site) rather than degrading a feature.
 
 If `DATABASE_URL` isn't set (or the tables haven't been migrated yet), the
 app shows a plain error card explaining that, rather than silently falling
@@ -53,15 +63,20 @@ back to fake data.
 
 ## Deployed
 
-Live at **https://manual-brain-iota.vercel.app**, on Vercel project
-`manual-brain` (team `wills-projects-92f15313`), backed by a Neon Postgres
-database (`neon-purple-dog`) provisioned through Vercel's Neon marketplace
-integration and connected to the project automatically. `DATABASE_URL`,
-`GCAL_ICS_URL`, and `SLACK_WEBHOOK_URL` are set as Production +
-Development environment variables — Preview never got them due to a
+Live at **https://www.manualbrain.xyz** (aliased to the Vercel default
+`manual-brain-iota.vercel.app`), on Vercel project `manual-brain` (team
+`wills-projects-92f15313`), backed by a Neon Postgres database
+(`neon-purple-dog`) provisioned through Vercel's Neon marketplace
+integration and connected to the project automatically. All env vars are
+set as Production + Development — Preview never got them due to a
 `vercel env add` CLI bug on this project (repeats its own suggested fix
 command and still fails); harmless for now since nothing here depends on
 Preview deploys.
+
+Google OAuth's authorized redirect URI is pinned to
+`https://www.manualbrain.xyz/api/auth/google/callback` (+
+`http://localhost:3000/...` for local dev) in the Google Cloud Console
+credential — changing the canonical domain means updating that too.
 
 To redeploy after local changes: `vercel deploy --prod`. To change an env
 var: `vercel env add <NAME> production --value "<value>" --yes` (repeat
@@ -75,12 +90,17 @@ app/
   page.tsx              Server Component — loads initial state, renders Dashboard
   layout.tsx            Archivo font, page metadata
   globals.css           base styles + hover-state classes
+  login/page.tsx         password gate form
+  settings/page.tsx       Google Calendar connect/status
+  chat/page.tsx           chat page shell (renders ChatPanel)
   api/
     state/route.ts      GET  — full sections+tasks read
     sections/route.ts   POST — create a list
     tasks/route.ts      POST — create a task
     tasks/[id]/route.ts PATCH (edit name / urgency / done) and DELETE
-    slack/sync/route.ts POST — push today's tasks to the Slack webhook
+    chat/route.ts        POST — the tool-use loop (list/schedule/mark done)
+    auth/login|logout/route.ts       password gate session cookie
+    auth/google/start|callback/route.ts  Google Calendar OAuth handshake
 components/
   Dashboard.tsx          all state + interaction logic
   TodayTaskRow.tsx        row used in the home "for today" block
@@ -89,14 +109,20 @@ components/
   TaskAddBox.tsx          list view's add-task box
   DonePanel.tsx           collapsible done list with undo
   CalendarPanel.tsx       live, read-only Google Calendar sidebar
+  ChatPanel.tsx           chat UI — client-side message history + send loop
   UrgencyChipRow.tsx      shared urgency picker used by both add boxes
 lib/
   db.ts        lazy Neon client (reads DATABASE_URL)
   data.ts      shared "load everything" query, used by the page and /api/state
-  gcal.ts      fetches + parses GCAL_ICS_URL, expands recurring events
+  gcal.ts      fetches + parses GCAL_ICS_URL, expands recurring events (read-only)
+  google-auth.ts      Google OAuth token exchange/refresh/storage (write access)
+  google-calendar.ts  createCalendarEvent() — the chat's booking tool
+  chat-tools.ts        tool definitions + execution for the chat loop
+  auth.ts       SITE_PASSWORD session cookie logic
   urgency.ts   the fixed set of urgency labels + colors
   types.ts     shared Section/Task shapes
   schema.sql   table definitions
+proxy.ts       site-wide password gate (Next 16's replacement for middleware.ts)
 scripts/
   migrate.mjs  applies schema.sql
   seed.mjs     seeds starter content (idempotent)
@@ -104,8 +130,7 @@ scripts/
 
 ## Deliberately out of scope (V1, per spec.md)
 
-- Moving the Slack channel/routine into the site; in-app chat.
 - Email integration.
 - Deleting a list (matches the original design — you can only add lists).
-- Writing to Google Calendar from the site (the panel is read-only; the
-  Slack routine is what books events).
+- Per-user accounts — `SITE_PASSWORD` is one shared password for the whole
+  site, not a real auth system.

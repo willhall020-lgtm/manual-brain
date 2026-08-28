@@ -85,7 +85,6 @@ export default function Dashboard({
   const [addingSection, setAddingSection] = useState(false);
   const [newSectionName, setNewSectionName] = useState("");
   const [actionError, setActionError] = useState<string | null>(null);
-  const [slackStatus, setSlackStatus] = useState<"idle" | "sending" | "sent" | "error">("idle");
 
   // A plain counter (not Math.random/Date.now) for optimistic temp ids —
   // swapped for the server's real id once a create request resolves.
@@ -263,18 +262,6 @@ export default function Dashboard({
     }
   }
 
-  async function sendToSlack() {
-    setSlackStatus("sending");
-    try {
-      const res = await fetch("/api/slack/sync", { method: "POST" });
-      if (!res.ok) throw new Error();
-      setSlackStatus("sent");
-    } catch {
-      setSlackStatus("error");
-    }
-    setTimeout(() => setSlackStatus("idle"), 3000);
-  }
-
   function startEdit(id: string, name: string) {
     setEditing(id);
     setEditVal(name);
@@ -431,8 +418,7 @@ export default function Dashboard({
                       Pick one and start there. Everything else is tucked away below.
                     </span>
                     <button
-                      onClick={sendToSlack}
-                      disabled={slackStatus === "sending" || todayTasks.length === 0}
+                      onClick={() => router.push("/chat")}
                       style={{
                         flex: "none",
                         background: "#14140F",
@@ -443,16 +429,9 @@ export default function Dashboard({
                         fontSize: 11,
                         fontWeight: 800,
                         letterSpacing: ".04em",
-                        opacity: todayTasks.length === 0 ? 0.5 : 1,
                       }}
                     >
-                      {slackStatus === "sending"
-                        ? "SENDING…"
-                        : slackStatus === "sent"
-                        ? "SENT ✓"
-                        : slackStatus === "error"
-                        ? "COULDN'T SEND"
-                        : "SEND TODAY → SLACK"}
+                      CHAT → SCHEDULE TODAY
                     </button>
                   </div>
                 </div>
