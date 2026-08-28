@@ -85,6 +85,8 @@ export default function Dashboard({
   const [menuFor, setMenuFor] = useState<string | null>(null);
   const [addingSection, setAddingSection] = useState(false);
   const [newSectionName, setNewSectionName] = useState("");
+  const [editingSectionName, setEditingSectionName] = useState(false);
+  const [sectionNameVal, setSectionNameVal] = useState("");
   const [actionError, setActionError] = useState<string | null>(null);
 
   // A plain counter (not Math.random/Date.now) for optimistic temp ids —
@@ -196,6 +198,31 @@ export default function Dashboard({
     } catch {
       setSections((prev) => prev.filter((s) => s.id !== tempId));
       setActionError("Couldn't create that list — try again.");
+    }
+  }
+
+  function startEditSectionName(current: string) {
+    setSectionNameVal(current);
+    setEditingSectionName(true);
+  }
+
+  async function saveSectionName(id: string) {
+    setEditingSectionName(false);
+    const name = sectionNameVal.trim();
+    const prev = sections.find((s) => s.id === id)?.name ?? "";
+    if (!name || name === prev) return;
+
+    setSections((cur) => cur.map((s) => (s.id === id ? { ...s, name } : s)));
+    try {
+      const res = await fetch(`/api/sections/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name }),
+      });
+      if (!res.ok) throw new Error();
+    } catch {
+      setSections((cur) => cur.map((s) => (s.id === id ? { ...s, name: prev } : s)));
+      setActionError("Couldn't rename that list — try again.");
     }
   }
 
@@ -523,6 +550,7 @@ export default function Dashboard({
                           setActiveAdd(null);
                           setMenuFor(null);
                           setEditing(null);
+                          setEditingSectionName(false);
                         }}
                         className="mb-sectionbox"
                         style={{
@@ -607,13 +635,45 @@ export default function Dashboard({
                       setActiveAdd(null);
                       setMenuFor(null);
                       setEditing(null);
+                      setEditingSectionName(false);
                     }}
                     className="mb-backbtn"
                     style={{ background: "transparent", border: "1.5px solid #DCDCD5", borderRadius: 99, padding: "8px 15px", fontSize: 12, fontWeight: 700, color: "#14140F" }}
                   >
                     ← All lists
                   </button>
-                  <h2 style={{ margin: 0, fontSize: 28, fontWeight: 800, letterSpacing: "-.03em" }}>{activeSection.name}</h2>
+                  {editingSectionName ? (
+                    <input
+                      value={sectionNameVal}
+                      onChange={(e) => setSectionNameVal(e.target.value)}
+                      onBlur={() => saveSectionName(activeSection.id)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") e.currentTarget.blur();
+                        if (e.key === "Escape") setEditingSectionName(false);
+                      }}
+                      autoFocus
+                      style={{
+                        margin: 0,
+                        fontSize: 28,
+                        fontWeight: 800,
+                        letterSpacing: "-.03em",
+                        border: 0,
+                        borderBottom: "2px solid #2B34EE",
+                        background: "transparent",
+                        outline: "none",
+                        padding: "1px 0",
+                        minWidth: 0,
+                      }}
+                    />
+                  ) : (
+                    <h2
+                      onClick={() => startEditSectionName(activeSection.name)}
+                      title="Click to rename"
+                      style={{ margin: 0, fontSize: 28, fontWeight: 800, letterSpacing: "-.03em", cursor: "pointer" }}
+                    >
+                      {activeSection.name}
+                    </h2>
+                  )}
                   <span style={{ fontSize: 12.5, fontWeight: 700, color: "#93938A" }}>
                     {activeSectionTasks.length === 1 ? "1 task" : `${activeSectionTasks.length} tasks`}
                   </span>
