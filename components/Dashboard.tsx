@@ -509,9 +509,6 @@ export default function Dashboard({
                       for today
                     </span>
                   </div>
-                  <span style={{ fontSize: 13, fontWeight: 600, color: "#41470F" }}>
-                    Pick one and start there, or ask the chat below to sort it out.
-                  </span>
                 </div>
 
                 <div style={{ display: "flex", flexDirection: "column", gap: 7 }}>
