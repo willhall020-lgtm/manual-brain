@@ -89,6 +89,7 @@ export default function Dashboard({
   const [editingSectionName, setEditingSectionName] = useState(false);
   const [sectionNameVal, setSectionNameVal] = useState("");
   const [actionError, setActionError] = useState<string | null>(null);
+  const [bookingIds, setBookingIds] = useState<Set<string>>(new Set());
 
   // A plain counter (not Math.random/Date.now) for optimistic temp ids —
   // swapped for the server's real id once a create request resolves.
@@ -265,6 +266,29 @@ export default function Dashboard({
     } catch {
       patchTaskLocal(id, { durationMinutes: prev });
       setActionError("Couldn't save that duration — try again.");
+    }
+  }
+
+  async function bookTask(id: string) {
+    if (bookingIds.has(id)) return;
+    setBookingIds((prev) => new Set(prev).add(id));
+    try {
+      const res = await fetch(`/api/tasks/${id}/book`, { method: "POST" });
+      const body = await res.json().catch(() => null);
+      if (!res.ok) throw new Error(body?.error || "Booking failed.");
+      if (!body.ok) {
+        setActionError(body.message || "Couldn't find a time to book that — try the chat instead.");
+      } else {
+        patchTaskLocal(id, { calendarEventId: body.calendarEventId });
+      }
+    } catch (err) {
+      setActionError(err instanceof Error ? err.message : "Couldn't book that — try again.");
+    } finally {
+      setBookingIds((prev) => {
+        const next = new Set(prev);
+        next.delete(id);
+        return next;
+      });
     }
   }
 
@@ -497,6 +521,8 @@ export default function Dashboard({
                       name={t.name}
                       sectionName={sectionName(t.sectionId)}
                       durationMinutes={t.durationMinutes}
+                      booked={!!t.calendarEventId}
+                      booking={bookingIds.has(t.id)}
                       editing={editing === t.id}
                       editVal={editVal}
                       onDone={() => markDone(t.id)}
@@ -504,6 +530,7 @@ export default function Dashboard({
                       onDelete={() => del(t.id)}
                       onEditChange={setEditVal}
                       onDurationCommit={(m) => setTaskDuration(t.id, m)}
+                      onBook={() => bookTask(t.id)}
                       onEditKeyDown={makeEditKeyHandler(saveEdit)}
                       onEditBlur={saveEdit}
                     />

@@ -1,26 +1,40 @@
 "use client";
 
-import { useState } from "react";
-
-// Always-visible, always-editable — no click-to-reveal step like the list
-// rename does. Local buffer state so typing doesn't round-trip through the
-// parent on every keystroke; commits (and only fires onCommit if the value
-// actually changed) on blur or Enter.
+// Plain, non-interactive text until `editing` is true (driven by the same
+// pencil-icon toggle the task name uses) — then a real input, committing
+// on blur or Enter like the rest of this app's inline edits. Uncontrolled
+// (defaultValue, not value/onChange): the label↔input swap on `editing`
+// already forces a fresh mount each time edit mode opens, which is all
+// the "reset to the current value" behavior needs — no effect required.
 
 interface Props {
   minutes: number | null;
+  editing: boolean;
   onCommit: (minutes: number | null) => void;
 }
 
-export default function DurationInput({ minutes, onCommit }: Props) {
-  const [value, setValue] = useState(minutes != null ? String(minutes) : "");
-
-  function commit() {
-    const trimmed = value.trim();
+export default function DurationInput({ minutes, editing, onCommit }: Props) {
+  function commit(raw: string) {
+    const trimmed = raw.trim();
     const parsed = trimmed ? parseInt(trimmed, 10) : NaN;
     const next = trimmed && parsed > 0 ? parsed : null;
-    setValue(next != null ? String(next) : "");
     if (next !== minutes) onCommit(next);
+  }
+
+  if (!editing) {
+    return (
+      <span
+        style={{
+          flex: "none",
+          fontSize: 10.5,
+          fontWeight: 700,
+          color: minutes != null ? "#93938A" : "#C4C4BB",
+          letterSpacing: ".02em",
+        }}
+      >
+        {minutes != null ? `${minutes} min` : "no est."}
+      </span>
+    );
   }
 
   return (
@@ -30,9 +44,8 @@ export default function DurationInput({ minutes, onCommit }: Props) {
         min={1}
         step={5}
         inputMode="numeric"
-        value={value}
-        onChange={(e) => setValue(e.target.value)}
-        onBlur={commit}
+        defaultValue={minutes != null ? String(minutes) : ""}
+        onBlur={(e) => commit(e.target.value)}
         onKeyDown={(e) => {
           if (e.key === "Enter") e.currentTarget.blur();
         }}

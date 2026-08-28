@@ -2,11 +2,14 @@
 
 import type { KeyboardEvent } from "react";
 import DurationInput from "@/components/DurationInput";
+import BookButton from "@/components/BookButton";
 
 interface Props {
   name: string;
   sectionName: string;
   durationMinutes: number | null;
+  booked: boolean;
+  booking: boolean;
   editing: boolean;
   editVal: string;
   onDone: () => void;
@@ -16,12 +19,15 @@ interface Props {
   onEditKeyDown: (e: KeyboardEvent<HTMLInputElement>) => void;
   onEditBlur: () => void;
   onDurationCommit: (minutes: number | null) => void;
+  onBook: () => void;
 }
 
 export default function TodayTaskRow({
   name,
   sectionName,
   durationMinutes,
+  booked,
+  booking,
   editing,
   editVal,
   onDone,
@@ -31,6 +37,7 @@ export default function TodayTaskRow({
   onEditKeyDown,
   onEditBlur,
   onDurationCommit,
+  onBook,
 }: Props) {
   return (
     <div
@@ -57,54 +64,66 @@ export default function TodayTaskRow({
           background: "#FFFFFF",
         }}
       />
-      <div style={{ flex: 1, minWidth: 0, display: "flex", alignItems: "center" }}>
-        {editing ? (
-          <input
-            value={editVal}
-            onChange={(e) => onEditChange(e.target.value)}
-            onKeyDown={onEditKeyDown}
-            onBlur={onEditBlur}
-            autoFocus
-            style={{
-              width: "100%",
-              fontSize: 15,
-              fontWeight: 600,
-              border: 0,
-              borderBottom: "2px solid #2B34EE",
-              background: "transparent",
-              outline: "none",
-              padding: "1px 0",
-            }}
-          />
-        ) : (
-          <span
-            style={{
-              fontSize: 15,
-              fontWeight: 600,
-              letterSpacing: "-.01em",
-              lineHeight: 1.3,
-            }}
-          >
-            {name}
-          </span>
-        )}
-      </div>
-      <span
-        style={{
-          flex: "none",
-          background: "#F2F2EE",
-          color: "#7C7C73",
-          borderRadius: 99,
-          padding: "4px 10px",
-          fontSize: 10.5,
-          fontWeight: 700,
-          letterSpacing: ".04em",
-          textTransform: "uppercase",
+      <div
+        style={{ display: "contents" }}
+        onBlur={(e) => {
+          // The name input and the duration input are two separate fields
+          // in the same edit group — tabbing between them shouldn't close
+          // the group, only losing focus to something outside it should.
+          if (editing && !e.currentTarget.contains(e.relatedTarget as Node)) {
+            onEditBlur();
+          }
         }}
       >
-        {sectionName}
-      </span>
-      <DurationInput minutes={durationMinutes} onCommit={onDurationCommit} />
+        <div style={{ flex: 1, minWidth: 0, display: "flex", alignItems: "center" }}>
+          {editing ? (
+            <input
+              value={editVal}
+              onChange={(e) => onEditChange(e.target.value)}
+              onKeyDown={onEditKeyDown}
+              autoFocus
+              style={{
+                width: "100%",
+                fontSize: 15,
+                fontWeight: 600,
+                border: 0,
+                borderBottom: "2px solid #2B34EE",
+                background: "transparent",
+                outline: "none",
+                padding: "1px 0",
+              }}
+            />
+          ) : (
+            <span
+              style={{
+                fontSize: 15,
+                fontWeight: 600,
+                letterSpacing: "-.01em",
+                lineHeight: 1.3,
+              }}
+            >
+              {name}
+            </span>
+          )}
+        </div>
+        <span
+          style={{
+            flex: "none",
+            background: "#F2F2EE",
+            color: "#7C7C73",
+            borderRadius: 99,
+            padding: "4px 10px",
+            fontSize: 10.5,
+            fontWeight: 700,
+            letterSpacing: ".04em",
+            textTransform: "uppercase",
+          }}
+        >
+          {sectionName}
+        </span>
+        <DurationInput minutes={durationMinutes} editing={editing} onCommit={onDurationCommit} />
+      </div>
+      <BookButton booked={booked} booking={booking} onBook={onBook} />
       <div style={{ flex: "none", display: "flex", alignItems: "center", gap: 2 }}>
         <button
           onClick={onEdit}

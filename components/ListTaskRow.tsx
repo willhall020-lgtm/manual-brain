@@ -73,13 +73,24 @@ export default function ListTaskRow({
           background: "#FFFFFF",
         }}
       />
+      <div
+        style={{ display: "contents" }}
+        onBlur={(e) => {
+          // The name input and the duration input are two separate fields
+          // in the same edit group — tabbing between them (or clicking the
+          // urgency pill) shouldn't close the group, only losing focus to
+          // something outside it should.
+          if (editing && !e.currentTarget.contains(e.relatedTarget as Node)) {
+            onEditBlur();
+          }
+        }}
+      >
       <div style={{ flex: 1, minWidth: 0, display: "flex", alignItems: "center" }}>
         {editing ? (
           <input
             value={editVal}
             onChange={(e) => onEditChange(e.target.value)}
             onKeyDown={onEditKeyDown}
-            onBlur={onEditBlur}
             autoFocus
             style={{
               width: "100%",
@@ -193,7 +204,8 @@ export default function ListTaskRow({
         )}
       </div>
 
-      <DurationInput minutes={durationMinutes} onCommit={onDurationCommit} />
+      <DurationInput minutes={durationMinutes} editing={editing} onCommit={onDurationCommit} />
+      </div>
 
       <div style={{ flex: "none", display: "flex", alignItems: "center", gap: 2 }}>
         <button
