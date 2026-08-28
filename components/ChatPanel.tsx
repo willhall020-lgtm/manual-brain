@@ -13,6 +13,7 @@ interface DisplayMessage {
 
 const TOOL_NOTES: Record<string, string> = {
   list_tasks: "Checked your tasks",
+  add_task: "Added a task",
   schedule_task: "Booked an event",
   mark_task_done: "Marked a task done",
 };
@@ -102,8 +103,8 @@ export default function ChatPanel() {
       <div ref={scrollRef} style={{ flex: 1, overflowY: "auto", padding: 20, display: "flex", flexDirection: "column", gap: 14 }}>
         {display.length === 0 && (
           <div style={{ fontSize: 13.5, fontWeight: 500, color: "#93938A", lineHeight: 1.5 }}>
-            Ask what&apos;s outstanding, tell it what to schedule today, or say a task&apos;s done.
-            It can see your task list and book onto your Google Calendar.
+            Ask what&apos;s outstanding, add a task to a list, tell it what to schedule today, or
+            say a task&apos;s done. It can see your task list and book onto your Google Calendar.
           </div>
         )}
         {display.map((m, i) => (
