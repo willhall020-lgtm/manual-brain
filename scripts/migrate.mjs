@@ -5,7 +5,13 @@
 import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import path from "node:path";
-import { Pool } from "@neondatabase/serverless";
+import { Pool, neonConfig } from "@neondatabase/serverless";
+import ws from "ws";
+
+// Node <22 has no global WebSocket — the Pool driver needs one to open its
+// connection. Not needed by the app itself (lib/db.ts uses the HTTP-based
+// `neon()` client), only by these one-off scripts.
+neonConfig.webSocketConstructor = ws;
 
 const url = process.env.DATABASE_URL;
 if (!url) {
