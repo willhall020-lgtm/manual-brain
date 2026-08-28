@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { KeyboardEvent } from "react";
+import { useRouter } from "next/navigation";
 import TodayTaskRow from "@/components/TodayTaskRow";
 import ListTaskRow from "@/components/ListTaskRow";
 import QuickAddBox from "@/components/QuickAddBox";
@@ -66,6 +67,7 @@ export default function Dashboard({
   calendarConfigured,
   calendarError,
 }: Props) {
+  const router = useRouter();
   const [today] = useState(() => new Date(todayISO));
   const [sections, setSections] = useState<Section[]>(initialSections);
   const [tasks, setTasks] = useState<Task[]>(initialTasks);
@@ -370,9 +372,20 @@ export default function Dashboard({
             Manual Brain
           </h1>
         </div>
-        <span style={{ fontSize: 12.5, fontWeight: 600, color: "#8E8E85" }}>
-          {activeCount} {activeCount === 1 ? "task" : "tasks"} in total · {doneCount} done
-        </span>
+        <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
+          <span style={{ fontSize: 12.5, fontWeight: 600, color: "#8E8E85" }}>
+            {activeCount} {activeCount === 1 ? "task" : "tasks"} in total · {doneCount} done
+          </span>
+          <button
+            onClick={async () => {
+              await fetch("/api/auth/logout", { method: "POST" });
+              router.push("/login");
+            }}
+            style={{ background: "transparent", border: 0, fontSize: 11, fontWeight: 700, color: "#B0B0A7", cursor: "pointer" }}
+          >
+            LOG OUT
+          </button>
+        </div>
       </div>
 
       {actionError && (
