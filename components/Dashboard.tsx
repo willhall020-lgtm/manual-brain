@@ -372,6 +372,9 @@ export default function Dashboard({
   }
 
   async function del(id: string) {
+    const name = tasks.find((t) => t.id === id)?.name ?? "this task";
+    if (!window.confirm(`Delete "${name}"? This can't be undone.`)) return;
+
     const prevTasks = tasks;
     setTasks((prev) => prev.filter((t) => t.id !== id));
     setEditing(null);
