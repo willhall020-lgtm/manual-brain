@@ -3,17 +3,21 @@ import type { MessageParam, TextBlock } from "@anthropic-ai/sdk/resources/messag
 import { runChatLoop } from "@/lib/chat-loop";
 import { isGoogleCalendarConnected } from "@/lib/google-auth";
 
-// Vercel Cron hits this on a schedule (see vercel.json) — same assistant
-// and tools as the interactive chat (lib/chat-loop.ts), just started by a
-// fixed prompt instead of the user typing one in.
+// A GitHub Actions scheduled workflow (.github/workflows/morning-schedule.yml)
+// hits this on a schedule — same assistant and tools as the interactive
+// chat (lib/chat-loop.ts), just started by a fixed prompt instead of the
+// user typing one in. Used to be Vercel's own cron (see vercel.json), but
+// that's Hobby-plan and doesn't guarantee the scheduled minute — it was
+// firing 10-30min late every day in practice. GitHub Actions' scheduler
+// is tighter, though still not exact.
 //
-// Scheduled for 08:15 UTC, i.e. 09:15 BST. Vercel Cron schedules are UTC
-// only — no per-request timezone/DST handling — so this drifts to 08:15
-// local once the UK falls back to GMT in autumn. Cheapest fix if that
-// matters: bump vercel.json's cron schedule by an hour each October/March.
-// A DST-aware version (poll every few minutes, check Europe/London time
-// server-side) needs more frequent invocations than the Hobby plan's
-// once-a-day cron allows.
+// Scheduled for 08:15 UTC, i.e. 09:15 BST. Both Vercel Cron and GitHub
+// Actions schedules are UTC only — no per-request timezone/DST handling —
+// so this drifts to 08:15 local once the UK falls back to GMT in autumn.
+// Cheapest fix if that matters: bump the workflow's cron schedule by an
+// hour each October/March. A DST-aware version (poll every few minutes,
+// check Europe/London time server-side) needs more frequent invocations
+// than a once-a-day trigger allows.
 
 export const dynamic = "force-dynamic";
 

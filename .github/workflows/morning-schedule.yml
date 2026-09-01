@@ -1,0 +1,32 @@
+name: Morning schedule cron
+
+# Vercel's own cron (see vercel.json) is on the Hobby plan, which doesn't
+# guarantee the scheduled minute — in practice it's been firing 10-30min
+# late every day. GitHub Actions' scheduler is tighter, so this workflow
+# is the real trigger; vercel.json's cron entry has been removed so the
+# route only runs once a day, from here.
+#
+# Same UTC-only caveat as the code this replaces (see the route's own
+# comment): 08:15 UTC is 09:15 BST. Once the UK falls back to GMT this
+# drifts an hour early — bump the schedule below (and vercel.json's old
+# comment, now just historical) each October/March.
+#
+# NOTE: even GitHub Actions' scheduler isn't exact — GitHub queues
+# scheduled workflows and can delay them a few minutes under load,
+# especially right on the hour/quarter-hour when everyone's cron fires
+# at once. Expect low-single-digit-minutes drift, not the 10-30min this
+# replaced.
+on:
+  schedule:
+    - cron: "15 8 * * *"
+  workflow_dispatch: {} # lets this be triggered manually from the Actions tab, for testing
+
+jobs:
+  trigger:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Call morning-schedule endpoint
+        run: |
+          curl -sf --max-time 280 \
+            -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
+            https://www.manualbrain.xyz/api/cron/morning-schedule
