@@ -85,6 +85,16 @@ export default function TodayTaskRow({
       />
       <div
         style={{ display: "contents" }}
+        onClick={() => {
+          // Tap-to-edit: the name/section/date/duration/time-of-day
+          // content has no other click handler of its own while not
+          // editing (they're plain text), so this is a safe, dead-space
+          // catch-all — no button lives in here to conflict with. Guarded
+          // on `editing` so tapping the already-open name/date/duration
+          // inputs doesn't re-fire startEdit and stomp an in-progress
+          // edit back to the task's saved name.
+          if (!editing) onEdit();
+        }}
         onBlur={(e) => {
           // The name input and the duration input are two separate fields
           // in the same edit group — tabbing between them shouldn't close
@@ -119,6 +129,7 @@ export default function TodayTaskRow({
                 fontWeight: 600,
                 letterSpacing: "-.01em",
                 lineHeight: 1.3,
+                cursor: "pointer",
               }}
             >
               {name}

@@ -77,6 +77,15 @@ export default function ListTaskRow({
       />
       <div
         style={{ display: "contents" }}
+        onClick={() => {
+          // Tap-to-edit: the name/date/duration/time-of-day content has
+          // no other click handler of its own while not editing (they're
+          // plain text), so this is a safe, dead-space catch-all — no
+          // button lives in here to conflict with. Guarded on `editing`
+          // so tapping the already-open inputs doesn't re-fire startEdit
+          // and stomp an in-progress edit back to the task's saved name.
+          if (!editing) onEdit();
+        }}
         onBlur={(e) => {
           // The name, due-date, and duration fields are one edit group —
           // tabbing/clicking between them shouldn't close the group, only
@@ -105,7 +114,7 @@ export default function ListTaskRow({
               }}
             />
           ) : (
-            <span style={{ fontSize: 14.5, fontWeight: 600, letterSpacing: "-.01em", lineHeight: 1.3 }}>
+            <span style={{ fontSize: 14.5, fontWeight: 600, letterSpacing: "-.01em", lineHeight: 1.3, cursor: "pointer" }}>
               {name}
             </span>
           )}
