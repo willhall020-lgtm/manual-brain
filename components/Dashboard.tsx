@@ -388,10 +388,21 @@ export default function Dashboard({
     const existing = tasks.find((t) => t.id === id);
     const prevDueDate = existing?.dueDate ?? null;
     const prevRepeat = existing?.repeatFrequency ?? null;
+    const prevCalendarEventId = existing?.calendarEventId ?? null;
     // Mirrors the API's cascade (app/api/tasks/[id]/route.ts): a repeat
     // rule only makes sense alongside a due date, so clearing the date
     // clears the repeat rule with it rather than leaving a stale badge.
-    patchTaskLocal(id, dueDate === null ? { dueDate, repeatFrequency: null } : { dueDate });
+    // Separately, a booked task moving to a *different* day (this branch
+    // only, not a same-day resave) unschedules it — its old slot is now
+    // for the wrong day, and worse, it'd otherwise still look "scheduled"
+    // and get silently skipped by the next booking run. The API deletes
+    // the actual stale calendar event; this just mirrors that locally so
+    // the BOOK button reappears immediately instead of after a refetch.
+    const patch: Partial<Task> = dueDate === null ? { dueDate, repeatFrequency: null } : { dueDate };
+    if (prevCalendarEventId && dueDate !== prevDueDate) {
+      patch.calendarEventId = null;
+    }
+    patchTaskLocal(id, patch);
     try {
       const res = await fetch(`/api/tasks/${id}`, {
         method: "PATCH",
@@ -400,7 +411,7 @@ export default function Dashboard({
       });
       if (!res.ok) throw new Error();
     } catch {
-      patchTaskLocal(id, { dueDate: prevDueDate, repeatFrequency: prevRepeat });
+      patchTaskLocal(id, { dueDate: prevDueDate, repeatFrequency: prevRepeat, calendarEventId: prevCalendarEventId });
       setActionError("Couldn't save that due date — try again.");
     }
   }

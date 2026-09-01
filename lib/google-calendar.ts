@@ -41,6 +41,23 @@ export async function createCalendarEvent(input: CreateEventInput): Promise<Crea
   return { id: data.id, htmlLink: data.htmlLink };
 }
 
+// Used when a booked task's due date moves to a different day — the old
+// event is still sitting on the old date/time, so it gets removed rather
+// than left as an orphaned entry on the calendar (see the dueDate handling
+// in app/api/tasks/[id]/route.ts). A 404 means it's already gone (deleted
+// by hand, or this is a retry) — treated as success either way, since the
+// end state ("no stale event") is the same.
+export async function deleteCalendarEvent(eventId: string): Promise<void> {
+  const accessToken = await getValidAccessToken();
+  const res = await fetch(
+    `https://www.googleapis.com/calendar/v3/calendars/primary/events/${eventId}`,
+    { method: "DELETE", headers: { Authorization: `Bearer ${accessToken}` } }
+  );
+  if (!res.ok && res.status !== 404 && res.status !== 410) {
+    throw new Error(`Google Calendar event deletion failed: ${await res.text()}`);
+  }
+}
+
 export interface ExistingEvent {
   id: string;
   title: string;

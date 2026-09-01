@@ -3,6 +3,7 @@ import { sql } from "@/lib/db";
 import { isDueDateString } from "@/lib/due-date";
 import { isTimeOfDay } from "@/lib/time-of-day";
 import { advanceDueDate, isRepeatFrequency } from "@/lib/repeat";
+import { deleteCalendarEvent } from "@/lib/google-calendar";
 
 export const dynamic = "force-dynamic";
 
@@ -31,11 +32,36 @@ export async function PATCH(
       if (body.dueDate !== null && !isDueDateString(body.dueDate)) {
         return NextResponse.json({ error: "dueDate must be YYYY-MM-DD or null" }, { status: 400 });
       }
+
+      const [before] = (await db`
+        SELECT due_date::text AS due_date, calendar_event_id FROM tasks WHERE id = ${id}
+      `) as { due_date: string | null; calendar_event_id: string | null }[];
+
       await db`UPDATE tasks SET due_date = ${body.dueDate} WHERE id = ${id}`;
       // A repeat rule only makes sense alongside a due date — clearing the
       // date clears any repeat rule with it rather than leaving it orphaned.
       if (body.dueDate === null) {
         await db`UPDATE tasks SET repeat_frequency = NULL WHERE id = ${id}`;
+      }
+
+      // A booked task moving to a different day invalidates its old slot —
+      // the calendar event is still sitting on the old date/time, and
+      // worse, a task that still looks "scheduled" (calendar_event_id set)
+      // gets silently skipped by the next booking run (list_tasks reports
+      // it as already scheduled; both the cron prompt and schedule_task's
+      // own instructions say to skip those) — so it would never get
+      // rebooked for its new date on its own. Unschedule it here instead:
+      // best-effort delete the stale event (failure isn't worth blocking
+      // the date change over — worst case a stray event needs manual
+      // cleanup), then always clear calendar_event_id so the task is
+      // picked up fresh next time something books it.
+      if (before?.calendar_event_id && before.due_date !== body.dueDate) {
+        try {
+          await deleteCalendarEvent(before.calendar_event_id);
+        } catch (err) {
+          console.error("Failed to delete stale calendar event while unscheduling:", err);
+        }
+        await db`UPDATE tasks SET calendar_event_id = NULL WHERE id = ${id}`;
       }
     }
 
@@ -102,7 +128,7 @@ export async function PATCH(
     // client turns a bare `date` column into a JS Date and shifts it by
     // the local UTC offset in the process, corrupting the calendar day.
     const rows = (await db`
-      SELECT id, section_id, name, due_date::text AS due_date, done_at, duration_minutes, time_of_day, repeat_frequency
+      SELECT id, section_id, name, due_date::text AS due_date, done_at, calendar_event_id, duration_minutes, time_of_day, repeat_frequency
       FROM tasks WHERE id = ${id}
     `) as {
       id: string;
@@ -110,6 +136,7 @@ export async function PATCH(
       name: string;
       due_date: string | null;
       done_at: string | null;
+      calendar_event_id: string | null;
       duration_minutes: number | null;
       time_of_day: string | null;
       repeat_frequency: string | null;
@@ -125,6 +152,7 @@ export async function PATCH(
       name: t.name,
       dueDate: t.due_date,
       doneAt: t.done_at,
+      calendarEventId: t.calendar_event_id,
       durationMinutes: t.duration_minutes,
       timeOfDay: isTimeOfDay(t.time_of_day) ? t.time_of_day : null,
       repeatFrequency: isRepeatFrequency(t.repeat_frequency) ? t.repeat_frequency : null,
