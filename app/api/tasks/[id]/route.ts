@@ -24,6 +24,21 @@ export async function PATCH(
       await db`UPDATE tasks SET name = ${name} WHERE id = ${id}`;
     }
 
+    // Move to a different list — the dashboard UI has no move control of
+    // its own (a task's list is fixed once created there), but the iOS
+    // task sheet does offer "which list?" as an edit, same as it does at
+    // creation, so this needs a place to land. Re-appended to the end of
+    // the target list, same position rule as a brand-new task there.
+    if (typeof body?.sectionId === "string" && body.sectionId) {
+      const [{ next_pos }] = (await db`
+        SELECT COALESCE(MAX(position), -1) + 1 AS next_pos
+        FROM tasks WHERE section_id = ${body.sectionId}
+      `) as { next_pos: number }[];
+      await db`
+        UPDATE tasks SET section_id = ${body.sectionId}, position = ${next_pos} WHERE id = ${id}
+      `;
+    }
+
     if (body?.dueDate !== undefined) {
       // null explicitly clears the due date; anything else that isn't a
       // valid "YYYY-MM-DD" is rejected rather than silently ignored here —

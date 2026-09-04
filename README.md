@@ -156,7 +156,11 @@ app/
     tasks/[id]/route.ts PATCH (edit name / due date / done / duration / time of day) and DELETE
     tasks/[id]/book/route.ts  POST — BookButton's one-task shortcut into
                                the chat loop
-    preferences/route.ts POST — save planning rules
+    preferences/route.ts GET (added for the iOS app) / POST — planning rules
+    calendar/route.ts    GET — read-only calendar feed as JSON (added for
+                               the iOS app; mirrors app/page.tsx's server-side read)
+    settings/route.ts    GET — Google Calendar + planning-rules status as
+                               JSON (added for the iOS app; mirrors app/settings/page.tsx)
     chat/route.ts        POST — the interactive chat, wraps lib/chat-loop.ts
     cron/morning-schedule/route.ts  GET — daily 08:15 UTC auto-schedule run
     auth/login|logout/route.ts       password gate session cookie
@@ -200,7 +204,20 @@ proxy.ts       site-wide password gate (Next 16's replacement for middleware.ts)
 scripts/
   migrate.mjs  applies schema.sql
   seed.mjs     seeds starter content (idempotent)
+ios/           native SwiftUI client — see ios/README.md
 ```
+
+## iOS app
+
+`ios/` is a native SwiftUI implementation of the `ui_kits/ios/` click-through
+prototype from this project's own [design system](https://github.com/willhall020-lgtm/manual-brain)
+export — five tabs (chat, today, tomorrow, lists, settings) talking to the
+same API routes above over the same session cookie the web dashboard uses.
+See [`ios/README.md`](ios/README.md) for setup (it's an
+[XcodeGen](https://github.com/yonaskolb/XcodeGen) spec, not a checked-in
+`.xcodeproj`) and a full account of what was carried over from the
+prototype as-is versus re-grounded in this repo's current schema (real due
+dates didn't exist yet when that kit was designed).
 
 ## Deliberately out of scope (V1, per spec.md)
 
