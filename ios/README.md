@@ -36,6 +36,34 @@ deployed instance, from the root README) — open the login screen's
 requires HTTPS by default via `NSAppTransportSecurity`, so point it at a
 `https://` tunnel or relax that exception locally if you need plain HTTP).
 
+### Or, run it entirely from the terminal (no Xcode UI)
+
+The simulator needs no code signing, so `DEVELOPMENT_TEAM` being blank is
+fine here — this works right after `xcodegen generate` with no other setup:
+
+```bash
+open -a Simulator                              # boots the Simulator app
+
+xcrun simctl list devices available | grep iPhone   # pick a device name/id
+
+xcodebuild \
+  -project ios/ManualBrain/ManualBrain.xcodeproj \
+  -scheme ManualBrain \
+  -destination 'platform=iOS Simulator,name=iPhone 16' \
+  -derivedDataPath ios/ManualBrain/build \
+  build
+
+xcrun simctl install booted \
+  ios/ManualBrain/build/Build/Products/Debug-iphonesimulator/ManualBrain.app
+
+xcrun simctl launch booted xyz.manualbrain.ios
+```
+
+Swap `iPhone 16` for whatever `simctl list devices` printed if that exact
+name isn't installed. Re-running just the last three commands (skip
+`xcodebuild` if nothing changed) is the fastest reinstall-and-relaunch loop
+while iterating.
+
 ## What this app is not
 
 It adds **zero** new backend logic. Three small, additive, read-only-ish
