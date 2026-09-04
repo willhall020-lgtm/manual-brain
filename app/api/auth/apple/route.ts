@@ -41,29 +41,42 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Couldn't verify that Apple sign-in." }, { status: 401 });
   }
 
-  await claimOwnerIfNoneExists(identity.sub, identity.email);
-  const owner = await getOwner();
+  try {
+    await claimOwnerIfNoneExists(identity.sub, identity.email);
+    const owner = await getOwner();
 
-  if (!owner || owner.id !== identity.sub) {
+    if (!owner || owner.id !== identity.sub) {
+      return NextResponse.json(
+        { error: "This app is already linked to a different Apple account." },
+        { status: 403 }
+      );
+    }
+
+    const res = NextResponse.json({ ok: true, email: owner.email });
+
+    // SITE_PASSWORD unset means proxy.ts's gate is already a no-op (open
+    // site) — nothing to set a session for in that case, same as the
+    // password login route would have nothing to check against either.
+    if (isAuthConfigured()) {
+      res.cookies.set(SESSION_COOKIE, expectedSessionToken()!, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "lax",
+        path: "/",
+        maxAge: 60 * 60 * 24 * 180, // 180 days — matches the password flow
+      });
+    }
+    return res;
+  } catch (err) {
+    // Same pattern as every other route in app/api/**: surface the real
+    // message rather than letting an unhandled DB error fall through to a
+    // bare, bodyless 500 — the most common cause here is `users` not
+    // existing yet (schema.sql's addition needs `npm run db:migrate`
+    // re-run against this deploy's actual database; see ios/README.md).
+    console.error("Apple sign-in failed after identity verification:", err);
     return NextResponse.json(
-      { error: "This app is already linked to a different Apple account." },
-      { status: 403 }
+      { error: err instanceof Error ? err.message : "Sign-in failed." },
+      { status: 500 }
     );
   }
-
-  const res = NextResponse.json({ ok: true, email: owner.email });
-
-  // SITE_PASSWORD unset means proxy.ts's gate is already a no-op (open
-  // site) — nothing to set a session for in that case, same as the
-  // password login route would have nothing to check against either.
-  if (isAuthConfigured()) {
-    res.cookies.set(SESSION_COOKIE, expectedSessionToken()!, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
-      path: "/",
-      maxAge: 60 * 60 * 24 * 180, // 180 days — matches the password flow
-    });
-  }
-  return res;
 }
