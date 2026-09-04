@@ -23,12 +23,15 @@ export function proxy(request: NextRequest) {
 
 export const config = {
   matcher: [
-    // Everything except the login page itself, its login API, static
-    // assets, and the cron endpoint — those must stay reachable without a
-    // session cookie: the first three to let someone log in at all, the
-    // last because Vercel's cron invocation carries no cookie, only its
-    // own Authorization: Bearer CRON_SECRET (checked independently inside
-    // that route, so this isn't opening it up unauthenticated).
-    "/((?!login|api/auth/login|api/cron|_next/static|_next/image|favicon.ico).*)",
+    // Everything except the login page itself, its login API, the native
+    // iOS app's Sign in with Apple API, static assets, and the cron
+    // endpoint — those must stay reachable without a session cookie: the
+    // first four to let someone establish a session at all (Apple's
+    // identity token *is* that app's credential, so this route can't also
+    // require the very session cookie it's meant to issue), the last
+    // because Vercel's cron invocation carries no cookie, only its own
+    // Authorization: Bearer CRON_SECRET (checked independently inside that
+    // route, so this isn't opening it up unauthenticated).
+    "/((?!login|api/auth/login|api/auth/apple|api/cron|_next/static|_next/image|favicon.ico).*)",
   ],
 };

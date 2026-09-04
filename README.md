@@ -87,12 +87,23 @@ design exported from Claude Design — see that project's `README.md` and
   from the read-only sidebar; see `lib/google-auth.ts` /
   `lib/google-calendar.ts`. Needs `GOOGLE_CLIENT_ID` /
   `GOOGLE_CLIENT_SECRET` and a one-time Connect click.
-- **Password gate** — the whole site sits behind one shared password
+- **Password gate** — the web dashboard sits behind one shared password
   (`SITE_PASSWORD`), enforced in `proxy.ts` (Next 16 renamed
   `middleware.ts` to this). Added once the chat started spending API
   budget and writing to the calendar. `/api/cron/*` is carved out of the
   gate's matcher — Vercel's cron request carries no session cookie, only
   its own `CRON_SECRET` bearer token, which that route checks itself.
+- **Sign in with Apple** (`lib/apple-auth.ts`, `app/api/auth/apple/`) — how
+  the native iOS app (`ios/`) authenticates instead of the password above.
+  The first Apple account that ever signs in this way becomes this
+  deploy's one permanent linked owner (`users` table in `schema.sql`) — an
+  onboarding claim against the data that already exists, not a per-user
+  account system; a second, different Apple account is rejected. On
+  success the route sets the exact same session cookie the password flow
+  does, so `proxy.ts` needed no changes at all — also why
+  `/api/auth/apple` is carved out of its matcher the same way
+  `/api/auth/login` is. Needs `APPLE_APP_BUNDLE_ID`; see `.env.example`
+  and `ios/README.md`.
 
 ## Local setup
 
@@ -163,7 +174,8 @@ app/
                                JSON (added for the iOS app; mirrors app/settings/page.tsx)
     chat/route.ts        POST — the interactive chat, wraps lib/chat-loop.ts
     cron/morning-schedule/route.ts  GET — daily 08:15 UTC auto-schedule run
-    auth/login|logout/route.ts       password gate session cookie
+    auth/login|logout/route.ts       password gate session cookie (web)
+    auth/apple/route.ts              Sign in with Apple (native iOS app)
     auth/google/start|callback/route.ts  Google Calendar OAuth handshake
 components/
   Dashboard.tsx          all state + interaction logic
@@ -193,7 +205,9 @@ lib/
   chat-loop.ts          the tool-use loop itself, shared by the
                          interactive chat and the morning cron
   preferences.ts        planning-rules get/save, with a hardcoded default
-  auth.ts       SITE_PASSWORD session cookie logic
+  auth.ts       SITE_PASSWORD session cookie logic (web login)
+  apple-auth.ts  Sign in with Apple identity-token verification + the
+                 single linked-owner record (native iOS login)
   due-date.ts  "YYYY-MM-DD" helpers — dateKey, isOverdue, isDueOrOverdue,
                formatDueDate; see the Stack section above for why
   time-of-day.ts  TimeOfDay type + isTimeOfDay validator + display labels
@@ -222,5 +236,9 @@ dates didn't exist yet when that kit was designed).
 ## Deliberately out of scope (V1, per spec.md)
 
 - Email integration.
-- Per-user accounts — `SITE_PASSWORD` is one shared password for the whole
-  site, not a real auth system.
+- Per-user accounts — this is still a single-owner app, not a real
+  multi-tenant auth system. The web dashboard's `SITE_PASSWORD` is one
+  shared password for the whole site; the native iOS app's Sign in with
+  Apple (`lib/apple-auth.ts`) links to exactly one Apple account, chosen by
+  whoever completes it first, rather than supporting separate accounts
+  with separate data.

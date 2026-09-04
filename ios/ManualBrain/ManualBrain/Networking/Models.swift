@@ -167,8 +167,11 @@ struct SavePreferencesRequest: Encodable {
     var planningRules: String
 }
 
-struct LoginRequest: Encodable {
-    var password: String
+/// The native Sign in with Apple flow already hands the client a signed
+/// identity token (a JWT) — this just relays it to the server for
+/// verification. No password ever exists in this app.
+struct AppleSignInRequest: Encodable {
+    var identityToken: String
 }
 
 enum ISO8601Formatting {

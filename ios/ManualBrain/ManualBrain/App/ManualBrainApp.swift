@@ -29,7 +29,7 @@ struct RootView: View {
             case .unknown:
                 SplashView()
             case .loggedOut:
-                LoginScreen()
+                OnboardingScreen()
             case .loggedIn:
                 RootTabView()
             }

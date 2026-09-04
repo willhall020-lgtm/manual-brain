@@ -1,9 +1,11 @@
 # Manual Brain for iPhone
 
 A native SwiftUI client for this same app — no new backend, it talks to the
-existing Next.js API routes (`app/api/**`) over the same shared-password
-session cookie the web dashboard uses. It's the production implementation of
-the **`ui_kits/ios/`** click-through prototype from the
+existing Next.js API routes (`app/api/**`) over the same session cookie the
+web dashboard uses, though it never sees the web's password: it signs in
+with **Sign in with Apple** instead (see § Onboarding & auth below). It's
+the production implementation of the **`ui_kits/ios/`** click-through
+prototype from the
 [Manual Brain Design System](https://github.com/willhall020-lgtm/manual-brain)
 project's Claude Design export (see that bundle's `README.md` and
 `chats/chat1.md` + `chats/chat2.md` for the full design brief and how it
@@ -30,11 +32,22 @@ open ManualBrain.xcodeproj
 Then, in Xcode: pick your own Team under Signing & Capabilities (the spec
 leaves `DEVELOPMENT_TEAM` blank), and Run on a simulator or device. On first
 launch the app talks to `https://www.manualbrain.xyz` (this repo's own
-deployed instance, from the root README) — open the login screen's
+deployed instance, from the root README) — open the onboarding screen's
 **server** disclosure to point it at a different deploy (e.g.
 `http://localhost:3000` for local dev against `npm run dev`; note the app
 requires HTTPS by default via `NSAppTransportSecurity`, so point it at a
 `https://` tunnel or relax that exception locally if you need plain HTTP).
+
+One manual step this repo can't do for you: **enable the "Sign In with
+Apple" capability** on this app's App ID in your
+[Apple Developer account](https://developer.apple.com/account) → Certificates,
+Identifiers & Profiles → Identifiers → the App ID matching
+`PRODUCT_BUNDLE_IDENTIFIER` in `project.yml` (`xyz.manualbrain.ios`, or
+whatever you change it to). `xcodegen generate` already writes the
+entitlement into the project; Xcode's automatic signing will pick the
+capability up once the App ID itself has it enabled. Then, on the server,
+set `APPLE_APP_BUNDLE_ID` to that same bundle id (see `.env.example`) — it's
+not a secret, just needs to match exactly.
 
 ### Or, run it entirely from the terminal (no Xcode UI)
 
@@ -64,6 +77,32 @@ name isn't installed. Re-running just the last three commands (skip
 `xcodebuild` if nothing changed) is the fastest reinstall-and-relaunch loop
 while iterating.
 
+## Onboarding & auth
+
+There is still no per-user account system in this repo (README.md:
+"Deliberately out of scope... Per-user accounts"), and this app doesn't add
+one. `OnboardingScreen.swift` shows exactly one control — Apple's own
+`SignInWithAppleButton` — and what happens after tapping it is a one-time
+**claim**, not account creation:
+
+- The very first Apple account that ever completes sign-in becomes this
+  deploy's one permanent linked owner (`app/api/auth/apple/route.ts`, the
+  `users` table in `schema.sql`) and immediately sees every section and
+  task that already exists — there's nothing to migrate, since that data
+  was never scoped to anyone to begin with.
+- Every sign-in after that first one is just a normal login, checked
+  against that same stored owner.
+- A *different* Apple account signing in against an already-claimed deploy
+  gets a plain 403 ("this app is already linked to a different Apple
+  account") rather than silently starting a second, empty account.
+
+No password ever exists in this app — `AppStore.swift` has no `login`
+function, only `signInWithApple(identityToken:)`. The web dashboard is
+unaffected and keeps its own `SITE_PASSWORD` gate exactly as before;
+`proxy.ts` didn't need to change at all, because `/api/auth/apple` issues
+the identical session cookie the password route does, once it has verified
+the Apple identity token and checked ownership itself.
+
 ## What this app is not
 
 It adds **zero** new backend logic. Three small, additive, read-only-ish
@@ -77,6 +116,14 @@ instead:
 | `GET /api/calendar` | `app/page.tsx`'s server-side `getCalendarEvents()` call |
 | `GET /api/settings` | `app/settings/page.tsx`'s server-side reads (Google Calendar status, planning rules) |
 | `GET /api/preferences` | the planning-rules half of the same page (POST already existed) |
+
+One genuinely new route was added for auth: `POST /api/auth/apple`
+(`lib/apple-auth.ts`) — verifies a native Sign in with Apple identity token
+against Apple's public keys and either claims or checks this deploy's one
+linked owner. See § Onboarding & auth above; `proxy.ts`'s matcher was
+updated to exclude it, the same way it already excludes
+`/api/auth/login`, since a route that establishes a session can't also
+require the session cookie it's meant to issue.
 
 One small **write** capability was also added: `PATCH /api/tasks/[id]` now
 accepts a `sectionId` field to move a task to a different list. The web
@@ -171,3 +218,13 @@ gaps — flagged rather than silently shipped:
 - **Moving a task between lists** is new (see the `sectionId` PATCH support
   above) and only exercised by this app's task-edit sheet — worth a second
   look before it's trusted as a stable API contract.
+- **No revocation check.** If you ever revoke this app's access to your
+  Apple ID (Settings → your name → Sign in with Apple), this app won't
+  notice — it just keeps using its existing session cookie until that
+  expires (180 days) or you tap Log Out. Apple's own
+  `ASAuthorizationAppleIDProvider.getCredentialState(forUserID:)` can check
+  this on launch; not wired up here.
+- **Onboarding has no "wrong Apple ID" recovery UI.** If a different Apple
+  account ever hits the 403 from an already-claimed deploy, `authError`
+  just shows the server's message — there's no in-app flow for "reset the
+  linked owner," only a manual `DELETE FROM users;` on the database.

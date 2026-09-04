@@ -41,7 +41,9 @@ targets:
           NSAllowsArbitraryLoads: false
     entitlements:
       path: ManualBrain/ManualBrain.entitlements
-      properties: {}
+      properties:
+        com.apple.developer.applesignin:
+          - Default
 
 schemes:
   ManualBrain:

@@ -87,3 +87,18 @@ CREATE TABLE IF NOT EXISTS google_auth (
   access_token_expires_at timestamptz,
   updated_at timestamptz NOT NULL DEFAULT now()
 );
+
+-- Sign in with Apple's one linked owner (see lib/apple-auth.ts and
+-- app/api/auth/apple/route.ts). This app still has no per-user accounts —
+-- sections, tasks, preferences and google_auth all stay global and
+-- unscoped, same as always. This table exists only to answer one question
+-- for the native iOS app: "is the Apple ID signing in the one owner this
+-- deploy is linked to?" The first successful Sign in with Apple this
+-- deploy ever sees claims that single row permanently (an onboarding
+-- claim against already-existing data, not account creation) — so in
+-- practice this table only ever holds zero or one row.
+CREATE TABLE IF NOT EXISTS users (
+  id text PRIMARY KEY, -- Apple's stable per-app subject identifier ("sub")
+  email text,          -- from the identity token, if Apple shared one
+  created_at timestamptz NOT NULL DEFAULT now()
+);

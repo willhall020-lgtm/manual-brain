@@ -34,8 +34,8 @@ final class AppStore: ObservableObject {
         case loggedIn
     }
     @Published var authState: AuthState = .unknown
-    @Published var loginError: String?
-    @Published var isLoggingIn = false
+    @Published var authError: String?
+    @Published var isAuthenticating = false
 
     // MARK: - Data
 
@@ -79,22 +79,28 @@ final class AppStore: ObservableObject {
     // MARK: - Bootstrap
 
     /// Called once at launch: try loading state directly. A 401 means no
-    /// session yet (or it expired) — that's the normal "show the login
-    /// screen" path, not an error to surface.
+    /// session yet (or it expired) — that's the normal "show onboarding"
+    /// path, not an error to surface.
     func bootstrap() async {
         await refreshAll()
     }
 
-    func login(password: String) async {
-        isLoggingIn = true
-        loginError = nil
-        defer { isLoggingIn = false }
+    /// The whole "password journey" is gone from this app — this is the
+    /// only way in now. See app/api/auth/apple/route.ts: the first Apple
+    /// account to ever complete this becomes the app's one permanent
+    /// owner and inherits the existing data outright; a different Apple
+    /// account on a deploy that's already linked comes back as a 403,
+    /// surfaced here as a plain error rather than a silent new account.
+    func signInWithApple(identityToken: String) async {
+        isAuthenticating = true
+        authError = nil
+        defer { isAuthenticating = false }
         do {
-            try await client.login(password: password)
+            try await client.signInWithApple(identityToken: identityToken)
             authState = .loggedIn
             await refreshAll()
         } catch {
-            loginError = error.localizedDescription
+            authError = error.localizedDescription
         }
     }
 

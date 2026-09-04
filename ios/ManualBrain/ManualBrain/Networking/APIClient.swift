@@ -24,14 +24,16 @@ enum APIError: Error, LocalizedError {
 /// Talks to the existing Next.js API routes (app/api/**) — this app adds no
 /// backend of its own, it's a native client for the same routes the web
 /// dashboard already uses (plus the small read-only additions in
-/// app/api/calendar and app/api/settings, added alongside this app so a
-/// non-browser client has something to read where the web page previously
-/// rendered server-side props instead).
+/// app/api/calendar and app/api/settings, and the Sign in with Apple route
+/// below, all added alongside this app).
 ///
-/// Auth is the same shared-password session cookie the web app uses
-/// (lib/auth.ts) — `URLSession`'s own cookie storage receives and resends
-/// it automatically once `login(password:)` succeeds, exactly like a
-/// browser would, so nothing else in the app has to think about it.
+/// Auth ends up as the same session cookie the web app's password login
+/// sets (lib/auth.ts) — `URLSession`'s own cookie storage receives and
+/// resends it automatically once `signInWithApple(identityToken:)`
+/// succeeds, exactly like a browser would, so nothing else in the app has
+/// to think about it. This app never sees or sends a password at all;
+/// see app/api/auth/apple/route.ts for how the two paths end up issuing
+/// the identical cookie.
 actor APIClient {
     private let session: URLSession
     private let encoder: JSONEncoder
@@ -100,8 +102,9 @@ actor APIClient {
 
     // MARK: - Auth
 
-    func login(password: String) async throws {
-        try await sendNoContent("/api/auth/login", method: "POST", LoginRequest(password: password))
+    func signInWithApple(identityToken: String) async throws {
+        try await sendNoContent(
+            "/api/auth/apple", method: "POST", AppleSignInRequest(identityToken: identityToken))
     }
 
     func logout() async throws {
