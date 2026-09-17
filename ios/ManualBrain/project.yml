@@ -39,6 +39,18 @@ targets:
         ITSAppUsesNonExemptEncryption: false
         NSAppTransportSecurity:
           NSAllowsArbitraryLoads: false
+        # Registers the vendored Archivo weights (Resources/Fonts/) so
+        # UIFont(name:size:)/Font.custom can find them — see
+        # DesignSystem/Typography.swift for the PostScript names these
+        # five files actually carry (an upstream Google Fonts/Archivo
+        # quirk: every static cut names itself off the variable font's
+        # "SemiBold" named instance, not "Archivo Regular/Bold/...").
+        UIAppFonts:
+          - Archivo-Regular.ttf
+          - Archivo-Medium.ttf
+          - Archivo-SemiBold.ttf
+          - Archivo-Bold.ttf
+          - Archivo-ExtraBold.ttf
     entitlements:
       path: ManualBrain/ManualBrain.entitlements
       properties:

@@ -4,28 +4,29 @@ import UIKit
 // One family, Archivo — weight and tracking carry all hierarchy, there is
 // no second family, no serif, no mono (readme.md § Visual foundations).
 //
-// Archivo's actual font files aren't vendored in this repo, the same way
-// they aren't vendored in the design system bundle this app was built from
-// (tokens/fonts.css `@import`s it from Google Fonts for the web — see that
-// project's readme.md § Known gaps). Drop the four weights below into
-// Assets (or a `Fonts/` group added to the Xcode target and to
-// `UIAppFonts` in Info.plist) and this resolves them automatically; until
-// then every call below falls back to the system font at a matching
-// weight, which is the same graceful-degradation the web app itself uses
-// when a font isn't available.
+// The five weight files live in Resources/Fonts/ (real Google Fonts TTFs,
+// SIL Open Font License — see OFL.txt alongside them) and are registered
+// via `UIAppFonts` in project.yml, so `xcodegen generate` wires them into
+// the bundle automatically.
 //
-// Expected PostScript names, from Google Fonts' static Archivo family:
-//   Archivo-Regular (400) · Archivo-Medium (500) · Archivo-SemiBold (600)
-//   Archivo-Bold (700) · Archivo-ExtraBold (800)
+// Their PostScript names are NOT "Archivo-Regular" etc., despite the
+// filenames — this is an upstream quirk in Google Fonts' static cuts of
+// the Archivo variable font: every weight's internal name table calls
+// itself off the variable font's "Archivo SemiBold" named instance rather
+// than a clean per-weight family name (confirmed by inspecting each file's
+// own name table, not guessed). The names below are the real ones; if
+// Google ever reissues clean static cuts, only this map needs to change.
+// `UIFont(name:)` still gracefully falls back to the system font at a
+// matching weight if a file's ever missing from the bundle.
 enum Brand {
     static func font(size: CGFloat, weight: Font.Weight) -> Font {
         let name: String
         switch weight {
-        case .black, .heavy: name = "Archivo-ExtraBold"
-        case .bold: name = "Archivo-Bold"
-        case .semibold: name = "Archivo-SemiBold"
-        case .medium: name = "Archivo-Medium"
-        default: name = "Archivo-Regular"
+        case .black, .heavy: name = "ArchivoSemiBold-ExtraBold"
+        case .bold: name = "ArchivoSemiBold-Bold"
+        case .semibold: name = "ArchivoSemiBold-SemiBold"
+        case .medium: name = "ArchivoSemiBold-Medium"
+        default: name = "ArchivoSemiBold-Regular"
         }
         if UIFont(name: name, size: size) != nil {
             return .custom(name, size: size)

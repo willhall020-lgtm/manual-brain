@@ -184,12 +184,17 @@ carried over faithfully from the design system's tokens
 Written in the same spirit as the design bundle's own `readme.md` § Known
 gaps — flagged rather than silently shipped:
 
-- **Archivo isn't vendored.** Same situation the web app's own
-  `tokens/fonts.css` documents (`@import`ed from Google Fonts, no local
-  files) — `DesignSystem/Typography.swift` falls back to the system font at
-  a matching weight when the four Archivo `.ttf`/`.otf` files aren't in the
-  bundle. Add them to the target (and `UIAppFonts` in Info.plist) to pick up
-  the real typeface.
+- **Archivo is vendored** (`Resources/Fonts/`, real Google Fonts TTFs under
+  the SIL Open Font License — `OFL.txt` sits alongside them), unlike the web
+  app's own `tokens/fonts.css`, which `@import`s it from Google Fonts at
+  runtime instead. One quirk worth knowing if you ever touch
+  `DesignSystem/Typography.swift`: each file's actual PostScript name is
+  `ArchivoSemiBold-<Weight>`, not `Archivo-<Weight>` — an upstream naming
+  bug in Google Fonts' static cuts of the Archivo variable font (every
+  weight's name table is derived from the variable font's "SemiBold" named
+  instance), confirmed by inspecting the files' own name tables. `Brand.font`
+  already accounts for this; `UIFont(name:)` still falls back to the system
+  font at a matching weight if a file's ever missing from the bundle.
 - **No app icon.** The design system's own rule: *"if the provided sources
   contain no logo, do not create one."* There is no Manual Brain logo
   anywhere in this project, so `Assets.xcassets/AppIcon.appiconset` is an
