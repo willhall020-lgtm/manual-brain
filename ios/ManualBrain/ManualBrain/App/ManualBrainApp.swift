@@ -6,16 +6,17 @@ struct ManualBrainApp: App {
     @StateObject private var store = AppStore()
 
     init() {
-        #if DEBUG
-        // Temporary diagnostic: prints every registered font family/name at
-        // launch, so a font-not-rendering report can be checked against
-        // what actually got bundled + registered rather than guessed at.
-        // Safe to delete once Archivo is confirmed showing correctly.
+        // Temporary diagnostic (no #if DEBUG — XcodeGen-generated projects
+        // don't define that compilation flag the way Xcode's own project
+        // templates do, so a DEBUG-gated block here silently never runs):
+        // prints every registered font family/name at launch, so a
+        // font-not-rendering report can be checked against what actually
+        // got bundled + registered rather than guessed at. Safe to delete
+        // once Archivo is confirmed showing correctly.
         print("[Fonts] registered families: \(UIFont.familyNames.sorted())")
         for family in UIFont.familyNames.sorted() where family.localizedCaseInsensitiveContains("archivo") {
             print("[Fonts] \(family) -> \(UIFont.fontNames(forFamilyName: family))")
         }
-        #endif
     }
 
     var body: some Scene {
