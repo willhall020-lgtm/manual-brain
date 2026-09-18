@@ -1,8 +1,22 @@
 import SwiftUI
+import UIKit
 
 @main
 struct ManualBrainApp: App {
     @StateObject private var store = AppStore()
+
+    init() {
+        #if DEBUG
+        // Temporary diagnostic: prints every registered font family/name at
+        // launch, so a font-not-rendering report can be checked against
+        // what actually got bundled + registered rather than guessed at.
+        // Safe to delete once Archivo is confirmed showing correctly.
+        print("[Fonts] registered families: \(UIFont.familyNames.sorted())")
+        for family in UIFont.familyNames.sorted() where family.localizedCaseInsensitiveContains("archivo") {
+            print("[Fonts] \(family) -> \(UIFont.fontNames(forFamilyName: family))")
+        }
+        #endif
+    }
 
     var body: some Scene {
         WindowGroup {
