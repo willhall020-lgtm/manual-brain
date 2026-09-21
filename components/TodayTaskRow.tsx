@@ -4,6 +4,7 @@ import type { KeyboardEvent } from "react";
 import DurationInput from "@/components/DurationInput";
 import DueDatePicker from "@/components/DueDatePicker";
 import TimeOfDayPicker from "@/components/TimeOfDayPicker";
+import AssigneeInput from "@/components/AssigneeInput";
 import BookButton from "@/components/BookButton";
 import type { TimeOfDay } from "@/lib/time-of-day";
 import type { RepeatFrequency } from "@/lib/repeat";
@@ -16,6 +17,7 @@ interface Props {
   durationMinutes: number | null;
   timeOfDay: TimeOfDay | null;
   repeatFrequency: RepeatFrequency | null;
+  assignedTo: string | null;
   booked: boolean;
   booking: boolean;
   editing: boolean;
@@ -30,6 +32,7 @@ interface Props {
   onDueDateChange: (v: string | null) => void;
   onTimeOfDayChange: (v: TimeOfDay | null) => void;
   onRepeatChange: (v: RepeatFrequency | null) => void;
+  onAssigneeCommit: (assignedTo: string | null) => void;
   onBook: () => void;
 }
 
@@ -41,6 +44,7 @@ export default function TodayTaskRow({
   durationMinutes,
   timeOfDay,
   repeatFrequency,
+  assignedTo,
   booked,
   booking,
   editing,
@@ -55,6 +59,7 @@ export default function TodayTaskRow({
   onDueDateChange,
   onTimeOfDayChange,
   onRepeatChange,
+  onAssigneeCommit,
   onBook,
 }: Props) {
   return (
@@ -161,6 +166,7 @@ export default function TodayTaskRow({
         />
         <DurationInput minutes={durationMinutes} editing={editing} onCommit={onDurationCommit} />
         <TimeOfDayPicker value={timeOfDay} editing={editing} onChange={onTimeOfDayChange} />
+        <AssigneeInput assignedTo={assignedTo} editing={editing} onCommit={onAssigneeCommit} />
       </div>
       <BookButton booked={booked} booking={booking} onBook={onBook} />
       <div style={{ flex: "none", display: "flex", alignItems: "center", gap: 2 }}>

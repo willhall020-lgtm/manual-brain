@@ -27,6 +27,7 @@ interface Draft {
   duration: string; // free-text minutes, kept as a string while typing — parsed on submit
   timeOfDay: TimeOfDay | null;
   repeatFrequency: RepeatFrequency | null; // only meaningful alongside dueDate
+  assignedTo: string; // free-text name, empty string means unassigned
 }
 const emptyDraft = (todayKey: string): Draft => ({
   text: "",
@@ -34,6 +35,7 @@ const emptyDraft = (todayKey: string): Draft => ({
   duration: "",
   timeOfDay: null,
   repeatFrequency: null,
+  assignedTo: "",
 });
 
 const WEEKDAYS = [
@@ -138,6 +140,7 @@ export default function Dashboard({
           durationMinutes: t.durationMinutes,
           timeOfDay: t.timeOfDay,
           repeatFrequency: t.repeatFrequency,
+          assignedTo: t.assignedTo,
         });
       }
     }
@@ -167,6 +170,7 @@ export default function Dashboard({
     // too (not just server-side) so the optimistic row can't show a repeat
     // badge the create actually ignored.
     const repeatFrequency = d.dueDate ? d.repeatFrequency : null;
+    const assignedTo = d.assignedTo.trim() || null;
 
     setTasks((prev) => [
       ...prev,
@@ -180,6 +184,7 @@ export default function Dashboard({
         durationMinutes,
         timeOfDay: d.timeOfDay,
         repeatFrequency,
+        assignedTo,
       },
     ]);
     setDrafts((prev) => ({ ...prev, [key]: emptyDraft(todayKey) }));
@@ -195,6 +200,7 @@ export default function Dashboard({
           durationMinutes: durationMinutes ?? undefined,
           timeOfDay: d.timeOfDay ?? undefined,
           repeatFrequency: repeatFrequency ?? undefined,
+          assignedTo: assignedTo ?? undefined,
         }),
       });
       if (!res.ok) throw new Error();
@@ -304,6 +310,22 @@ export default function Dashboard({
     } catch {
       patchTaskLocal(id, { timeOfDay: prev });
       setActionError("Couldn't save that preference — try again.");
+    }
+  }
+
+  async function setTaskAssignee(id: string, assignedTo: string | null) {
+    const prev = tasks.find((t) => t.id === id)?.assignedTo ?? null;
+    patchTaskLocal(id, { assignedTo });
+    try {
+      const res = await fetch(`/api/tasks/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ assignedTo }),
+      });
+      if (!res.ok) throw new Error();
+    } catch {
+      patchTaskLocal(id, { assignedTo: prev });
+      setActionError("Couldn't save that assignee — try again.");
     }
   }
 
@@ -615,6 +637,7 @@ export default function Dashboard({
                       durationMinutes={t.durationMinutes}
                       timeOfDay={t.timeOfDay}
                       repeatFrequency={t.repeatFrequency}
+                      assignedTo={t.assignedTo}
                       booked={!!t.calendarEventId}
                       booking={bookingIds.has(t.id)}
                       editing={editing === t.id}
@@ -627,6 +650,7 @@ export default function Dashboard({
                       onDueDateChange={(d) => setTaskDueDate(t.id, d)}
                       onTimeOfDayChange={(v) => setTaskTimeOfDay(t.id, v)}
                       onRepeatChange={(v) => setTaskRepeat(t.id, v)}
+                      onAssigneeCommit={(v) => setTaskAssignee(t.id, v)}
                       onBook={() => bookTask(t.id)}
                       onEditKeyDown={makeEditKeyHandler(saveEdit)}
                       onEditBlur={saveEdit}
@@ -648,6 +672,7 @@ export default function Dashboard({
                       duration={draft("quick").duration}
                       timeOfDay={draft("quick").timeOfDay}
                       repeatFrequency={draft("quick").repeatFrequency}
+                      assignedTo={draft("quick").assignedTo}
                       sections={sections}
                       selectedSectionId={quickSection}
                       onOpen={() => setActiveAdd("quick")}
@@ -657,6 +682,7 @@ export default function Dashboard({
                       onDueDateChange={(v) => setDraft("quick", { dueDate: v })}
                       onTimeOfDayChange={(v) => setDraft("quick", { timeOfDay: v })}
                       onRepeatChange={(v) => setDraft("quick", { repeatFrequency: v })}
+                      onAssignedToChange={(v) => setDraft("quick", { assignedTo: v })}
                       onSectionPick={setQuickSection}
                       onKeyDown={(e) => {
                         if (e.key === "Enter") addTask("quick", quickSection);
@@ -824,6 +850,7 @@ export default function Dashboard({
                       durationMinutes={t.durationMinutes}
                       timeOfDay={t.timeOfDay}
                       repeatFrequency={t.repeatFrequency}
+                      assignedTo={t.assignedTo}
                       editing={editing === t.id}
                       editVal={editVal}
                       onDone={() => markDone(t.id)}
@@ -836,6 +863,7 @@ export default function Dashboard({
                       onDueDateChange={(d) => setTaskDueDate(t.id, d)}
                       onTimeOfDayChange={(v) => setTaskTimeOfDay(t.id, v)}
                       onRepeatChange={(v) => setTaskRepeat(t.id, v)}
+                      onAssigneeCommit={(v) => setTaskAssignee(t.id, v)}
                     />
                   ))}
 
@@ -854,6 +882,7 @@ export default function Dashboard({
                       duration={draft(`sec:${activeSection.id}`).duration}
                       timeOfDay={draft(`sec:${activeSection.id}`).timeOfDay}
                       repeatFrequency={draft(`sec:${activeSection.id}`).repeatFrequency}
+                      assignedTo={draft(`sec:${activeSection.id}`).assignedTo}
                       onOpen={() => setActiveAdd(`sec:${activeSection.id}`)}
                       onCancel={() => setActiveAdd(null)}
                       onTextChange={(v) => setDraft(`sec:${activeSection.id}`, { text: v })}
@@ -861,6 +890,7 @@ export default function Dashboard({
                       onDueDateChange={(v) => setDraft(`sec:${activeSection.id}`, { dueDate: v })}
                       onTimeOfDayChange={(v) => setDraft(`sec:${activeSection.id}`, { timeOfDay: v })}
                       onRepeatChange={(v) => setDraft(`sec:${activeSection.id}`, { repeatFrequency: v })}
+                      onAssignedToChange={(v) => setDraft(`sec:${activeSection.id}`, { assignedTo: v })}
                       onKeyDown={(e) => {
                         if (e.key === "Enter") addTask(`sec:${activeSection.id}`, activeSection.id);
                         if (e.key === "Escape") setActiveAdd(null);

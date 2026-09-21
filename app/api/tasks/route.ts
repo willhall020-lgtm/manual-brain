@@ -48,6 +48,11 @@ export async function POST(req: Request) {
     // stored orphaned; same courtesy-field treatment as duration/timeOfDay.
     const repeatFrequency = dueDate && isRepeatFrequency(body?.repeatFrequency) ? body.repeatFrequency : null;
 
+    // Optional free-text name of who this task is assigned to — same
+    // courtesy-field treatment as the other optional fields above.
+    const assignedTo =
+      typeof body?.assignedTo === "string" && body.assignedTo.trim() ? body.assignedTo.trim() : null;
+
     const db = sql();
     const [{ next_pos }] = (await db`
       SELECT COALESCE(MAX(position), -1) + 1 AS next_pos
@@ -56,12 +61,12 @@ export async function POST(req: Request) {
 
     const id = "task_" + crypto.randomUUID().slice(0, 8);
     await db`
-      INSERT INTO tasks (id, section_id, name, due_date, position, duration_minutes, time_of_day, repeat_frequency)
-      VALUES (${id}, ${sectionId}, ${name}, ${dueDate}, ${next_pos}, ${durationMinutes}, ${timeOfDay}, ${repeatFrequency})
+      INSERT INTO tasks (id, section_id, name, due_date, position, duration_minutes, time_of_day, repeat_frequency, assigned_to)
+      VALUES (${id}, ${sectionId}, ${name}, ${dueDate}, ${next_pos}, ${durationMinutes}, ${timeOfDay}, ${repeatFrequency}, ${assignedTo})
     `;
 
     return NextResponse.json(
-      { id, sectionId, name, dueDate, doneAt: null, durationMinutes, timeOfDay, repeatFrequency },
+      { id, sectionId, name, dueDate, doneAt: null, durationMinutes, timeOfDay, repeatFrequency, assignedTo },
       { status: 201 }
     );
   } catch (err) {

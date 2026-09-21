@@ -16,7 +16,7 @@ export const CHAT_TOOLS: Anthropic.Tool[] = [
   {
     name: "list_tasks",
     description:
-      "Lists every list name and all not-done tasks across every list, with each task's id, name, list name, due_date (\"YYYY-MM-DD\", or null for no due date), overdue (true if due_date is before today and it's still not done), whether it's already booked on the calendar (scheduled: true/false), duration_minutes if the user set one when creating it (null if not — estimate it yourself when booking), and time_of_day (\"morning\", \"afternoon\", \"evening\", or null for no preference — a hint for what part of the day to book it in when schedule_task's start_iso isn't otherwise dictated by the user). Call this first in any conversation about what's outstanding, what to schedule, or before adding a task (to get valid list names) — and always before booking anything, to avoid double-booking a task that's already scheduled.",
+      "Lists every list name and all not-done tasks across every list, with each task's id, name, list name, due_date (\"YYYY-MM-DD\", or null for no due date), overdue (true if due_date is before today and it's still not done), whether it's already booked on the calendar (scheduled: true/false), duration_minutes if the user set one when creating it (null if not — estimate it yourself when booking), time_of_day (\"morning\", \"afternoon\", \"evening\", or null for no preference — a hint for what part of the day to book it in when schedule_task's start_iso isn't otherwise dictated by the user), and assigned_to (a free-text name of who the task is for, or null if unassigned — e.g. a task assigned to you by name is one you should take initiative on rather than just book). Call this first in any conversation about what's outstanding, what to schedule, or before adding a task (to get valid list names) — and always before booking anything, to avoid double-booking a task that's already scheduled.",
     input_schema: { type: "object", properties: {}, additionalProperties: false },
   },
   {
@@ -45,6 +45,10 @@ export const CHAT_TOOLS: Anthropic.Tool[] = [
           type: "string",
           enum: ["daily", "weekly", "monthly"],
           description: "Optional — only if the user asked for a recurring task (e.g. \"every week\", \"daily\"). Requires due_date to also be set (a repeat rule with no date to repeat from is ignored); ask for a date if the user wants repetition but hasn't given one.",
+        },
+        assigned_to: {
+          type: "string",
+          description: "Optional — free-text name of who this task is for, if the user says so (e.g. \"assign this to Instinct\").",
         },
       },
       required: ["list_name", "name"],
@@ -115,18 +119,20 @@ export async function runChatTool(name: string, input: unknown): Promise<string>
           duration_minutes: t.durationMinutes,
           time_of_day: t.timeOfDay,
           repeats: t.repeatFrequency,
+          assigned_to: t.assignedTo,
         }));
       return JSON.stringify({ lists: sections.map((s) => s.name), tasks: active });
     }
 
     case "add_task": {
-      const { list_name, name, due_date, duration_minutes, time_of_day, repeat_frequency } = input as {
+      const { list_name, name, due_date, duration_minutes, time_of_day, repeat_frequency, assigned_to } = input as {
         list_name: string;
         name: string;
         due_date?: string;
         duration_minutes?: number;
         time_of_day?: string;
         repeat_frequency?: string;
+        assigned_to?: string;
       };
       const { sections } = await getState();
       const section = sections.find((s) => s.name.toLowerCase() === list_name.toLowerCase());
@@ -147,6 +153,7 @@ export async function runChatTool(name: string, input: unknown): Promise<string>
       // Only meaningful alongside a due date — same courtesy-field
       // treatment as the dashboard's create endpoint (app/api/tasks/route.ts).
       const resolvedRepeat = resolvedDueDate && isRepeatFrequency(repeat_frequency) ? repeat_frequency : null;
+      const resolvedAssignee = typeof assigned_to === "string" && assigned_to.trim() ? assigned_to.trim() : null;
 
       const db = sql();
       const [{ next_pos }] = (await db`
@@ -155,8 +162,8 @@ export async function runChatTool(name: string, input: unknown): Promise<string>
       `) as { next_pos: number }[];
       const id = "task_" + crypto.randomUUID().slice(0, 8);
       await db`
-        INSERT INTO tasks (id, section_id, name, due_date, position, duration_minutes, time_of_day, repeat_frequency)
-        VALUES (${id}, ${section.id}, ${trimmedName}, ${resolvedDueDate}, ${next_pos}, ${resolvedDuration}, ${resolvedTimeOfDay}, ${resolvedRepeat})
+        INSERT INTO tasks (id, section_id, name, due_date, position, duration_minutes, time_of_day, repeat_frequency, assigned_to)
+        VALUES (${id}, ${section.id}, ${trimmedName}, ${resolvedDueDate}, ${next_pos}, ${resolvedDuration}, ${resolvedTimeOfDay}, ${resolvedRepeat}, ${resolvedAssignee})
       `;
       return JSON.stringify({ ok: true, id, list: section.name });
     }

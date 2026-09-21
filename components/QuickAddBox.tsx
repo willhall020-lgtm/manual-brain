@@ -19,6 +19,7 @@ interface Props {
   duration: string;
   timeOfDay: TimeOfDay | null;
   repeatFrequency: RepeatFrequency | null;
+  assignedTo: string;
   sections: SectionOption[];
   selectedSectionId: string;
   onOpen: () => void;
@@ -28,6 +29,7 @@ interface Props {
   onDueDateChange: (v: string | null) => void;
   onTimeOfDayChange: (v: TimeOfDay | null) => void;
   onRepeatChange: (v: RepeatFrequency | null) => void;
+  onAssignedToChange: (v: string) => void;
   onSectionPick: (id: string) => void;
   onKeyDown: (e: KeyboardEvent<HTMLInputElement>) => void;
   onAdd: () => void;
@@ -41,6 +43,7 @@ export default function QuickAddBox({
   duration,
   timeOfDay,
   repeatFrequency,
+  assignedTo,
   sections,
   selectedSectionId,
   onOpen,
@@ -50,6 +53,7 @@ export default function QuickAddBox({
   onDueDateChange,
   onTimeOfDayChange,
   onRepeatChange,
+  onAssignedToChange,
   onSectionPick,
   onKeyDown,
   onAdd,
@@ -189,6 +193,28 @@ export default function QuickAddBox({
           WHEN IN THE DAY? (OPTIONAL)
         </span>
         <TimeOfDayPicker value={timeOfDay} editing onChange={onTimeOfDayChange} />
+      </div>
+
+      <div style={{ display: "flex", flexDirection: "column", gap: 7 }}>
+        <span style={{ fontSize: 10, fontWeight: 800, letterSpacing: ".14em", color: "#A3A39A" }}>
+          ASSIGNED TO? (OPTIONAL)
+        </span>
+        <input
+          value={assignedTo}
+          onChange={(e) => onAssignedToChange(e.target.value)}
+          onKeyDown={onKeyDown}
+          placeholder="e.g. Instinct"
+          style={{
+            width: 140,
+            border: "1px solid #DFDFD8",
+            borderRadius: 10,
+            padding: "7px 10px",
+            fontSize: 12.5,
+            fontWeight: 600,
+            outline: "none",
+            background: "#FFFFFF",
+          }}
+        />
       </div>
 
       <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
