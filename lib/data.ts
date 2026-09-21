@@ -18,7 +18,7 @@ export async function getState(): Promise<{ sections: Section[]; tasks: Task[] }
   // SQL sidesteps that entirely: Postgres hands back the literal
   // "YYYY-MM-DD" text, no Date object ever constructed.
   const taskRows = (await db`
-    SELECT id, section_id, name, due_date::text AS due_date, done_at, calendar_event_id, duration_minutes, time_of_day, repeat_frequency
+    SELECT id, section_id, name, due_date::text AS due_date, done_at, calendar_event_id, duration_minutes, time_of_day, repeat_frequency, assigned_to
     FROM tasks
     ORDER BY position ASC
   `) as {
@@ -31,6 +31,7 @@ export async function getState(): Promise<{ sections: Section[]; tasks: Task[] }
     duration_minutes: number | null;
     time_of_day: string | null;
     repeat_frequency: string | null;
+    assigned_to: string | null;
   }[];
 
   const tasks: Task[] = taskRows.map((t) => ({
@@ -43,6 +44,7 @@ export async function getState(): Promise<{ sections: Section[]; tasks: Task[] }
     durationMinutes: t.duration_minutes,
     timeOfDay: isTimeOfDay(t.time_of_day) ? t.time_of_day : null,
     repeatFrequency: isRepeatFrequency(t.repeat_frequency) ? t.repeat_frequency : null,
+    assignedTo: t.assigned_to,
   }));
 
   return { sections: sections.map((s) => ({ id: s.id, name: s.name })), tasks };

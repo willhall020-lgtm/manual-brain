@@ -4,6 +4,7 @@ import type { KeyboardEvent } from "react";
 import DurationInput from "@/components/DurationInput";
 import DueDatePicker from "@/components/DueDatePicker";
 import TimeOfDayPicker from "@/components/TimeOfDayPicker";
+import AssigneeInput from "@/components/AssigneeInput";
 import type { TimeOfDay } from "@/lib/time-of-day";
 import type { RepeatFrequency } from "@/lib/repeat";
 
@@ -14,6 +15,7 @@ interface Props {
   durationMinutes: number | null;
   timeOfDay: TimeOfDay | null;
   repeatFrequency: RepeatFrequency | null;
+  assignedTo: string | null;
   editing: boolean;
   editVal: string;
   onDone: () => void;
@@ -26,6 +28,7 @@ interface Props {
   onDueDateChange: (v: string | null) => void;
   onTimeOfDayChange: (v: TimeOfDay | null) => void;
   onRepeatChange: (v: RepeatFrequency | null) => void;
+  onAssigneeCommit: (assignedTo: string | null) => void;
 }
 
 export default function ListTaskRow({
@@ -35,6 +38,7 @@ export default function ListTaskRow({
   durationMinutes,
   timeOfDay,
   repeatFrequency,
+  assignedTo,
   editing,
   editVal,
   onDone,
@@ -47,6 +51,7 @@ export default function ListTaskRow({
   onDueDateChange,
   onTimeOfDayChange,
   onRepeatChange,
+  onAssigneeCommit,
 }: Props) {
   return (
     <div
@@ -130,6 +135,7 @@ export default function ListTaskRow({
         />
         <DurationInput minutes={durationMinutes} editing={editing} onCommit={onDurationCommit} />
         <TimeOfDayPicker value={timeOfDay} editing={editing} onChange={onTimeOfDayChange} />
+        <AssigneeInput assignedTo={assignedTo} editing={editing} onCommit={onAssigneeCommit} />
       </div>
 
       <div style={{ flex: "none", display: "flex", alignItems: "center", gap: 2 }}>

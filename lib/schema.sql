@@ -61,6 +61,13 @@ ALTER TABLE tasks ADD COLUMN IF NOT EXISTS time_of_day text;
 -- done_at, so there's no separate history of past occurrences to store.
 ALTER TABLE tasks ADD COLUMN IF NOT EXISTS repeat_frequency text;
 
+-- Optional free-text name of who a task is assigned to (a person, or e.g.
+-- "Instinct" for the chat assistant to pick up) — surfaced to the chat
+-- (list_tasks) so it can tell which tasks are its own. No fixed list of
+-- assignees: this is a single-user app with no real accounts, so a plain
+-- name is enough.
+ALTER TABLE tasks ADD COLUMN IF NOT EXISTS assigned_to text;
+
 CREATE INDEX IF NOT EXISTS tasks_section_id_idx ON tasks (section_id);
 CREATE INDEX IF NOT EXISTS tasks_done_at_idx ON tasks (done_at);
 

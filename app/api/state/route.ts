@@ -19,6 +19,7 @@ export async function GET() {
         durationMinutes: t.durationMinutes,
         timeOfDay: t.timeOfDay,
         repeatFrequency: t.repeatFrequency,
+        assignedTo: t.assignedTo,
       });
     }
     return NextResponse.json({ sections: Array.from(bySectionId.values()) });
