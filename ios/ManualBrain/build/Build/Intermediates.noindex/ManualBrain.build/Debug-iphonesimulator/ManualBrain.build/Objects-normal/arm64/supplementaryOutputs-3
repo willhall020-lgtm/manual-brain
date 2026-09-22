@@ -1,0 +1,37 @@
+{
+  "/Users/willhall/manual-brain/ios/ManualBrain/ManualBrain/Components/DonePanelView.swift" : {
+    "const-values" : "/Users/willhall/manual-brain/ios/ManualBrain/build/Build/Intermediates.noindex/ManualBrain.build/Debug-iphonesimulator/ManualBrain.build/Objects-normal/arm64/DonePanelView.swiftconstvalues",
+    "dependencies" : "/Users/willhall/manual-brain/ios/ManualBrain/build/Build/Intermediates.noindex/ManualBrain.build/Debug-iphonesimulator/ManualBrain.build/Objects-normal/arm64/DonePanelView.d",
+    "diagnostics" : "/Users/willhall/manual-brain/ios/ManualBrain/build/Build/Intermediates.noindex/ManualBrain.build/Debug-iphonesimulator/ManualBrain.build/Objects-normal/arm64/DonePanelView.dia",
+    "object" : "/Users/willhall/manual-brain/ios/ManualBrain/build/Build/Intermediates.noindex/ManualBrain.build/Debug-iphonesimulator/ManualBrain.build/Objects-normal/arm64/DonePanelView.o",
+    "swift-dependencies" : "/Users/willhall/manual-brain/ios/ManualBrain/build/Build/Intermediates.noindex/ManualBrain.build/Debug-iphonesimulator/ManualBrain.build/Objects-normal/arm64/DonePanelView.swiftdeps"
+  },
+  "/Users/willhall/manual-brain/ios/ManualBrain/ManualBrain/Components/ErrorBanner.swift" : {
+    "const-values" : "/Users/willhall/manual-brain/ios/ManualBrain/build/Build/Intermediates.noindex/ManualBrain.build/Debug-iphonesimulator/ManualBrain.build/Objects-normal/arm64/ErrorBanner.swiftconstvalues",
+    "dependencies" : "/Users/willhall/manual-brain/ios/ManualBrain/build/Build/Intermediates.noindex/ManualBrain.build/Debug-iphonesimulator/ManualBrain.build/Objects-normal/arm64/ErrorBanner.d",
+    "diagnostics" : "/Users/willhall/manual-brain/ios/ManualBrain/build/Build/Intermediates.noindex/ManualBrain.build/Debug-iphonesimulator/ManualBrain.build/Objects-normal/arm64/ErrorBanner.dia",
+    "object" : "/Users/willhall/manual-brain/ios/ManualBrain/build/Build/Intermediates.noindex/ManualBrain.build/Debug-iphonesimulator/ManualBrain.build/Objects-normal/arm64/ErrorBanner.o",
+    "swift-dependencies" : "/Users/willhall/manual-brain/ios/ManualBrain/build/Build/Intermediates.noindex/ManualBrain.build/Debug-iphonesimulator/ManualBrain.build/Objects-normal/arm64/ErrorBanner.swiftdeps"
+  },
+  "/Users/willhall/manual-brain/ios/ManualBrain/ManualBrain/Components/FlowLayout.swift" : {
+    "const-values" : "/Users/willhall/manual-brain/ios/ManualBrain/build/Build/Intermediates.noindex/ManualBrain.build/Debug-iphonesimulator/ManualBrain.build/Objects-normal/arm64/FlowLayout.swiftconstvalues",
+    "dependencies" : "/Users/willhall/manual-brain/ios/ManualBrain/build/Build/Intermediates.noindex/ManualBrain.build/Debug-iphonesimulator/ManualBrain.build/Objects-normal/arm64/FlowLayout.d",
+    "diagnostics" : "/Users/willhall/manual-brain/ios/ManualBrain/build/Build/Intermediates.noindex/ManualBrain.build/Debug-iphonesimulator/ManualBrain.build/Objects-normal/arm64/FlowLayout.dia",
+    "object" : "/Users/willhall/manual-brain/ios/ManualBrain/build/Build/Intermediates.noindex/ManualBrain.build/Debug-iphonesimulator/ManualBrain.build/Objects-normal/arm64/FlowLayout.o",
+    "swift-dependencies" : "/Users/willhall/manual-brain/ios/ManualBrain/build/Build/Intermediates.noindex/ManualBrain.build/Debug-iphonesimulator/ManualBrain.build/Objects-normal/arm64/FlowLayout.swiftdeps"
+  },
+  "/Users/willhall/manual-brain/ios/ManualBrain/ManualBrain/DesignSystem/Glyphs.swift" : {
+    "const-values" : "/Users/willhall/manual-brain/ios/ManualBrain/build/Build/Intermediates.noindex/ManualBrain.build/Debug-iphonesimulator/ManualBrain.build/Objects-normal/arm64/Glyphs.swiftconstvalues",
+    "dependencies" : "/Users/willhall/manual-brain/ios/ManualBrain/build/Build/Intermediates.noindex/ManualBrain.build/Debug-iphonesimulator/ManualBrain.build/Objects-normal/arm64/Glyphs.d",
+    "diagnostics" : "/Users/willhall/manual-brain/ios/ManualBrain/build/Build/Intermediates.noindex/ManualBrain.build/Debug-iphonesimulator/ManualBrain.build/Objects-normal/arm64/Glyphs.dia",
+    "object" : "/Users/willhall/manual-brain/ios/ManualBrain/build/Build/Intermediates.noindex/ManualBrain.build/Debug-iphonesimulator/ManualBrain.build/Objects-normal/arm64/Glyphs.o",
+    "swift-dependencies" : "/Users/willhall/manual-brain/ios/ManualBrain/build/Build/Intermediates.noindex/ManualBrain.build/Debug-iphonesimulator/ManualBrain.build/Objects-normal/arm64/Glyphs.swiftdeps"
+  },
+  "/Users/willhall/manual-brain/ios/ManualBrain/ManualBrain/Support/DueDate.swift" : {
+    "const-values" : "/Users/willhall/manual-brain/ios/ManualBrain/build/Build/Intermediates.noindex/ManualBrain.build/Debug-iphonesimulator/ManualBrain.build/Objects-normal/arm64/DueDate.swiftconstvalues",
+    "dependencies" : "/Users/willhall/manual-brain/ios/ManualBrain/build/Build/Intermediates.noindex/ManualBrain.build/Debug-iphonesimulator/ManualBrain.build/Objects-normal/arm64/DueDate.d",
+    "diagnostics" : "/Users/willhall/manual-brain/ios/ManualBrain/build/Build/Intermediates.noindex/ManualBrain.build/Debug-iphonesimulator/ManualBrain.build/Objects-normal/arm64/DueDate.dia",
+    "object" : "/Users/willhall/manual-brain/ios/ManualBrain/build/Build/Intermediates.noindex/ManualBrain.build/Debug-iphonesimulator/ManualBrain.build/Objects-normal/arm64/DueDate.o",
+    "swift-dependencies" : "/Users/willhall/manual-brain/ios/ManualBrain/build/Build/Intermediates.noindex/ManualBrain.build/Debug-iphonesimulator/ManualBrain.build/Objects-normal/arm64/DueDate.swiftdeps"
+  }
+}

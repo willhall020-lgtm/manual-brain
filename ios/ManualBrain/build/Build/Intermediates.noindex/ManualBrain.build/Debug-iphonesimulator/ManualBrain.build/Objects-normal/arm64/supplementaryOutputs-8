@@ -1,0 +1,30 @@
+{
+  "/Users/willhall/manual-brain/ios/ManualBrain/ManualBrain/DesignSystem/Typography.swift" : {
+    "const-values" : "/Users/willhall/manual-brain/ios/ManualBrain/build/Build/Intermediates.noindex/ManualBrain.build/Debug-iphonesimulator/ManualBrain.build/Objects-normal/arm64/Typography.swiftconstvalues",
+    "dependencies" : "/Users/willhall/manual-brain/ios/ManualBrain/build/Build/Intermediates.noindex/ManualBrain.build/Debug-iphonesimulator/ManualBrain.build/Objects-normal/arm64/Typography.d",
+    "diagnostics" : "/Users/willhall/manual-brain/ios/ManualBrain/build/Build/Intermediates.noindex/ManualBrain.build/Debug-iphonesimulator/ManualBrain.build/Objects-normal/arm64/Typography.dia",
+    "object" : "/Users/willhall/manual-brain/ios/ManualBrain/build/Build/Intermediates.noindex/ManualBrain.build/Debug-iphonesimulator/ManualBrain.build/Objects-normal/arm64/Typography.o",
+    "swift-dependencies" : "/Users/willhall/manual-brain/ios/ManualBrain/build/Build/Intermediates.noindex/ManualBrain.build/Debug-iphonesimulator/ManualBrain.build/Objects-normal/arm64/Typography.swiftdeps"
+  },
+  "/Users/willhall/manual-brain/ios/ManualBrain/ManualBrain/Screens/TodayScreen.swift" : {
+    "const-values" : "/Users/willhall/manual-brain/ios/ManualBrain/build/Build/Intermediates.noindex/ManualBrain.build/Debug-iphonesimulator/ManualBrain.build/Objects-normal/arm64/TodayScreen.swiftconstvalues",
+    "dependencies" : "/Users/willhall/manual-brain/ios/ManualBrain/build/Build/Intermediates.noindex/ManualBrain.build/Debug-iphonesimulator/ManualBrain.build/Objects-normal/arm64/TodayScreen.d",
+    "diagnostics" : "/Users/willhall/manual-brain/ios/ManualBrain/build/Build/Intermediates.noindex/ManualBrain.build/Debug-iphonesimulator/ManualBrain.build/Objects-normal/arm64/TodayScreen.dia",
+    "object" : "/Users/willhall/manual-brain/ios/ManualBrain/build/Build/Intermediates.noindex/ManualBrain.build/Debug-iphonesimulator/ManualBrain.build/Objects-normal/arm64/TodayScreen.o",
+    "swift-dependencies" : "/Users/willhall/manual-brain/ios/ManualBrain/build/Build/Intermediates.noindex/ManualBrain.build/Debug-iphonesimulator/ManualBrain.build/Objects-normal/arm64/TodayScreen.swiftdeps"
+  },
+  "/Users/willhall/manual-brain/ios/ManualBrain/ManualBrain/Screens/TomorrowScreen.swift" : {
+    "const-values" : "/Users/willhall/manual-brain/ios/ManualBrain/build/Build/Intermediates.noindex/ManualBrain.build/Debug-iphonesimulator/ManualBrain.build/Objects-normal/arm64/TomorrowScreen.swiftconstvalues",
+    "dependencies" : "/Users/willhall/manual-brain/ios/ManualBrain/build/Build/Intermediates.noindex/ManualBrain.build/Debug-iphonesimulator/ManualBrain.build/Objects-normal/arm64/TomorrowScreen.d",
+    "diagnostics" : "/Users/willhall/manual-brain/ios/ManualBrain/build/Build/Intermediates.noindex/ManualBrain.build/Debug-iphonesimulator/ManualBrain.build/Objects-normal/arm64/TomorrowScreen.dia",
+    "object" : "/Users/willhall/manual-brain/ios/ManualBrain/build/Build/Intermediates.noindex/ManualBrain.build/Debug-iphonesimulator/ManualBrain.build/Objects-normal/arm64/TomorrowScreen.o",
+    "swift-dependencies" : "/Users/willhall/manual-brain/ios/ManualBrain/build/Build/Intermediates.noindex/ManualBrain.build/Debug-iphonesimulator/ManualBrain.build/Objects-normal/arm64/TomorrowScreen.swiftdeps"
+  },
+  "/Users/willhall/manual-brain/ios/ManualBrain/build/Build/Intermediates.noindex/ManualBrain.build/Debug-iphonesimulator/ManualBrain.build/DerivedSources/GeneratedAssetSymbols.swift" : {
+    "const-values" : "/Users/willhall/manual-brain/ios/ManualBrain/build/Build/Intermediates.noindex/ManualBrain.build/Debug-iphonesimulator/ManualBrain.build/Objects-normal/arm64/GeneratedAssetSymbols.swiftconstvalues",
+    "dependencies" : "/Users/willhall/manual-brain/ios/ManualBrain/build/Build/Intermediates.noindex/ManualBrain.build/Debug-iphonesimulator/ManualBrain.build/Objects-normal/arm64/GeneratedAssetSymbols.d",
+    "diagnostics" : "/Users/willhall/manual-brain/ios/ManualBrain/build/Build/Intermediates.noindex/ManualBrain.build/Debug-iphonesimulator/ManualBrain.build/Objects-normal/arm64/GeneratedAssetSymbols.dia",
+    "object" : "/Users/willhall/manual-brain/ios/ManualBrain/build/Build/Intermediates.noindex/ManualBrain.build/Debug-iphonesimulator/ManualBrain.build/Objects-normal/arm64/GeneratedAssetSymbols.o",
+    "swift-dependencies" : "/Users/willhall/manual-brain/ios/ManualBrain/build/Build/Intermediates.noindex/ManualBrain.build/Debug-iphonesimulator/ManualBrain.build/Objects-normal/arm64/GeneratedAssetSymbols.swiftdeps"
+  }
+}

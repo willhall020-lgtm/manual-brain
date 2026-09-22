@@ -1,0 +1,7 @@
+/* Two shadows only, both warm-black and directional (never ambient glow).
+   Resting surfaces are flat with a 1px border; shadow means "floating". */
+:root{
+  --shadow-menu:0 14px 34px rgba(20,20,15,.14);
+  --shadow-popover:0 10px 26px rgba(20,20,15,.10);
+  --lift-hover:translateY(-2px);/* @kind other */
+}

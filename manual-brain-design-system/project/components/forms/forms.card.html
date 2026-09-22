@@ -1,0 +1,32 @@
+<!-- @dsCard group="Components" viewport="700x560" name="Add boxes & controls" subtitle="Quick add, list add, urgency chips, add button, icon buttons" -->
+<!DOCTYPE html><html><head><meta charset="utf-8">
+<link rel="stylesheet" href="../../styles.css">
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script src="../../_ds_bundle.js"></script>
+<style>body{margin:0;padding:14px;background:var(--bg-page)}.grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;align-items:start}.lime{background:var(--surface-today);border-radius:var(--radius-panel);padding:12px;display:flex;flex-direction:column;gap:8px}.sunk{background:var(--surface-sunken);border-radius:var(--radius-panel);padding:12px;display:flex;flex-direction:column;gap:8px}.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.card{background:var(--surface-card);border:1px solid var(--border-card);border-radius:var(--radius-row);padding:12px;display:flex;flex-direction:column;gap:10px}</style>
+</head><body><div id="root"></div>
+<script type="text/babel">
+const { QuickAddBox, TaskAddBox, UrgencyChipRow, Chip, AddButton, IconButton } = window.ManualBrainDesignSystem_41bc1a;
+const SECTIONS=[{id:'1',name:'Work (Deloitte)'},{id:'2',name:'Personal projects'},{id:'3',name:'Life admin'}];
+function Demo(){
+  const [urg,setUrg]=React.useState('2–3 days');
+  const [sec,setSec]=React.useState('2');
+  return (<div className="grid">
+    <div className="lime">
+      <QuickAddBox />
+      <QuickAddBox open text="Apply to baby vc bootcamp" urgency={urg} sections={SECTIONS} selectedSectionId={sec} onUrgencyChange={setUrg} onSectionPick={setSec} />
+    </div>
+    <div style={{display:'flex',flexDirection:'column',gap:14}}>
+      <div className="sunk"><TaskAddBox /><TaskAddBox open text="" urgency="Custom" custom="before Sam visits" /></div>
+      <div className="card">
+        <UrgencyChipRow value={urg} onChange={setUrg} />
+        <div className="row">{SECTIONS.map(s=><Chip key={s.id} label={s.name} selected={sec===s.id} onClick={()=>setSec(s.id)} />)}</div>
+        <div className="row"><AddButton /><AddButton filled /><AddButton label="CREATE LIST" filled /><IconButton glyph="✎" title="Edit" /><IconButton glyph="✕" title="Delete" tone="danger" /><IconButton glyph="↺" title="Undo" size={24} /></div>
+      </div>
+    </div>
+  </div>);
+}
+ReactDOM.createRoot(document.getElementById('root')).render(<Demo/>);
+</script></body></html>

@@ -1,0 +1,37 @@
+{
+  "/Users/willhall/manual-brain/ios/ManualBrain/ManualBrain/App/AppStore.swift" : {
+    "const-values" : "/Users/willhall/manual-brain/ios/ManualBrain/build/Build/Intermediates.noindex/ManualBrain.build/Debug-iphonesimulator/ManualBrain.build/Objects-normal/arm64/AppStore.swiftconstvalues",
+    "dependencies" : "/Users/willhall/manual-brain/ios/ManualBrain/build/Build/Intermediates.noindex/ManualBrain.build/Debug-iphonesimulator/ManualBrain.build/Objects-normal/arm64/AppStore.d",
+    "diagnostics" : "/Users/willhall/manual-brain/ios/ManualBrain/build/Build/Intermediates.noindex/ManualBrain.build/Debug-iphonesimulator/ManualBrain.build/Objects-normal/arm64/AppStore.dia",
+    "object" : "/Users/willhall/manual-brain/ios/ManualBrain/build/Build/Intermediates.noindex/ManualBrain.build/Debug-iphonesimulator/ManualBrain.build/Objects-normal/arm64/AppStore.o",
+    "swift-dependencies" : "/Users/willhall/manual-brain/ios/ManualBrain/build/Build/Intermediates.noindex/ManualBrain.build/Debug-iphonesimulator/ManualBrain.build/Objects-normal/arm64/AppStore.swiftdeps"
+  },
+  "/Users/willhall/manual-brain/ios/ManualBrain/ManualBrain/Components/AgendaListView.swift" : {
+    "const-values" : "/Users/willhall/manual-brain/ios/ManualBrain/build/Build/Intermediates.noindex/ManualBrain.build/Debug-iphonesimulator/ManualBrain.build/Objects-normal/arm64/AgendaListView.swiftconstvalues",
+    "dependencies" : "/Users/willhall/manual-brain/ios/ManualBrain/build/Build/Intermediates.noindex/ManualBrain.build/Debug-iphonesimulator/ManualBrain.build/Objects-normal/arm64/AgendaListView.d",
+    "diagnostics" : "/Users/willhall/manual-brain/ios/ManualBrain/build/Build/Intermediates.noindex/ManualBrain.build/Debug-iphonesimulator/ManualBrain.build/Objects-normal/arm64/AgendaListView.dia",
+    "object" : "/Users/willhall/manual-brain/ios/ManualBrain/build/Build/Intermediates.noindex/ManualBrain.build/Debug-iphonesimulator/ManualBrain.build/Objects-normal/arm64/AgendaListView.o",
+    "swift-dependencies" : "/Users/willhall/manual-brain/ios/ManualBrain/build/Build/Intermediates.noindex/ManualBrain.build/Debug-iphonesimulator/ManualBrain.build/Objects-normal/arm64/AgendaListView.swiftdeps"
+  },
+  "/Users/willhall/manual-brain/ios/ManualBrain/ManualBrain/Components/ChatComponents.swift" : {
+    "const-values" : "/Users/willhall/manual-brain/ios/ManualBrain/build/Build/Intermediates.noindex/ManualBrain.build/Debug-iphonesimulator/ManualBrain.build/Objects-normal/arm64/ChatComponents.swiftconstvalues",
+    "dependencies" : "/Users/willhall/manual-brain/ios/ManualBrain/build/Build/Intermediates.noindex/ManualBrain.build/Debug-iphonesimulator/ManualBrain.build/Objects-normal/arm64/ChatComponents.d",
+    "diagnostics" : "/Users/willhall/manual-brain/ios/ManualBrain/build/Build/Intermediates.noindex/ManualBrain.build/Debug-iphonesimulator/ManualBrain.build/Objects-normal/arm64/ChatComponents.dia",
+    "object" : "/Users/willhall/manual-brain/ios/ManualBrain/build/Build/Intermediates.noindex/ManualBrain.build/Debug-iphonesimulator/ManualBrain.build/Objects-normal/arm64/ChatComponents.o",
+    "swift-dependencies" : "/Users/willhall/manual-brain/ios/ManualBrain/build/Build/Intermediates.noindex/ManualBrain.build/Debug-iphonesimulator/ManualBrain.build/Objects-normal/arm64/ChatComponents.swiftdeps"
+  },
+  "/Users/willhall/manual-brain/ios/ManualBrain/ManualBrain/Networking/APIClient.swift" : {
+    "const-values" : "/Users/willhall/manual-brain/ios/ManualBrain/build/Build/Intermediates.noindex/ManualBrain.build/Debug-iphonesimulator/ManualBrain.build/Objects-normal/arm64/APIClient.swiftconstvalues",
+    "dependencies" : "/Users/willhall/manual-brain/ios/ManualBrain/build/Build/Intermediates.noindex/ManualBrain.build/Debug-iphonesimulator/ManualBrain.build/Objects-normal/arm64/APIClient.d",
+    "diagnostics" : "/Users/willhall/manual-brain/ios/ManualBrain/build/Build/Intermediates.noindex/ManualBrain.build/Debug-iphonesimulator/ManualBrain.build/Objects-normal/arm64/APIClient.dia",
+    "object" : "/Users/willhall/manual-brain/ios/ManualBrain/build/Build/Intermediates.noindex/ManualBrain.build/Debug-iphonesimulator/ManualBrain.build/Objects-normal/arm64/APIClient.o",
+    "swift-dependencies" : "/Users/willhall/manual-brain/ios/ManualBrain/build/Build/Intermediates.noindex/ManualBrain.build/Debug-iphonesimulator/ManualBrain.build/Objects-normal/arm64/APIClient.swiftdeps"
+  },
+  "/Users/willhall/manual-brain/ios/ManualBrain/ManualBrain/Screens/AddTaskSheet.swift" : {
+    "const-values" : "/Users/willhall/manual-brain/ios/ManualBrain/build/Build/Intermediates.noindex/ManualBrain.build/Debug-iphonesimulator/ManualBrain.build/Objects-normal/arm64/AddTaskSheet.swiftconstvalues",
+    "dependencies" : "/Users/willhall/manual-brain/ios/ManualBrain/build/Build/Intermediates.noindex/ManualBrain.build/Debug-iphonesimulator/ManualBrain.build/Objects-normal/arm64/AddTaskSheet.d",
+    "diagnostics" : "/Users/willhall/manual-brain/ios/ManualBrain/build/Build/Intermediates.noindex/ManualBrain.build/Debug-iphonesimulator/ManualBrain.build/Objects-normal/arm64/AddTaskSheet.dia",
+    "object" : "/Users/willhall/manual-brain/ios/ManualBrain/build/Build/Intermediates.noindex/ManualBrain.build/Debug-iphonesimulator/ManualBrain.build/Objects-normal/arm64/AddTaskSheet.o",
+    "swift-dependencies" : "/Users/willhall/manual-brain/ios/ManualBrain/build/Build/Intermediates.noindex/ManualBrain.build/Debug-iphonesimulator/ManualBrain.build/Objects-normal/arm64/AddTaskSheet.swiftdeps"
+  }
+}

@@ -1,0 +1,5 @@
+/* Manual Brain ships one typeface: Archivo, loaded from Google Fonts.
+   The app itself loads it via next/font/google (app/layout.tsx), so Google
+   Fonts IS the upstream source — this is not a substitution. */
+@import url("https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800&display=swap");
+:root{--font-archivo:"Archivo";--font-sans:var(--font-archivo),Archivo,Helvetica,Arial,sans-serif}

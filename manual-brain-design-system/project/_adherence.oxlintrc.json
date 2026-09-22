@@ -1,0 +1,717 @@
+{
+  "plugins": [
+    "react",
+    "import"
+  ],
+  "rules": {
+    "react/forbid-elements": [
+      "warn",
+      {
+        "forbid": []
+      }
+    ],
+    "no-restricted-imports": [
+      "warn",
+      {
+        "patterns": [
+          {
+            "group": [
+              "components/forms/**",
+              "components/layout/**",
+              "components/mobile/**",
+              "components/tasks/**",
+              "ui_kits/dashboard/**",
+              "ui_kits/ios/**"
+            ],
+            "message": "Import design-system components from 'index.js', not component internals."
+          }
+        ]
+      }
+    ],
+    "no-restricted-syntax": [
+      "warn",
+      {
+        "selector": "Literal[value=/#[0-9a-fA-F]{3,8}\\b/]",
+        "message": "Raw hex color — use a design-system color token via var()."
+      },
+      {
+        "selector": "Literal[value=/\\b\\d+px\\b/]",
+        "message": "Raw px value — use a design-system spacing token via var()."
+      },
+      {
+        "selector": "Literal[value=/font-family\\s*:\\s*(?!['\\\"]?(?:Archivo))/i]",
+        "message": "Font not provided by the design system. Available: Archivo."
+      },
+      {
+        "selector": "JSXOpeningElement[name.name='AddButton'] > JSXAttribute > JSXIdentifier[name!=/^(?:label|filled|size|onClick|key|ref|className|style|children)$/]",
+        "message": "<AddButton> doesn't accept that prop. Declared props: label, filled, size, onClick."
+      },
+      {
+        "selector": "JSXOpeningElement[name.name='AddButton'] > JSXAttribute[name.name='size'] > Literal[value!=/^(?:md|touch)$/]",
+        "message": "<AddButton> size must be one of 'md' | 'touch'."
+      },
+      {
+        "selector": "JSXOpeningElement[name.name='AddListCard'] > JSXAttribute > JSXIdentifier[name!=/^(?:adding|value|onOpen|onChange|onKeyDown|onCreate|key|ref|className|style|children)$/]",
+        "message": "<AddListCard> doesn't accept that prop. Declared props: adding, value, onOpen, onChange, onKeyDown, onCreate."
+      },
+      {
+        "selector": "JSXOpeningElement[name.name='AddSheet'] > JSXAttribute > JSXIdentifier[name!=/^(?:open|text|urgency|custom|due|minutes|when|repeat|sections|selectedSectionId|onClose|onTextChange|onCustomChange|onUrgencyChange|onSectionPick|onDueChange|onMinutesChange|onWhenChange|onRepeatChange|onAdd|key|ref|className|style|children)$/]",
+        "message": "<AddSheet> doesn't accept that prop. Declared props: open, text, urgency, custom, due, minutes, when, repeat, sections, selectedSectionId, onClose, onTextChange, onCustomChange, onUrgencyChange, onSectionPick, onDueChange, onMinutesChange, onWhenChange, onRepeatChange, onAdd."
+      },
+      {
+        "selector": "JSXOpeningElement[name.name='AgendaList'] > JSXAttribute > JSXIdentifier[name!=/^(?:before|after|showNow|source|label|key|ref|className|style|children)$/]",
+        "message": "<AgendaList> doesn't accept that prop. Declared props: before, after, showNow, source, label."
+      },
+      {
+        "selector": "JSXOpeningElement[name.name='BackButton'] > JSXAttribute > JSXIdentifier[name!=/^(?:label|onClick|key|ref|className|style|children)$/]",
+        "message": "<BackButton> doesn't accept that prop. Declared props: label, onClick."
+      },
+      {
+        "selector": "JSXOpeningElement[name.name='CalendarEvent'] > JSXAttribute > JSXIdentifier[name!=/^(?:time|title|meta|barColor|dim|key|ref|className|style|children)$/]",
+        "message": "<CalendarEvent> doesn't accept that prop. Declared props: time, title, meta, barColor, dim."
+      },
+      {
+        "selector": "JSXOpeningElement[name.name='ChatBubble'] > JSXAttribute > JSXIdentifier[name!=/^(?:from|children|pending|key|ref|className|style|children)$/]",
+        "message": "<ChatBubble> doesn't accept that prop. Declared props: from, children, pending."
+      },
+      {
+        "selector": "JSXOpeningElement[name.name='ChatBubble'] > JSXAttribute[name.name='from'] > Literal[value!=/^(?:me|brain)$/]",
+        "message": "<ChatBubble> from must be one of 'me' | 'brain'."
+      },
+      {
+        "selector": "JSXOpeningElement[name.name='ChatComposer'] > JSXAttribute > JSXIdentifier[name!=/^(?:value|placeholder|busy|onChange|onSend|key|ref|className|style|children)$/]",
+        "message": "<ChatComposer> doesn't accept that prop. Declared props: value, placeholder, busy, onChange, onSend."
+      },
+      {
+        "selector": "JSXOpeningElement[name.name='CheckCircle'] > JSXAttribute > JSXIdentifier[name!=/^(?:size|hit|onClick|title|key|ref|className|style|children)$/]",
+        "message": "<CheckCircle> doesn't accept that prop. Declared props: size, hit, onClick, title."
+      },
+      {
+        "selector": "JSXOpeningElement[name.name='Chip'] > JSXAttribute > JSXIdentifier[name!=/^(?:label|selected|tone|size|onClick|key|ref|className|style|children)$/]",
+        "message": "<Chip> doesn't accept that prop. Declared props: label, selected, tone, size, onClick."
+      },
+      {
+        "selector": "JSXOpeningElement[name.name='Chip'] > JSXAttribute[name.name='tone'] > Literal[value!=/^(?:ink|lime)$/]",
+        "message": "<Chip> tone must be one of 'ink' | 'lime'."
+      },
+      {
+        "selector": "JSXOpeningElement[name.name='Chip'] > JSXAttribute[name.name='size'] > Literal[value!=/^(?:md|touch)$/]",
+        "message": "<Chip> size must be one of 'md' | 'touch'."
+      },
+      {
+        "selector": "JSXOpeningElement[name.name='DonePanel'] > JSXAttribute > JSXIdentifier[name!=/^(?:items|open|onToggle|onUndo|key|ref|className|style|children)$/]",
+        "message": "<DonePanel> doesn't accept that prop. Declared props: items, open, onToggle, onUndo."
+      },
+      {
+        "selector": "JSXOpeningElement[name.name='DoneTaskRow'] > JSXAttribute > JSXIdentifier[name!=/^(?:name|sectionName|onUndo|key|ref|className|style|children)$/]",
+        "message": "<DoneTaskRow> doesn't accept that prop. Declared props: name, sectionName, onUndo."
+      },
+      {
+        "selector": "JSXOpeningElement[name.name='ErrorBanner'] > JSXAttribute > JSXIdentifier[name!=/^(?:message|onDismiss|key|ref|className|style|children)$/]",
+        "message": "<ErrorBanner> doesn't accept that prop. Declared props: message, onDismiss."
+      },
+      {
+        "selector": "JSXOpeningElement[name.name='Eyebrow'] > JSXAttribute > JSXIdentifier[name!=/^(?:children|tone|key|ref|className|style|children)$/]",
+        "message": "<Eyebrow> doesn't accept that prop. Declared props: children, tone."
+      },
+      {
+        "selector": "JSXOpeningElement[name.name='Eyebrow'] > JSXAttribute[name.name='tone'] > Literal[value!=/^(?:muted|ink|faint)$/]",
+        "message": "<Eyebrow> tone must be one of 'muted' | 'ink' | 'faint'."
+      },
+      {
+        "selector": "JSXOpeningElement[name.name='IconButton'] > JSXAttribute > JSXIdentifier[name!=/^(?:glyph|title|onClick|tone|size|hit|key|ref|className|style|children)$/]",
+        "message": "<IconButton> doesn't accept that prop. Declared props: glyph, title, onClick, tone, size, hit."
+      },
+      {
+        "selector": "JSXOpeningElement[name.name='IconButton'] > JSXAttribute[name.name='tone'] > Literal[value!=/^(?:default|danger)$/]",
+        "message": "<IconButton> tone must be one of 'default' | 'danger'."
+      },
+      {
+        "selector": "JSXOpeningElement[name.name='ListCard'] > JSXAttribute > JSXIdentifier[name!=/^(?:name|taskCount|dueCount|todayCount|soonCount|onClick|key|ref|className|style|children)$/]",
+        "message": "<ListCard> doesn't accept that prop. Declared props: name, taskCount, dueCount, todayCount, soonCount, onClick."
+      },
+      {
+        "selector": "JSXOpeningElement[name.name='ListTaskRow'] > JSXAttribute > JSXIdentifier[name!=/^(?:name|urgency|customLabel|urgencyDisplay|editing|editVal|menuOpen|onDone|onEdit|onDelete|onEditChange|onEditKeyDown|onEditBlur|onToggleMenu|onPickUrgency|key|ref|className|style|children)$/]",
+        "message": "<ListTaskRow> doesn't accept that prop. Declared props: name, urgency, customLabel, urgencyDisplay, editing, editVal, menuOpen, onDone, onEdit, onDelete, onEditChange, onEditKeyDown, onEditBlur, onToggleMenu, onPickUrgency."
+      },
+      {
+        "selector": "JSXOpeningElement[name.name='ListTaskRow'] > JSXAttribute[name.name='urgencyDisplay'] > Literal[value!=/^(?:pill|dot)$/]",
+        "message": "<ListTaskRow> urgencyDisplay must be one of 'pill' | 'dot'."
+      },
+      {
+        "selector": "JSXOpeningElement[name.name='MobileListRow'] > JSXAttribute > JSXIdentifier[name!=/^(?:name|taskCount|dueCount|todayCount|soonCount|onClick|key|ref|className|style|children)$/]",
+        "message": "<MobileListRow> doesn't accept that prop. Declared props: name, taskCount, dueCount, todayCount, soonCount, onClick."
+      },
+      {
+        "selector": "JSXOpeningElement[name.name='MobileNavBar'] > JSXAttribute > JSXIdentifier[name!=/^(?:dateLabel|title|meta|onBack|backLabel|key|ref|className|style|children)$/]",
+        "message": "<MobileNavBar> doesn't accept that prop. Declared props: dateLabel, title, meta, onBack, backLabel."
+      },
+      {
+        "selector": "JSXOpeningElement[name.name='MobileTaskRow'] > JSXAttribute > JSXIdentifier[name!=/^(?:name|sectionName|urgency|customLabel|urgencyDisplay|due|overdue|minutes|when|repeat|booked|variant|onDone|onPressUrgency|onPress|onBook|key|ref|className|style|children)$/]",
+        "message": "<MobileTaskRow> doesn't accept that prop. Declared props: name, sectionName, urgency, customLabel, urgencyDisplay, due, overdue, minutes, when, repeat, booked, variant, onDone, onPressUrgency, onPress, onBook."
+      },
+      {
+        "selector": "JSXOpeningElement[name.name='MobileTaskRow'] > JSXAttribute[name.name='urgencyDisplay'] > Literal[value!=/^(?:pill|dot)$/]",
+        "message": "<MobileTaskRow> urgencyDisplay must be one of 'pill' | 'dot'."
+      },
+      {
+        "selector": "JSXOpeningElement[name.name='MobileTaskRow'] > JSXAttribute[name.name='variant'] > Literal[value!=/^(?:today|list)$/]",
+        "message": "<MobileTaskRow> variant must be one of 'today' | 'list'."
+      },
+      {
+        "selector": "JSXOpeningElement[name.name='PageHeader'] > JSXAttribute > JSXIdentifier[name!=/^(?:dateLabel|title|meta|key|ref|className|style|children)$/]",
+        "message": "<PageHeader> doesn't accept that prop. Declared props: dateLabel, title, meta."
+      },
+      {
+        "selector": "JSXOpeningElement[name.name='QuickAddBox'] > JSXAttribute > JSXIdentifier[name!=/^(?:open|text|urgency|custom|sections|selectedSectionId|onOpen|onCancel|onTextChange|onCustomChange|onUrgencyChange|onSectionPick|onKeyDown|onAdd|key|ref|className|style|children)$/]",
+        "message": "<QuickAddBox> doesn't accept that prop. Declared props: open, text, urgency, custom, sections, selectedSectionId, onOpen, onCancel, onTextChange, onCustomChange, onUrgencyChange, onSectionPick, onKeyDown, onAdd."
+      },
+      {
+        "selector": "JSXOpeningElement[name.name='SettingsRow'] > JSXAttribute > JSXIdentifier[name!=/^(?:label|description|value|children|key|ref|className|style|children)$/]",
+        "message": "<SettingsRow> doesn't accept that prop. Declared props: label, description, value, children."
+      },
+      {
+        "selector": "JSXOpeningElement[name.name='Sheet'] > JSXAttribute > JSXIdentifier[name!=/^(?:open|title|onClose|children|height|key|ref|className|style|children)$/]",
+        "message": "<Sheet> doesn't accept that prop. Declared props: open, title, onClose, children, height."
+      },
+      {
+        "selector": "JSXOpeningElement[name.name='SuggestionChips'] > JSXAttribute > JSXIdentifier[name!=/^(?:items|onPick|key|ref|className|style|children)$/]",
+        "message": "<SuggestionChips> doesn't accept that prop. Declared props: items, onPick."
+      },
+      {
+        "selector": "JSXOpeningElement[name.name='TabItem'] > JSXAttribute > JSXIdentifier[name!=/^(?:id|label|glyph|key|ref|className|style|children)$/]",
+        "message": "<TabItem> doesn't accept that prop. Declared props: id, label, glyph."
+      },
+      {
+        "selector": "JSXOpeningElement[name.name='TaskAddBox'] > JSXAttribute > JSXIdentifier[name!=/^(?:open|text|urgency|custom|onOpen|onCancel|onTextChange|onCustomChange|onUrgencyChange|onKeyDown|onAdd|key|ref|className|style|children)$/]",
+        "message": "<TaskAddBox> doesn't accept that prop. Declared props: open, text, urgency, custom, onOpen, onCancel, onTextChange, onCustomChange, onUrgencyChange, onKeyDown, onAdd."
+      },
+      {
+        "selector": "JSXOpeningElement[name.name='DueLabel'] > JSXAttribute > JSXIdentifier[name!=/^(?:due|overdue|key|ref|className|style|children)$/]",
+        "message": "<DueLabel> doesn't accept that prop. Declared props: due, overdue."
+      },
+      {
+        "selector": "JSXOpeningElement[name.name='TaskDraft'] > JSXAttribute > JSXIdentifier[name!=/^(?:name|sectionId|urgency|customLabel|dueISO|minutes|when|repeat|key|ref|className|style|children)$/]",
+        "message": "<TaskDraft> doesn't accept that prop. Declared props: name, sectionId, urgency, customLabel, dueISO, minutes, when, repeat."
+      },
+      {
+        "selector": "JSXOpeningElement[name.name='TodayBlock'] > JSXAttribute > JSXIdentifier[name!=/^(?:count|note|children|key|ref|className|style|children)$/]",
+        "message": "<TodayBlock> doesn't accept that prop. Declared props: count, note, children."
+      },
+      {
+        "selector": "JSXOpeningElement[name.name='TodayTaskRow'] > JSXAttribute > JSXIdentifier[name!=/^(?:name|sectionName|editing|editVal|onDone|onEdit|onDelete|onEditChange|onEditKeyDown|onEditBlur|key|ref|className|style|children)$/]",
+        "message": "<TodayTaskRow> doesn't accept that prop. Declared props: name, sectionName, editing, editVal, onDone, onEdit, onDelete, onEditChange, onEditKeyDown, onEditBlur."
+      },
+      {
+        "selector": "JSXOpeningElement[name.name='UrgencyChipRow'] > JSXAttribute > JSXIdentifier[name!=/^(?:value|size|onChange|key|ref|className|style|children)$/]",
+        "message": "<UrgencyChipRow> doesn't accept that prop. Declared props: value, size, onChange."
+      },
+      {
+        "selector": "JSXOpeningElement[name.name='UrgencyChipRow'] > JSXAttribute[name.name='size'] > Literal[value!=/^(?:md|touch)$/]",
+        "message": "<UrgencyChipRow> size must be one of 'md' | 'touch'."
+      },
+      {
+        "selector": "JSXOpeningElement[name.name='UrgencyMenu'] > JSXAttribute > JSXIdentifier[name!=/^(?:onPick|align|key|ref|className|style|children)$/]",
+        "message": "<UrgencyMenu> doesn't accept that prop. Declared props: onPick, align."
+      },
+      {
+        "selector": "JSXOpeningElement[name.name='UrgencyMenu'] > JSXAttribute[name.name='align'] > Literal[value!=/^(?:left|right)$/]",
+        "message": "<UrgencyMenu> align must be one of 'left' | 'right'."
+      },
+      {
+        "selector": "JSXOpeningElement[name.name='UrgencyPill'] > JSXAttribute > JSXIdentifier[name!=/^(?:urgency|customLabel|display|hit|onClick|title|key|ref|className|style|children)$/]",
+        "message": "<UrgencyPill> doesn't accept that prop. Declared props: urgency, customLabel, display, hit, onClick, title."
+      },
+      {
+        "selector": "JSXOpeningElement[name.name='UrgencyPill'] > JSXAttribute[name.name='display'] > Literal[value!=/^(?:pill|dot)$/]",
+        "message": "<UrgencyPill> display must be one of 'pill' | 'dot'."
+      },
+      {
+        "selector": "JSXOpeningElement[name.name='UrgencySheet'] > JSXAttribute > JSXIdentifier[name!=/^(?:open|value|onClose|onPick|key|ref|className|style|children)$/]",
+        "message": "<UrgencySheet> doesn't accept that prop. Declared props: open, value, onClose, onPick."
+      }
+    ]
+  },
+  "overrides": [
+    {
+      "files": [
+        "**/index.js"
+      ],
+      "rules": {
+        "no-restricted-imports": "off"
+      }
+    }
+  ],
+  "x-omelette": {
+    "components": {
+      "AddButton": {
+        "replaces": []
+      },
+      "AddListCard": {
+        "replaces": []
+      },
+      "AddSheet": {
+        "replaces": []
+      },
+      "AgendaList": {
+        "replaces": []
+      },
+      "BackButton": {
+        "replaces": []
+      },
+      "CalendarEvent": {
+        "replaces": []
+      },
+      "ChatBubble": {
+        "replaces": []
+      },
+      "ChatComposer": {
+        "replaces": []
+      },
+      "CheckCircle": {
+        "replaces": []
+      },
+      "Chip": {
+        "replaces": []
+      },
+      "DonePanel": {
+        "replaces": []
+      },
+      "DoneTaskRow": {
+        "replaces": []
+      },
+      "ErrorBanner": {
+        "replaces": []
+      },
+      "Eyebrow": {
+        "replaces": []
+      },
+      "IconButton": {
+        "replaces": []
+      },
+      "ListCard": {
+        "replaces": []
+      },
+      "ListTaskRow": {
+        "replaces": []
+      },
+      "MobileListRow": {
+        "replaces": []
+      },
+      "MobileNavBar": {
+        "replaces": []
+      },
+      "MobileTaskRow": {
+        "replaces": []
+      },
+      "PageHeader": {
+        "replaces": []
+      },
+      "QuickAddBox": {
+        "replaces": []
+      },
+      "SettingsRow": {
+        "replaces": []
+      },
+      "Sheet": {
+        "replaces": []
+      },
+      "SuggestionChips": {
+        "replaces": []
+      },
+      "TabItem": {
+        "replaces": []
+      },
+      "TaskAddBox": {
+        "replaces": []
+      },
+      "DueLabel": {
+        "replaces": []
+      },
+      "TaskDraft": {
+        "replaces": []
+      },
+      "TodayBlock": {
+        "replaces": []
+      },
+      "TodayTaskRow": {
+        "replaces": []
+      },
+      "UrgencyChipRow": {
+        "replaces": []
+      },
+      "UrgencyMenu": {
+        "replaces": []
+      },
+      "UrgencyPill": {
+        "replaces": []
+      },
+      "UrgencySheet": {
+        "replaces": []
+      }
+    },
+    "tokens": [
+      "--accent-focus",
+      "--accent-today",
+      "--bg-page",
+      "--border-card",
+      "--border-check",
+      "--border-control",
+      "--border-dashed",
+      "--border-strong",
+      "--calendar-width",
+      "--danger",
+      "--danger-strong",
+      "--danger-surface",
+      "--font-archivo",
+      "--font-body",
+      "--font-sans",
+      "--fs-body",
+      "--fs-body-lg",
+      "--fs-body-sm",
+      "--fs-caption",
+      "--fs-chip",
+      "--fs-eyebrow",
+      "--fs-eyebrow-sm",
+      "--fs-h2",
+      "--fs-list-title",
+      "--fs-meta",
+      "--fs-meta-sm",
+      "--fs-micro",
+      "--fs-today-count",
+      "--fs-today-label",
+      "--fs-wordmark",
+      "--fw-black",
+      "--fw-bold",
+      "--fw-medium",
+      "--fw-regular",
+      "--fw-semibold",
+      "--gap-card-grid",
+      "--gap-list-row",
+      "--gap-row",
+      "--gap-row-inner",
+      "--gap-stack",
+      "--icon-hover",
+      "--icon-rest",
+      "--layout-max",
+      "--lh-body",
+      "--lh-snug",
+      "--lh-tight",
+      "--lh-wordmark",
+      "--lift-hover",
+      "--list-card-height",
+      "--list-card-min",
+      "--ls-button",
+      "--ls-daylabel",
+      "--ls-eyebrow",
+      "--ls-h2",
+      "--ls-list-title",
+      "--ls-tag",
+      "--ls-tight",
+      "--ls-today-count",
+      "--ls-today-label",
+      "--ls-wordmark",
+      "--mb-blue",
+      "--mb-blue-hover",
+      "--mb-blue-soft",
+      "--mb-blue-tint",
+      "--mb-blue-tint-border",
+      "--mb-g-100",
+      "--mb-g-200",
+      "--mb-g-300",
+      "--mb-g-400",
+      "--mb-g-500",
+      "--mb-g-600",
+      "--mb-g-700",
+      "--mb-g-800",
+      "--mb-g-850",
+      "--mb-g-900",
+      "--mb-ink",
+      "--mb-lime",
+      "--mb-lime-border",
+      "--mb-lime-dashed",
+      "--mb-lime-ink",
+      "--mb-lime-tint",
+      "--mb-n-100",
+      "--mb-n-150",
+      "--mb-n-200",
+      "--mb-n-250",
+      "--mb-n-300",
+      "--mb-n-350",
+      "--mb-n-400",
+      "--mb-n-450",
+      "--mb-n-50",
+      "--mb-n-500",
+      "--mb-n-550",
+      "--mb-n-600",
+      "--mb-n-650",
+      "--mb-n-700",
+      "--mb-n-750",
+      "--mb-n-800",
+      "--mb-n-850",
+      "--mb-n-900",
+      "--mb-n-950",
+      "--mb-olive",
+      "--mb-paper",
+      "--mb-red",
+      "--mb-red-strong",
+      "--mb-red-tint",
+      "--mb-white",
+      "--menu-width",
+      "--pad-list-card",
+      "--pad-page",
+      "--pad-panel",
+      "--pad-row",
+      "--pad-today-block",
+      "--radius-box",
+      "--radius-card",
+      "--radius-icon",
+      "--radius-input",
+      "--radius-menu",
+      "--radius-menuitem",
+      "--radius-panel",
+      "--radius-pill",
+      "--radius-row",
+      "--shadow-menu",
+      "--shadow-popover",
+      "--space-1",
+      "--space-10",
+      "--space-11",
+      "--space-12",
+      "--space-13",
+      "--space-14",
+      "--space-16",
+      "--space-18",
+      "--space-2",
+      "--space-20",
+      "--space-22",
+      "--space-24",
+      "--space-34",
+      "--space-36",
+      "--space-4",
+      "--space-5",
+      "--space-6",
+      "--space-7",
+      "--space-72",
+      "--space-8",
+      "--space-9",
+      "--sticky-top",
+      "--surface-booked",
+      "--surface-card",
+      "--surface-input",
+      "--surface-sunken",
+      "--surface-today",
+      "--text-body",
+      "--text-booked",
+      "--text-done",
+      "--text-eyebrow-weight",
+      "--text-faint",
+      "--text-link",
+      "--text-link-hover",
+      "--text-muted",
+      "--text-on-lime",
+      "--text-overdue",
+      "--text-placeholder",
+      "--text-subtle",
+      "--text-title",
+      "--urg-2-3-bd",
+      "--urg-2-3-bg",
+      "--urg-2-3-fg",
+      "--urg-custom-bd",
+      "--urg-custom-bg",
+      "--urg-custom-fg",
+      "--urg-month-bd",
+      "--urg-month-bg",
+      "--urg-month-fg",
+      "--urg-today-bd",
+      "--urg-today-bg",
+      "--urg-today-fg",
+      "--urg-week-bd",
+      "--urg-week-bg",
+      "--urg-week-fg"
+    ],
+    "tokenKinds": {
+      "--font-archivo": "font",
+      "--font-sans": "font",
+      "--mb-ink": "color",
+      "--mb-paper": "color",
+      "--mb-white": "color",
+      "--mb-lime": "color",
+      "--mb-lime-border": "color",
+      "--mb-lime-dashed": "color",
+      "--mb-lime-ink": "color",
+      "--mb-lime-tint": "color",
+      "--mb-olive": "color",
+      "--mb-blue": "color",
+      "--mb-blue-hover": "color",
+      "--mb-blue-tint": "color",
+      "--mb-blue-tint-border": "color",
+      "--mb-blue-soft": "color",
+      "--mb-red": "color",
+      "--mb-red-strong": "color",
+      "--mb-red-tint": "color",
+      "--mb-n-50": "color",
+      "--mb-n-100": "color",
+      "--mb-n-150": "color",
+      "--mb-n-200": "color",
+      "--mb-n-250": "color",
+      "--mb-n-300": "color",
+      "--mb-n-350": "color",
+      "--mb-n-400": "color",
+      "--mb-n-450": "color",
+      "--mb-n-500": "color",
+      "--mb-n-550": "color",
+      "--mb-n-600": "color",
+      "--mb-n-650": "color",
+      "--mb-n-700": "color",
+      "--mb-n-750": "color",
+      "--mb-n-800": "color",
+      "--mb-n-850": "color",
+      "--mb-n-900": "color",
+      "--mb-n-950": "color",
+      "--mb-g-100": "color",
+      "--mb-g-200": "color",
+      "--mb-g-300": "color",
+      "--mb-g-400": "color",
+      "--mb-g-500": "color",
+      "--mb-g-600": "color",
+      "--mb-g-700": "color",
+      "--mb-g-800": "color",
+      "--mb-g-850": "color",
+      "--mb-g-900": "color",
+      "--bg-page": "color",
+      "--surface-card": "color",
+      "--surface-sunken": "color",
+      "--surface-input": "color",
+      "--surface-today": "color",
+      "--text-body": "font",
+      "--text-muted": "font",
+      "--text-subtle": "font",
+      "--text-faint": "font",
+      "--text-done": "font",
+      "--text-on-lime": "font",
+      "--text-link": "font",
+      "--text-link-hover": "font",
+      "--text-placeholder": "font",
+      "--border-card": "color",
+      "--border-strong": "color",
+      "--border-dashed": "color",
+      "--border-control": "color",
+      "--border-check": "color",
+      "--accent-focus": "color",
+      "--accent-today": "color",
+      "--danger": "color",
+      "--danger-strong": "color",
+      "--danger-surface": "color",
+      "--text-overdue": "font",
+      "--surface-booked": "color",
+      "--text-booked": "font",
+      "--icon-rest": "color",
+      "--icon-hover": "color",
+      "--urg-today-bg": "color",
+      "--urg-today-fg": "color",
+      "--urg-today-bd": "color",
+      "--urg-2-3-bg": "color",
+      "--urg-2-3-fg": "color",
+      "--urg-2-3-bd": "color",
+      "--urg-week-bg": "color",
+      "--urg-week-fg": "color",
+      "--urg-week-bd": "color",
+      "--urg-month-bg": "color",
+      "--urg-month-fg": "color",
+      "--urg-month-bd": "color",
+      "--urg-custom-bg": "color",
+      "--urg-custom-fg": "color",
+      "--urg-custom-bd": "color",
+      "--font-body": "font",
+      "--fs-wordmark": "spacing",
+      "--lh-wordmark": "font",
+      "--ls-wordmark": "spacing",
+      "--fs-today-count": "spacing",
+      "--ls-today-count": "spacing",
+      "--fs-h2": "spacing",
+      "--ls-h2": "spacing",
+      "--fs-list-title": "spacing",
+      "--ls-list-title": "spacing",
+      "--fs-today-label": "spacing",
+      "--ls-today-label": "spacing",
+      "--fs-body-lg": "spacing",
+      "--fs-body": "spacing",
+      "--fs-body-sm": "spacing",
+      "--fs-meta": "spacing",
+      "--fs-meta-sm": "spacing",
+      "--fs-caption": "spacing",
+      "--fs-chip": "spacing",
+      "--fs-micro": "spacing",
+      "--fs-eyebrow": "spacing",
+      "--fs-eyebrow-sm": "spacing",
+      "--fw-regular": "font",
+      "--fw-medium": "font",
+      "--fw-semibold": "font",
+      "--fw-bold": "font",
+      "--fw-black": "font",
+      "--ls-eyebrow": "spacing",
+      "--ls-daylabel": "spacing",
+      "--ls-button": "spacing",
+      "--ls-tag": "spacing",
+      "--ls-tight": "spacing",
+      "--lh-tight": "font",
+      "--lh-snug": "font",
+      "--lh-body": "font",
+      "--text-title": "font",
+      "--text-eyebrow-weight": "font",
+      "--space-1": "spacing",
+      "--space-2": "spacing",
+      "--space-4": "spacing",
+      "--space-5": "spacing",
+      "--space-6": "spacing",
+      "--space-7": "spacing",
+      "--space-8": "spacing",
+      "--space-9": "spacing",
+      "--space-10": "spacing",
+      "--space-11": "spacing",
+      "--space-12": "spacing",
+      "--space-13": "spacing",
+      "--space-14": "spacing",
+      "--space-16": "spacing",
+      "--space-18": "spacing",
+      "--space-20": "spacing",
+      "--space-22": "spacing",
+      "--space-24": "spacing",
+      "--space-34": "spacing",
+      "--space-36": "spacing",
+      "--space-72": "spacing",
+      "--gap-row": "spacing",
+      "--gap-list-row": "spacing",
+      "--gap-row-inner": "spacing",
+      "--gap-card-grid": "spacing",
+      "--gap-stack": "spacing",
+      "--pad-row": "spacing",
+      "--pad-panel": "spacing",
+      "--pad-today-block": "spacing",
+      "--pad-list-card": "spacing",
+      "--pad-page": "spacing",
+      "--layout-max": "spacing",
+      "--calendar-width": "spacing",
+      "--list-card-min": "spacing",
+      "--list-card-height": "spacing",
+      "--menu-width": "spacing",
+      "--sticky-top": "spacing",
+      "--radius-pill": "radius",
+      "--radius-panel": "radius",
+      "--radius-card": "radius",
+      "--radius-box": "radius",
+      "--radius-row": "radius",
+      "--radius-menu": "radius",
+      "--radius-input": "radius",
+      "--radius-menuitem": "radius",
+      "--radius-icon": "radius",
+      "--shadow-menu": "shadow",
+      "--shadow-popover": "shadow",
+      "--lift-hover": "other"
+    },
+    "fontFamilies": [
+      "Archivo"
+    ]
+  }
+}

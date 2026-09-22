@@ -1,0 +1,35 @@
+/* Ported from manual-brain app/globals.css. Resting looks live in inline
+   styles on components; these classes carry the hover states (!important,
+   since a stylesheet rule only beats an inline style that way). */
+*,*::before,*::after{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{background:var(--bg-page);color:var(--text-body);font-family:var(--font-body);-webkit-font-smoothing:antialiased}
+input,button{font-family:inherit}
+button{cursor:pointer}
+a{color:var(--text-link);text-decoration:none}
+a:hover{color:var(--text-link-hover)}
+::placeholder{color:var(--text-placeholder)}
+.mb-donebtn:hover{border-color:var(--mb-blue)!important;background:var(--mb-blue-tint)!important}
+.mb-iconbtn:hover{background:var(--mb-n-200)!important;color:var(--mb-ink)!important}
+.mb-iconbtn-danger:hover{background:var(--mb-n-200)!important;color:var(--mb-red)!important}
+.mb-chip:hover{opacity:.85}
+.mb-cancel:hover{color:var(--mb-ink)!important}
+.mb-addbtn:hover{opacity:.88}
+.mb-quickadd-rest:hover{background:var(--mb-white)!important;border-color:var(--mb-ink)!important;border-style:solid!important}
+.mb-listadd-rest:hover{border-color:var(--mb-ink)!important;color:var(--mb-ink)!important;background:var(--mb-white)!important}
+.mb-sectionbox:hover{border-color:var(--mb-ink)!important;transform:var(--lift-hover)}
+.mb-addlist:hover{border-color:var(--mb-ink)!important;color:var(--mb-ink)!important;background:var(--mb-n-250)!important}
+.mb-backbtn:hover{border-color:var(--mb-ink)!important;background:var(--mb-white)!important}
+.mb-urgpill:hover{opacity:.82}
+.mb-donehit:hover .mb-donering{border-color:var(--mb-blue)!important;background:var(--mb-blue-tint)!important}
+.mb-iconhit:hover .mb-iconbox{background:var(--mb-n-200)!important;color:var(--mb-ink)!important}
+.mb-iconhit-danger:hover .mb-iconbox{background:var(--mb-n-200)!important;color:var(--mb-red)!important}
+.mb-urghit:hover .mb-urgvis{opacity:.82}
+.mb-bookhit:hover .mb-bookvis{opacity:.88}
+/* Buys a 44px-tall pressable area around a small painted control without
+   costing any layout height — the only safe way inside a wrapping flex,
+   where min-height inflates the row and a negative pull invades the line
+   above. Vertical only: horizontal growth would overlap a sibling control. */
+.mb-hit{position:relative}
+.mb-hit::after{content:"";position:absolute;top:50%;left:0;right:0;height:44px;transform:translateY(-50%)}
+.mb-menuitem:hover{background:var(--mb-n-100)!important}

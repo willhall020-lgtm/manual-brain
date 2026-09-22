@@ -1,0 +1,30 @@
+<!-- @dsCard group="Components" viewport="700x420" name="Task rows" subtitle="Today row, list row, urgency pill + menu, done row" -->
+<!DOCTYPE html><html><head><meta charset="utf-8">
+<link rel="stylesheet" href="../../styles.css">
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script src="../../_ds_bundle.js"></script>
+<style>body{margin:0;padding:14px;background:var(--bg-page)}.lime{background:var(--surface-today);border-radius:var(--radius-panel);padding:12px;display:flex;flex-direction:column;gap:var(--gap-row)}.sunk{background:var(--surface-sunken);border-radius:var(--radius-panel);padding:10px;display:flex;flex-direction:column;gap:var(--gap-list-row)}.wrap{display:flex;flex-direction:column;gap:12px}.pills{display:flex;gap:6px;align-items:center;flex-wrap:wrap;padding-left:2px}</style>
+</head><body><div id="root"></div>
+<script type="text/babel">
+const { TodayTaskRow, ListTaskRow, DoneTaskRow, UrgencyPill, UrgencyMenu, URGENCY } = window.ManualBrainDesignSystem_41bc1a;
+function Demo(){
+  const [menu,setMenu]=React.useState(false);
+  return (<div className="wrap">
+    <div className="lime">
+      <TodayTaskRow name="Founders factory application" sectionName="Applications" />
+      <TodayTaskRow name="Adopt docker approach on current skills" sectionName="Work (Deloitte)" editing editVal="Adopt docker approach on current skills" />
+    </div>
+    <div className="sunk">
+      <ListTaskRow name="Renew passport" urgency="End of this week" menuOpen={menu} onToggleMenu={()=>setMenu(v=>!v)} />
+      <ListTaskRow name="Book physio" urgency="2–3 days" />
+      <ListTaskRow name="Chase invoice" urgency="This month" urgencyDisplay="dot" />
+      <ListTaskRow name="Tidy the spare room" urgency="Custom" customLabel="before Sam visits" />
+      <DoneTaskRow name="Book dentist" sectionName="Life admin" />
+    </div>
+    <div className="pills">{URGENCY.map(u=><UrgencyPill key={u.k} urgency={u.k} customLabel="before Sam visits" />)}</div>
+  </div>);
+}
+ReactDOM.createRoot(document.getElementById('root')).render(<Demo/>);
+</script></body></html>

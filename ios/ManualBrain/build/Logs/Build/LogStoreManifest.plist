@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>logFormatVersion</key>
+	<integer>13</integer>
+	<key>logs</key>
+	<dict>
+		<key>783B750F-CFE2-48AE-817E-9C058976DC00</key>
+		<dict>
+			<key>className</key>
+			<string>IDECommandLineBuildLog</string>
+			<key>documentTypeString</key>
+			<string>&lt;nil&gt;</string>
+			<key>domainType</key>
+			<string>Xcode.IDEActivityLogDomainType.BuildLog</string>
+			<key>fileName</key>
+			<string>783B750F-CFE2-48AE-817E-9C058976DC00.xcactivitylog</string>
+			<key>hasPrimaryLog</key>
+			<true/>
+			<key>primaryObservable</key>
+			<dict>
+				<key>highLevelStatus</key>
+				<string>S</string>
+				<key>totalNumberOfAnalyzerIssues</key>
+				<integer>0</integer>
+				<key>totalNumberOfErrors</key>
+				<integer>0</integer>
+				<key>totalNumberOfTestFailures</key>
+				<integer>0</integer>
+				<key>totalNumberOfWarnings</key>
+				<integer>0</integer>
+			</dict>
+			<key>schemeIdentifier-containerName</key>
+			<string>ManualBrain project</string>
+			<key>schemeIdentifier-schemeName</key>
+			<string>ManualBrain</string>
+			<key>schemeIdentifier-sharedScheme</key>
+			<integer>1</integer>
+			<key>signature</key>
+			<string>Building project ManualBrain with scheme ManualBrain</string>
+			<key>timeStartedRecording</key>
+			<real>811428408.87056994</real>
+			<key>timeStoppedRecording</key>
+			<real>811428412.45935094</real>
+			<key>title</key>
+			<string>Building project ManualBrain with scheme ManualBrain</string>
+			<key>uniqueIdentifier</key>
+			<string>783B750F-CFE2-48AE-817E-9C058976DC00</string>
+		</dict>
+		<key>EAD51972-F2F1-42E4-8FE2-97D462F8D158</key>
+		<dict>
+			<key>className</key>
+			<string>IDECommandLineBuildLog</string>
+			<key>documentTypeString</key>
+			<string>&lt;nil&gt;</string>
+			<key>domainType</key>
+			<string>Xcode.IDEActivityLogDomainType.BuildLog</string>
+			<key>fileName</key>
+			<string>EAD51972-F2F1-42E4-8FE2-97D462F8D158.xcactivitylog</string>
+			<key>hasPrimaryLog</key>
+			<true/>
+			<key>primaryObservable</key>
+			<dict>
+				<key>highLevelStatus</key>
+				<string>S</string>
+				<key>totalNumberOfAnalyzerIssues</key>
+				<integer>0</integer>
+				<key>totalNumberOfErrors</key>
+				<integer>0</integer>
+				<key>totalNumberOfTestFailures</key>
+				<integer>0</integer>
+				<key>totalNumberOfWarnings</key>
+				<integer>0</integer>
+			</dict>
+			<key>schemeIdentifier-containerName</key>
+			<string>ManualBrain project</string>
+			<key>schemeIdentifier-schemeName</key>
+			<string>ManualBrain</string>
+			<key>schemeIdentifier-sharedScheme</key>
+			<integer>1</integer>
+			<key>signature</key>
+			<string>Building project ManualBrain with scheme ManualBrain</string>
+			<key>timeStartedRecording</key>
+			<real>811429421.94161606</real>
+			<key>timeStoppedRecording</key>
+			<real>811429426.36942399</real>
+			<key>title</key>
+			<string>Building project ManualBrain with scheme ManualBrain</string>
+			<key>uniqueIdentifier</key>
+			<string>EAD51972-F2F1-42E4-8FE2-97D462F8D158</string>
+		</dict>
+	</dict>
+</dict>
+</plist>

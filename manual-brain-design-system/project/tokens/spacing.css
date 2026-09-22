@@ -1,0 +1,27 @@
+/* Manual Brain does NOT use a 4/8 grid — gaps are hand-tuned odd numbers
+   (7, 11, 14, 22). These are the real values; keep them. */
+:root{
+  --space-1:1px;--space-2:2px;--space-4:4px;--space-5:5px;--space-6:6px;--space-7:7px;
+  --space-8:8px;--space-9:9px;--space-10:10px;--space-11:11px;--space-12:12px;
+  --space-13:13px;--space-14:14px;--space-16:16px;--space-18:18px;--space-20:20px;
+  --space-22:22px;--space-24:24px;--space-34:34px;--space-36:36px;--space-72:72px;
+
+  --gap-row:7px;          /* between task rows in the today block */
+  --gap-list-row:8px;     /* between rows inside a list view */
+  --gap-row-inner:11px;   /* checkbox → title → pill inside a row */
+  --gap-card-grid:14px;   /* list-card grid gutter */
+  --gap-stack:22px;       /* between major page blocks */
+
+  --pad-row:12px 12px 12px 13px;
+  --pad-panel:18px 16px;
+  --pad-today-block:18px 20px 16px;
+  --pad-list-card:16px 16px 14px;
+  --pad-page:34px 36px 72px;
+
+  --layout-max:1520px;
+  --calendar-width:326px;
+  --list-card-min:232px;
+  --list-card-height:126px;
+  --menu-width:186px;
+  --sticky-top:28px;
+}

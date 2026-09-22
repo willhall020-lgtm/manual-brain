@@ -1,0 +1,45 @@
+<!-- @dsCard group="Components" viewport="700x620" name="Mobile (iOS)" subtitle="Nav bar, task rows, list rows, tab bar, settings row, add / task / urgency sheets" -->
+<!DOCTYPE html><html><head><meta charset="utf-8"><link rel="stylesheet" href="../../styles.css">
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script src="../../_ds_bundle.js"></script>
+<style>body{margin:0;padding:14px;background:var(--bg-page)}.grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start}.phone{width:320px;background:var(--bg-page);border:1px solid var(--border-card);border-radius:22px;overflow:hidden;position:relative}.lime{background:var(--surface-today);border-radius:var(--radius-panel);padding:12px;display:flex;flex-direction:column;gap:7px;margin:0 12px}.sunk{background:var(--surface-sunken);border-radius:var(--radius-panel);padding:12px;display:flex;flex-direction:column;gap:8px;margin:12px}.stack{display:flex;flex-direction:column;gap:10px;padding:0 12px 12px}</style>
+</head><body><div id="root"></div>
+<script type="text/babel">
+const { MobileNavBar, MobileTaskRow, MobileListRow, TabBar, Sheet, AddSheet, UrgencySheet, TaskSheet, SettingsRow, Chip } = window.ManualBrainDesignSystem_41bc1a;
+const SECTIONS=[{id:'1',name:'Work (Deloitte)'},{id:'2',name:'Personal projects'},{id:'3',name:'Life admin'}];
+function Demo(){
+  const [tab,setTab]=React.useState('today');
+  const [urg,setUrg]=React.useState('2–3 days');
+  const [sec,setSec]=React.useState('2');
+  return (<div className="grid">
+    <div className="phone">
+      <MobileNavBar dateLabel="TUESDAY 1 SEPTEMBER" meta="12 tasks · 2 done" />
+      <div className="lime">
+        <MobileTaskRow name="Founders factory application" sectionName="Applications" due="31 aug" overdue minutes={40} when="any time" booked />
+        <MobileTaskRow name="manual brain ios app design" sectionName="Personal projects" due="today" minutes={30} when="afternoon" booked={false} />
+      </div>
+      <div className="sunk">
+        <MobileTaskRow name="Renew passport" urgency="End of this week" variant="list" due="12 sep" minutes={45} />
+        <MobileTaskRow name="Weekly meds refill" urgency="This month" variant="list" repeat="weekly" minutes={15} />
+        <MobileTaskRow name="Tidy the spare room" urgency="Custom" customLabel="before Sam visits" variant="list" />
+      </div>
+      <div className="stack"><MobileListRow name="Personal projects" taskCount={17} soonCount={2} /></div>
+      <TabBar tabs={[{id:'chat',label:'chat'},{id:'today',label:'today'},{id:'tomorrow',label:'tomorrow'},{id:'lists',label:'lists'},{id:'settings',label:'settings',glyph:'⚙︎'}]} active={tab} onSelect={setTab} />
+    </div>
+    <div style={{display:'flex',flexDirection:'column',gap:16}}>
+      <div className="phone" style={{minHeight:330}}><AddSheet open text="Apply to baby vc bootcamp" urgency={urg} sections={SECTIONS} selectedSectionId={sec} onUrgencyChange={setUrg} onSectionPick={setSec} /></div>
+      <div className="phone" style={{minHeight:330}}><UrgencySheet open value={urg} onPick={setUrg} /></div>
+      <div className="phone" style={{minHeight:200,padding:12,display:'flex',flexDirection:'column',gap:10}}>
+        <SettingsRow label="urgency labels" description="show the whole label, or shrink it to a colour dot.">
+          <Chip label="pill" size="touch" selected onClick={()=>{}} /><Chip label="dot" size="touch" onClick={()=>{}} />
+        </SettingsRow>
+        <SettingsRow label="calendar" value="google · read only" description="manual brain never writes to your calendar." />
+      </div>
+      <div className="phone" style={{minHeight:360}}><TaskSheet open sections={SECTIONS} task={{id:'t1',name:'Founders factory application',sectionId:'2',urgency:urg,dueISO:'2026-08-31',minutes:40,when:'any time',repeat:'never'}} onChange={p=>p.urgency&&setUrg(p.urgency)} /></div>
+    </div>
+  </div>);
+}
+ReactDOM.createRoot(document.getElementById('root')).render(<Demo/>);
+</script></body></html>

@@ -1,0 +1,11 @@
+:root{
+  --radius-pill:99px;
+  --radius-panel:22px;   /* today block, calendar, done panel, list container */
+  --radius-card:20px;    /* list cards */
+  --radius-box:16px;     /* open add boxes */
+  --radius-row:14px;     /* task rows, banners */
+  --radius-menu:13px;    /* urgency dropdown */
+  --radius-input:10px;   /* custom-label input */
+  --radius-menuitem:9px;
+  --radius-icon:8px;     /* icon-button hit area */
+}

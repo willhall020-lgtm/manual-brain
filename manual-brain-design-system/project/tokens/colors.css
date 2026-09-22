@@ -1,0 +1,98 @@
+/* Values lifted verbatim from manual-brain: app/globals.css, lib/urgency.ts,
+   and the inline styles in components/*.tsx. Do not round these. */
+:root{
+  /* --- base palette --- */
+  --mb-ink:#14140F;
+  --mb-paper:#F6F6F3;
+  --mb-white:#FFFFFF;
+
+  --mb-lime:#D6EC3C;
+  --mb-lime-border:#C6DC2C;
+  --mb-lime-dashed:#A9BA2E;
+  --mb-lime-ink:#41470F;
+  --mb-lime-tint:#ECF5CE;
+  --mb-olive:#7E8A16;
+
+  --mb-blue:#2B34EE;
+  --mb-blue-hover:#1B22B4;
+  --mb-blue-tint:#E3E5FD;
+  --mb-blue-tint-border:#D2D6FB;
+  --mb-blue-soft:#C6C9FA;
+
+  --mb-red:#C4372B;
+  --mb-red-strong:#B3261E;
+  --mb-red-tint:#FDEDEB;
+
+  /* neutrals — warm greige ramp, light to dark */
+  --mb-n-50:#FBFBF8;
+  --mb-n-100:#F3F3EF;
+  --mb-n-150:#F2F2EE;
+  --mb-n-200:#F1F1EC;
+  --mb-n-250:#EFEFEB;
+  --mb-n-300:#EDEDE9;
+  --mb-n-350:#EEEEEA;
+  --mb-n-400:#EDEDE7;
+  --mb-n-450:#EAEAE4;
+  --mb-n-500:#E9E9E3;
+  --mb-n-550:#E6E6E0;
+  --mb-n-600:#E4E4DE;
+  --mb-n-650:#E2E2DD;
+  --mb-n-700:#DFDFD8;
+  --mb-n-750:#DCDCD5;
+  --mb-n-800:#D6D6CE;
+  --mb-n-850:#CFCFC6;
+  --mb-n-900:#C7C7BE;
+  --mb-n-950:#C4C4BB;
+  --mb-g-100:#B0B0A7;
+  --mb-g-200:#A9A99F;
+  --mb-g-300:#A5A59D;
+  --mb-g-400:#A3A39A;
+  --mb-g-500:#9A9A91;
+  --mb-g-600:#93938A;
+  --mb-g-700:#8E8E85;
+  --mb-g-800:#7C7C73;
+  --mb-g-850:#6E6E67;
+  --mb-g-900:#5E5E56;
+
+  /* --- semantic aliases --- */
+  --bg-page:var(--mb-paper);
+  --surface-card:var(--mb-white);
+  --surface-sunken:var(--mb-n-350);
+  --surface-input:var(--mb-n-50);
+  --surface-today:var(--mb-lime);
+
+  --text-body:var(--mb-ink);
+  --text-muted:var(--mb-g-700);
+  --text-subtle:var(--mb-g-600);
+  --text-faint:var(--mb-g-100);
+  --text-done:var(--mb-g-500);
+  --text-on-lime:var(--mb-lime-ink);
+  --text-link:var(--mb-blue);
+  --text-link-hover:var(--mb-blue-hover);
+  --text-placeholder:var(--mb-g-300);
+
+  --border-card:var(--mb-n-550);
+  --border-strong:var(--mb-ink);
+  --border-dashed:var(--mb-n-850);
+  --border-control:var(--mb-n-700);
+  --border-check:var(--mb-n-900);
+
+  --accent-focus:var(--mb-blue);
+  --accent-today:var(--mb-lime);
+  --danger:var(--mb-red);
+  --danger-strong:var(--mb-red-strong);
+  --danger-surface:var(--mb-red-tint);
+  --text-overdue:var(--mb-red);
+  --surface-booked:var(--mb-lime-tint);
+  --text-booked:var(--mb-olive);
+
+  --icon-rest:var(--mb-g-400);
+  --icon-hover:var(--mb-ink);
+
+  /* urgency scale — the fixed relative labels (lib/urgency.ts) */
+  --urg-today-bg:#2B34EE;--urg-today-fg:#FFFFFF;--urg-today-bd:#2B34EE;
+  --urg-2-3-bg:#D6EC3C;--urg-2-3-fg:#14140F;--urg-2-3-bd:#C6DC2C;
+  --urg-week-bg:#E3E5FD;--urg-week-fg:#2B34EE;--urg-week-bd:#D2D6FB;
+  --urg-month-bg:#EDEDE9;--urg-month-fg:#6E6E67;--urg-month-bd:#E2E2DD;
+  --urg-custom-bg:#FFFFFF;--urg-custom-fg:#14140F;--urg-custom-bd:#A9A99F;
+}

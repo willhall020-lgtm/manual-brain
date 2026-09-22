@@ -1,0 +1,35 @@
+/* One family, weight + tracking do all the work. Sizes are the literal
+   values from the app — half-pixel sizes (13.5, 12.5, 10.5) are intentional. */
+:root{
+  --font-body:var(--font-sans);
+
+  --fs-wordmark:40px;--lh-wordmark:.95;/* @kind font */--ls-wordmark:-.035em;
+  --fs-today-count:44px;--ls-today-count:-.04em;
+  --fs-h2:28px;--ls-h2:-.03em;
+  --fs-list-title:18px;--ls-list-title:-.025em;
+  --fs-today-label:17px;--ls-today-label:-.02em;
+  --fs-body-lg:15px;
+  --fs-body:14.5px;
+  --fs-body-sm:13.5px;
+  --fs-meta:13px;
+  --fs-meta-sm:12.5px;
+  --fs-caption:11.5px;
+  --fs-chip:11px;
+  --fs-micro:10.5px;
+  --fs-eyebrow:11px;
+  --fs-eyebrow-sm:10px;
+
+  --fw-regular:400;/* @kind font */--fw-medium:500;/* @kind font */--fw-semibold:600;/* @kind font */--fw-bold:700;/* @kind font */--fw-black:800;/* @kind font */
+
+  --ls-eyebrow:.14em;
+  --ls-daylabel:.1em;
+  --ls-button:.05em;
+  --ls-tag:.04em;
+  --ls-tight:-.01em;
+
+  --lh-tight:1.1;/* @kind font */--lh-snug:1.3;/* @kind font */--lh-body:1.5;/* @kind font */
+
+  /* semantic type roles */
+  --text-title:var(--fw-black) var(--fs-wordmark)/var(--lh-wordmark) var(--font-body);
+  --text-eyebrow-weight:var(--fw-bold);
+}

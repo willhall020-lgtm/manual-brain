@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<!-- @template name="Manual Brain dashboard" description="Today block, task lists and the read-only calendar sidebar, composed from Manual Brain components." -->
+<helmet><script src="./ds-base.js"></script><style>body{margin:0;background:#F6F6F3;font-family:Archivo,Helvetica,Arial,sans-serif;color:#14140F;-webkit-font-smoothing:antialiased}</style></helmet>
+<div style="display:flex;flex-direction:column;gap:22px;max-width:1520px;margin:0 auto;padding:34px 36px 72px">
+<x-import component-from-global-scope="ManualBrainDesignSystem_41bc1a.PageHeader" date-label="tuesday 1 september" meta="12 tasks in total · 2 done" hint-size="100%,72px"></x-import>
+<div style="display:flex;align-items:flex-start;gap:22px">
+<div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:22px">
+<x-import component-from-global-scope="ManualBrainDesignSystem_41bc1a.TodayBlock" count="{{ todayCount }}" hint-size="100%,240px">
+<x-import component-from-global-scope="ManualBrainDesignSystem_41bc1a.TodayTaskRow" name="Founders factory application" section-name="Applications" hint-size="100%,45px"></x-import>
+<x-import component-from-global-scope="ManualBrainDesignSystem_41bc1a.TodayTaskRow" name="Adopt docker approach on current skills" section-name="Work (Deloitte)" hint-size="100%,45px"></x-import>
+<x-import component-from-global-scope="ManualBrainDesignSystem_41bc1a.TodayTaskRow" name="manual brain ios app design" section-name="Personal projects" hint-size="100%,45px"></x-import>
+<x-import component-from-global-scope="ManualBrainDesignSystem_41bc1a.QuickAddBox" hint-size="100%,42px"></x-import>
+</x-import>
+<div style="display:flex;flex-direction:column;gap:11px">
+<div style="padding-left:4px"><x-import component-from-global-scope="ManualBrainDesignSystem_41bc1a.Eyebrow" hint-size="320px,16px">the rest — open when you're ready</x-import></div>
+<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(232px,1fr));gap:14px">
+<x-import component-from-global-scope="ManualBrainDesignSystem_41bc1a.ListCard" name="Work (Deloitte)" task-count="{{ six }}" today-count="{{ one }}" hint-size="100%,126px"></x-import>
+<x-import component-from-global-scope="ManualBrainDesignSystem_41bc1a.ListCard" name="Personal projects" task-count="{{ seventeen }}" soon-count="{{ two }}" hint-size="100%,126px"></x-import>
+<x-import component-from-global-scope="ManualBrainDesignSystem_41bc1a.ListCard" name="Life admin" task-count="{{ five }}" hint-size="100%,126px"></x-import>
+<x-import component-from-global-scope="ManualBrainDesignSystem_41bc1a.AddListCard" hint-size="100%,126px"></x-import>
+</div>
+</div>
+<x-import component-from-global-scope="ManualBrainDesignSystem_41bc1a.DonePanel" items="{{ doneItems }}" hint-size="100%,60px"></x-import>
+</div>
+<x-import component-from-global-scope="ManualBrainDesignSystem_41bc1a.CalendarPanel" today-label="today · tue 1" tomorrow-label="tomorrow · wed 2" before="{{ calBefore }}" after="{{ calAfter }}" tomorrow="{{ calTomorrow }}" hint-size="326px,420px"></x-import>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  renderVals() {
+    return {
+      todayCount: 3, one: 1, two: 2, five: 5, six: 6, seventeen: 17,
+      doneItems: [
+        { id: "d1", name: "Book dentist", sectionName: "Life admin" },
+        { id: "d2", name: "Send Monday invoice", sectionName: "Work (Deloitte)" },
+      ],
+      calBefore: [
+        { time: "09:00", title: "Address Egor's comments", meta: "30 min", barColor: "#2B34EE" },
+        { time: "10:00", title: "Finish creating evals", meta: "1 hr", barColor: "#2B34EE" },
+      ],
+      calAfter: [
+        { time: "16:00", title: "Apply to baby vc bootcamp", meta: "1 hr", barColor: "#C6C9FA" },
+        { time: "19:00", title: "apply to antler scheme", meta: "30 min", barColor: "#C6C9FA" },
+      ],
+      calTomorrow: [
+        { time: "09:00", title: "Workshop prep", meta: "2 hrs", barColor: "#EAEAE4", dim: true },
+      ],
+    };
+  }
+}
+</script>
+</body>
+</html>
