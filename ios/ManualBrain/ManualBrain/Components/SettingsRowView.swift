@@ -11,7 +11,7 @@ struct SettingsRowView<Trailing: View>: View {
         VStack(alignment: .leading, spacing: 9) {
             HStack(alignment: .firstTextBaseline) {
                 Text(label)
-                    .font(MBFont.body)
+                    .font(MBFont.bodyBold)
                     .mbTracking(-0.01, fontSize: 14.5)
                     .mbLowercase()
                     .foregroundStyle(Color.textBody)
@@ -31,8 +31,10 @@ struct SettingsRowView<Trailing: View>: View {
             }
             trailing
         }
+        .frame(maxWidth: .infinity, alignment: .leading)
         .padding(.horizontal, 14)
-        .padding(.vertical, 13)
+        .padding(.top, 14)
+        .padding(.bottom, 13)
         .background(Color.surfaceCard)
         .clipShape(RoundedRectangle(cornerRadius: MBRadius.row, style: .continuous))
         .overlay(

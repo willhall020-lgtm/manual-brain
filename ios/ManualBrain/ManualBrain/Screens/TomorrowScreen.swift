@@ -26,7 +26,7 @@ struct TomorrowScreen: View {
             )
             ScrollView {
                 VStack(spacing: MBSpace.gapStack) {
-                    VStack(spacing: MBSpace.gapListRow) {
+                    VStack(spacing: 10) {
                         ForEach(tomorrowTasks) { task in
                             MobileTaskRowView(
                                 task: task,
@@ -41,7 +41,7 @@ struct TomorrowScreen: View {
                             )
                         }
                         if tomorrowTasks.isEmpty {
-                            EmptyStateCard(text: "nothing lined up. tomorrow is open.", dashed: true)
+                            EmptyStateCard(text: "nothing lined up. tomorrow is open.", style: .dashed)
                         }
                     }
 
@@ -54,6 +54,7 @@ struct TomorrowScreen: View {
                     )
                 }
                 .padding(.horizontal, MBSpace.screenPadding)
+                .padding(.top, MBSpace.gapStack)
                 .padding(.bottom, 26)
             }
         }

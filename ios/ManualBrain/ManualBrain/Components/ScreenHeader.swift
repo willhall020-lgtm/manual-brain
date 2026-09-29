@@ -14,18 +14,23 @@ struct ScreenHeader: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 6) {
             if let onBack {
+                // Painted pill is 34pt tall (MobileNavBar.jsx); the 44pt
+                // hit box is pulled back in vertically so it costs no layout.
                 Button(action: onBack) {
                     Text(backLabel)
-                        .font(MBFont.metaBold)
+                        .font(MBFont.backButton)
                         .foregroundStyle(Color.textBody)
                         .padding(.horizontal, 14)
-                        .padding(.vertical, 7)
+                        .frame(minHeight: 34)
+                        .overlay(Capsule().strokeBorder(Color.mbN750, lineWidth: 1.5))
+                        .padding(.vertical, 5)
+                        .contentShape(Rectangle())
                 }
-                .background(Capsule().stroke(Color.mbN750, lineWidth: 1.5))
-                .frame(minHeight: MBHitTarget.minimum, alignment: .leading)
+                .buttonStyle(.plain)
+                .padding(.vertical, -5)
             } else if let dateLabel {
                 Text(dateLabel)
-                    .font(MBFont.eyebrowSmall)
+                    .font(MBFont.eyebrowSmallBold)
                     .mbTracking(0.14, fontSize: 10)
                     .foregroundStyle(Color.textMuted)
             }

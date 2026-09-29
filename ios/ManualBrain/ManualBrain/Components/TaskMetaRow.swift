@@ -1,7 +1,7 @@
 import SwiftUI
 
 /// The scheduling metadata line under a task's title — due date, duration,
-/// time of day, repeat, book state — in their canonical order, mirroring
+/// time of day, repeat, assignee, book state — in their canonical order, mirroring
 /// components/tasks/TaskMeta.jsx exactly (including which pieces are
 /// mutually exclusive with "not shown at all").
 struct TaskMetaRow: View {
@@ -17,9 +17,12 @@ struct TaskMetaRow: View {
     }
 
     var body: some View {
+        // The book pill counts as meta on its own (TaskMeta.jsx renders
+        // whenever `booked !== null`), so a task with no scheduling fields
+        // still gets it once the calendar is connected.
         let hasAnything =
             task.dueDate != nil || task.durationMinutes != nil || task.timeOfDay != nil
-            || task.repeatFrequency != nil
+            || task.repeatFrequency != nil || task.assignedTo != nil || googleCalendarConnected
 
         if hasAnything {
             // FlowLayout, not HStack: the web version marks every one of
@@ -59,6 +62,15 @@ struct TaskMetaRow: View {
                         .lineLimit(1)
                         .fixedSize()
                 }
+                if let assignee = task.assignedTo, !assignee.isEmpty {
+                    // AssigneeInput.tsx's resting label.
+                    Text("@\(assignee)")
+                        .font(MBFont.micro)
+                        .mbTracking(0.02, fontSize: 10.5)
+                        .foregroundStyle(Color.textSubtle)
+                        .lineLimit(1)
+                        .fixedSize()
+                }
                 if googleCalendarConnected {
                     BookPill(booked: task.isBooked, busy: isBooking, action: onBook)
                 }
@@ -74,10 +86,9 @@ struct TaskMetaRow: View {
 ///
 /// The web version solves "44pt tap target, zero layout cost" inside its
 /// wrapping meta row with a `.mb-hit` pseudo-element overlay (readme.md
-/// § Touch targets). SwiftUI has no equivalent that doesn't also reserve
-/// the extra space in a wrapping HStack, so this keeps the pill's own
-/// generous padding but doesn't force a full 44pt frame here — a known,
-/// documented simplification (see ios/README.md) rather than a silent one.
+/// § Touch targets). Here the pill keeps its painted 5×11 padding and an
+/// outset `contentShape` does the same job: a ~44pt-tall pressable area
+/// that reserves no layout space in the wrapping row.
 struct BookPill: View {
     var booked: Bool
     var busy: Bool
@@ -86,15 +97,16 @@ struct BookPill: View {
     var body: some View {
         Button(action: action) {
             Text(booked ? "booked" : (busy ? "booking…" : "book"))
-                .font(MBFont.micro)
+                .font(MBFont.microBlack)
                 .mbTracking(0.05, fontSize: 10.5)
                 .foregroundStyle(booked ? Color.textBooked : .white)
                 .lineLimit(1)
                 .fixedSize()
-                .padding(.horizontal, 12)
-                .padding(.vertical, 8)
+                .padding(.horizontal, 11)
+                .padding(.vertical, 5)
         }
         .background(Capsule().fill(booked ? Color.surfaceBooked : Color.mbInk))
+        .contentShape(Rectangle().inset(by: -10))
         .disabled(booked || busy)
     }
 }

@@ -47,20 +47,36 @@ enum MBFont {
     static let todayLabel = Brand.font(size: 17, weight: .black)
     static let bodyLg = Brand.font(size: 15, weight: .semibold)
     static let body = Brand.font(size: 14.5, weight: .semibold)
+    static let bodyBold = Brand.font(size: 14.5, weight: .bold) // settings row label, add-a-list
+    static let bodyMediumLg = Brand.font(size: 14.5, weight: .medium) // chat bubble
+    static let bodyLgMedium = Brand.font(size: 15, weight: .medium) // chat composer
     static let bodyMedium = Brand.font(size: 14, weight: .medium)
     static let bodySm = Brand.font(size: 13.5, weight: .semibold)
+    static let bodySmBold = Brand.font(size: 13.5, weight: .bold) // "mark it done"
+    static let addStrip = Brand.font(size: 14, weight: .bold) // MAddStrip label
+    static let addStripGlyph = Brand.font(size: 17, weight: .bold) // MAddStrip "+"
+    static let field = Brand.font(size: 14, weight: .semibold) // AddSheet's `field` style
+    static let sheetTitleField = Brand.font(size: 17, weight: .semibold) // AddSheet/TaskSheet name input
     static let meta = Brand.font(size: 13, weight: .medium)
     static let metaBold = Brand.font(size: 13, weight: .bold)
     static let metaSm = Brand.font(size: 12.5, weight: .semibold)
+    static let metaSmBold = Brand.font(size: 12.5, weight: .bold) // counts, suggestion chips, cancel, log out
+    static let chipTouch = Brand.font(size: 13, weight: .bold) // Chip size="touch"
+    static let agendaTime = Brand.font(size: 12, weight: .bold)
+    static let agendaMeta = Brand.font(size: 12, weight: .medium)
+    static let backButton = Brand.font(size: 12, weight: .bold)
     static let caption = Brand.font(size: 11.5, weight: .semibold)
     static let chip = Brand.font(size: 11, weight: .bold)
     static let micro = Brand.font(size: 10.5, weight: .bold)
     static let microBlack = Brand.font(size: 10.5, weight: .black)
     static let eyebrow = Brand.font(size: 11, weight: .bold)
-    static let eyebrowSmall = Brand.font(size: 10, weight: .black)
+    static let eyebrowSmall = Brand.font(size: 10, weight: .black) // sheet field labels
+    static let eyebrowSmallBold = Brand.font(size: 10, weight: .bold) // nav date label, section tag
     static let button = Brand.font(size: 12.5, weight: .black)
     static let tabLabel = Brand.font(size: 13, weight: .black)
     static let tabGlyph = Brand.font(size: 17, weight: .medium)
+    static let glyph16 = Brand.font(size: 16, weight: .bold) // list row "→"
+    static let sendGlyph = Brand.font(size: 15, weight: .bold) // composer "↑"
 }
 
 /// Applies em-based letter-tracking the way the design tokens express it

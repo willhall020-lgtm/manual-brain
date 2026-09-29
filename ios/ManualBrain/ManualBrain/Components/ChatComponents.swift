@@ -1,5 +1,4 @@
 import SwiftUI
-import UIKit
 
 /// components/mobile/ChatBubble.jsx — one dropped corner marks "this side
 /// spoke", ink-on-white for the assistant, ink-fill for the user (matching
@@ -9,47 +8,36 @@ struct ChatBubbleView: View {
     var text: String
     var pending: Bool = false
 
+    /// 16pt corners with the speaker's bottom corner dropped to 5pt.
+    private var shape: UnevenRoundedRectangle {
+        UnevenRoundedRectangle(
+            topLeadingRadius: MBRadius.box,
+            bottomLeadingRadius: isMe ? MBRadius.box : 5,
+            bottomTrailingRadius: isMe ? 5 : MBRadius.box,
+            topTrailingRadius: MBRadius.box,
+            style: .continuous
+        )
+    }
+
     var body: some View {
         HStack {
-            if isMe { Spacer(minLength: 40) }
+            // maxWidth: 84% of the column, as a trailing/leading gutter.
+            if isMe { Spacer(minLength: 56) }
             Text(text)
-                .font(MBFont.body)
+                .font(MBFont.bodyMediumLg)
                 .mbTracking(-0.01, fontSize: 14.5)
+                .lineSpacing(5) // ≈ --lh-body 1.5 over Archivo's own line height
                 .mbLowercase()
                 .foregroundStyle(isMe ? .white : Color.textBody)
                 .padding(.horizontal, 13)
                 .padding(.vertical, 11)
-                .background(isMe ? Color.mbInk : Color.surfaceCard)
-                .clipShape(BubbleShape(isMe: isMe))
-                .overlay(
-                    Group {
-                        if !isMe {
-                            BubbleShape(isMe: isMe).stroke(Color.borderCard, lineWidth: 1)
-                        }
-                    }
-                )
+                .background(shape.fill(isMe ? Color.mbInk : Color.surfaceCard))
+                .overlay {
+                    if !isMe { shape.strokeBorder(Color.borderCard, lineWidth: 1) }
+                }
                 .opacity(pending ? 0.55 : 1)
-            if !isMe { Spacer(minLength: 40) }
+            if !isMe { Spacer(minLength: 56) }
         }
-    }
-}
-
-private struct BubbleShape: Shape {
-    var isMe: Bool
-    func path(in rect: CGRect) -> Path {
-        var corners: UIRectCorner = [.topLeft, .topRight]
-        corners.insert(isMe ? .bottomLeft : .bottomRight)
-        let droppedCorner: UIRectCorner = isMe ? .bottomRight : .bottomLeft
-        let path = UIBezierPath(
-            roundedRect: rect, byRoundingCorners: corners.union(droppedCorner),
-            cornerRadii: CGSize(width: MBRadius.box, height: MBRadius.box))
-        // Redraw the dropped corner tighter (5pt) — matches the design
-        // system's "one corner dropped to 5px" chat-bubble rule.
-        let tightPath = UIBezierPath(
-            roundedRect: rect, byRoundingCorners: droppedCorner,
-            cornerRadii: CGSize(width: 5, height: 5))
-        path.append(tightPath)
-        return Path(path.cgPath)
     }
 }
 
@@ -66,12 +54,15 @@ struct SuggestionChipsRow: View {
                     onPick(item)
                 } label: {
                     Text(item)
-                        .font(MBFont.metaSm)
+                        .font(MBFont.metaSmBold)
                         .mbLowercase()
                         .foregroundStyle(Color.textSubtle)
                         .padding(.horizontal, 13)
+                        .padding(.vertical, 9)
                         .frame(minHeight: 40)
+                        .contentShape(Capsule())
                 }
+                .buttonStyle(.plain)
                 .background(
                     Capsule().strokeBorder(Color.borderDashed, style: StrokeStyle(lineWidth: 1, dash: [4, 3]))
                 )
@@ -92,7 +83,7 @@ struct ChatComposerView: View {
     var body: some View {
         HStack(alignment: .bottom, spacing: 9) {
             TextField("ask your brain…", text: $text, axis: .vertical)
-                .font(MBFont.bodyLg)
+                .font(MBFont.bodyLgMedium)
                 .mbTracking(-0.01, fontSize: 15)
                 .lineLimit(1...4)
                 .padding(.horizontal, 16)
@@ -104,21 +95,22 @@ struct ChatComposerView: View {
 
             Button(action: onSend) {
                 Text(MBGlyph.send)
-                    .font(.system(size: 15, weight: .bold))
+                    .font(MBFont.sendGlyph)
                     .foregroundStyle(ready ? .white : Color.iconRest)
                     .frame(width: 46, height: 46)
+                    .background(Circle().fill(ready ? Color.mbInk : Color.mbN600))
+                    .contentShape(Circle())
             }
-            .background(Circle().fill(ready ? Color.mbInk : Color.mbN600))
+            .buttonStyle(.plain)
+            .accessibilityLabel("send")
             .disabled(!ready)
         }
         .padding(.horizontal, MBSpace.screenPadding)
         .padding(.top, 10)
         .padding(.bottom, 12)
-        .background(
-            VStack(spacing: 0) {
-                Divider().overlay(Color.borderCard)
-                Color.bgPage
-            }
-        )
+        .background(Color.bgPage)
+        .overlay(alignment: .top) {
+            Rectangle().fill(Color.borderCard).frame(height: 1)
+        }
     }
 }

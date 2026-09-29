@@ -1,7 +1,7 @@
 import SwiftUI
 
 enum AppTab: String, CaseIterable, Identifiable {
-    case chat, today, tomorrow, lists, settings
+    case add, today, tomorrow, lists, settings
     var id: String { rawValue }
 }
 
@@ -18,7 +18,7 @@ struct TabBarView: View {
     var body: some View {
         HStack(spacing: 2) {
             Spacer(minLength: 0)
-            tabButton(.chat, label: "chat")
+            tabButton(.add, label: "add")
             tabButton(.today, label: "today")
             tabButton(.tomorrow, label: "tomorrow")
             tabButton(.lists, label: "lists")
@@ -26,13 +26,13 @@ struct TabBarView: View {
             Spacer(minLength: 0)
         }
         .padding(.horizontal, 8)
-        .frame(height: 46)
-        .background(
-            VStack(spacing: 0) {
-                Divider().overlay(Color.borderCard)
-                Color.surfaceCard
-            }
-        )
+        // The white bar carries on down through the home-indicator inset
+        // (IosApp.jsx wraps TabBar in an 18px surface-card footer) — the
+        // tabs themselves sit above it, never under the indicator.
+        .background(Color.surfaceCard.ignoresSafeArea(edges: .bottom))
+        .overlay(alignment: .top) {
+            Rectangle().fill(Color.borderCard).frame(height: 1)
+        }
     }
 
     @ViewBuilder

@@ -15,7 +15,10 @@ struct FlowLayout: Layout {
 
         for subview in subviews {
             let size = subview.sizeThatFits(.unspecified)
-            if rowWidth + size.width > maxWidth, rowWidth > 0 {
+            // Must match placeSubviews' wrap test exactly, spacing included —
+            // otherwise the measured height can come up a row short and the
+            // last wrapped chip overlaps whatever sits below the layout.
+            if rowWidth > 0, rowWidth + spacing + size.width > maxWidth {
                 totalHeight += rowHeight + lineSpacing
                 rowWidth = 0
                 rowHeight = 0
