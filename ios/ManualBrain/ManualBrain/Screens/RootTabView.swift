@@ -78,7 +78,10 @@ struct RootTabView: View {
             applyQALaunchArguments()
             #endif
         }
-        .refreshable { await store.refreshAll() }
+        // Run the reload in its own task: SwiftUI cancels a refreshable's
+        // task if the screen redraws mid-refresh (which the reload itself
+        // causes), and that cancelled every request as "couldn't reach".
+        .refreshable { await Task { await store.refreshAll() }.value }
     }
 
     #if DEBUG

@@ -71,6 +71,12 @@ actor APIClient {
         let response: URLResponse
         do {
             (data, response) = try await session.data(for: request)
+        } catch let error as URLError where error.code == .cancelled {
+            // The caller's task was cancelled (e.g. SwiftUI tearing down a
+            // pull-to-refresh) — not a network failure, so don't report one.
+            throw CancellationError()
+        } catch is CancellationError {
+            throw CancellationError()
         } catch {
             throw APIError.invalidResponse
         }

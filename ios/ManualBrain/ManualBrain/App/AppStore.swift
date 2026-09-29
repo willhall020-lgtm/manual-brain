@@ -41,7 +41,6 @@ final class AppStore: ObservableObject {
 
     @Published var sections: [Section] = []
     @Published var tasks: [APITask] = []
-    @Published var isLoadingState = false
     @Published var actionError: String?
 
     @Published var calendar: CalendarResponse?
@@ -118,8 +117,6 @@ final class AppStore: ObservableObject {
     // MARK: - State loading
 
     func refreshAll() async {
-        isLoadingState = true
-        defer { isLoadingState = false }
         async let stateTask: Void = loadState()
         async let calendarTask: Void = loadCalendar()
         async let settingsTask: Void = loadSettings()
@@ -135,6 +132,8 @@ final class AppStore: ObservableObject {
             authState = .loggedIn
         } catch APIError.unauthorized(_) {
             authState = .loggedOut
+        } catch is CancellationError {
+            // Superseded or torn down mid-flight — the next load will land.
         } catch {
             actionError = error.localizedDescription
         }
