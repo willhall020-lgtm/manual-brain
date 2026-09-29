@@ -46,7 +46,6 @@ final class AppStore: ObservableObject {
     @Published var calendar: CalendarResponse?
     @Published var settings: SettingsResponse?
 
-    @Published var bookingTaskIDs: Set<String> = []
 
     // MARK: - Chat
 
@@ -252,22 +251,6 @@ final class AppStore: ObservableObject {
             tasks.removeAll { $0.id == id }
         } catch {
             actionError = "couldn't delete that — try again."
-        }
-    }
-
-    func bookTask(id: String) async {
-        guard !bookingTaskIDs.contains(id) else { return }
-        bookingTaskIDs.insert(id)
-        defer { bookingTaskIDs.remove(id) }
-        do {
-            let result = try await client.bookTask(id: id)
-            if result.ok, let index = tasks.firstIndex(where: { $0.id == id }) {
-                tasks[index].calendarEventId = result.calendarEventId
-            } else if !result.ok {
-                actionError = result.message ?? "couldn't find a time to book that — try the chat instead."
-            }
-        } catch {
-            actionError = error.localizedDescription
         }
     }
 

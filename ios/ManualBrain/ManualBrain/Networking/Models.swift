@@ -25,7 +25,6 @@ struct APITask: Codable, Identifiable, Equatable, Hashable {
     var assignedTo: String?
 
     var isDone: Bool { doneAt != nil }
-    var isBooked: Bool { calendarEventId != nil }
 }
 
 // GET /api/state's shape: sections, each carrying its own tasks (without a
@@ -96,12 +95,6 @@ struct SettingsResponse: Codable {
     let googleCalendarConnected: Bool
     var planningRules: String // var: AppStore updates this in place after a save
     let defaultPlanningRules: String
-}
-
-struct BookResponse: Codable {
-    let ok: Bool
-    let message: String?
-    let calendarEventId: String?
 }
 
 struct OKResponse: Codable {

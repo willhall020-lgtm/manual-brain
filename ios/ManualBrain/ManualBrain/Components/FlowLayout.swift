@@ -32,20 +32,34 @@ struct FlowLayout: Layout {
 
     func placeSubviews(in bounds: CGRect, proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) {
         let maxWidth = bounds.width
-        var x: CGFloat = bounds.minX
-        var y: CGFloat = bounds.minY
-        var rowHeight: CGFloat = 0
 
+        // Break into rows first so each item can be centred vertically in
+        // its row (`align-items: center`) — placing at the row's top edge
+        // left smaller text (a 10.5pt repeat/assignee label next to 13pt
+        // meta) riding visibly high.
+        var rows: [[(subview: LayoutSubview, size: CGSize)]] = [[]]
+        var rowWidth: CGFloat = 0
         for subview in subviews {
             let size = subview.sizeThatFits(.unspecified)
-            if x + size.width > bounds.minX + maxWidth, x > bounds.minX {
-                x = bounds.minX
-                y += rowHeight + lineSpacing
-                rowHeight = 0
+            if rowWidth > 0, rowWidth + spacing + size.width > maxWidth {
+                rows.append([])
+                rowWidth = 0
             }
-            subview.place(at: CGPoint(x: x, y: y), proposal: ProposedViewSize(size))
-            x += size.width + spacing
-            rowHeight = max(rowHeight, size.height)
+            rowWidth += size.width + (rowWidth > 0 ? spacing : 0)
+            rows[rows.count - 1].append((subview, size))
+        }
+
+        var y = bounds.minY
+        for row in rows where !row.isEmpty {
+            let rowHeight = row.map(\.size.height).max() ?? 0
+            var x = bounds.minX
+            for (subview, size) in row {
+                subview.place(
+                    at: CGPoint(x: x, y: y + (rowHeight - size.height) / 2),
+                    proposal: ProposedViewSize(size))
+                x += size.width + spacing
+            }
+            y += rowHeight + lineSpacing
         }
     }
 }

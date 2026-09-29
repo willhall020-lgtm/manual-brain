@@ -10,17 +10,14 @@ struct MobileTaskRowView: View {
     var task: APITask
     var sectionName: String?
     var todayKey: String
-    var isBooking: Bool
-    var googleCalendarConnected: Bool
     var flat: Bool // true on Today: white card, no border, sitting on the lime block
     var onOpen: () -> Void
     var onToggleDone: () -> Void
-    var onBook: () -> Void
 
     var body: some View {
         // Deliberately not a `Button` wrapping the row: SwiftUI's nested
         // buttons inside a Button's label can swallow taps meant for the
-        // check ring / book pill inside it. A plain container with its own
+        // check ring inside it. A plain container with its own
         // tap gesture — the same "row opens the sheet, every control inside
         // stops its own tap from bubbling" shape as the web's onClick +
         // stopPropagation pattern — keeps both independently tappable.
@@ -49,9 +46,7 @@ struct MobileTaskRowView: View {
                             .foregroundStyle(Color.mbG800)
                     }
                 }
-                TaskMetaRow(
-                    task: task, todayKey: todayKey, isBooking: isBooking,
-                    googleCalendarConnected: googleCalendarConnected, onBook: onBook)
+                TaskMetaRow(task: task, todayKey: todayKey)
             }
             Spacer(minLength: 0)
         }

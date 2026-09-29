@@ -31,12 +31,9 @@ struct TodayScreen: View {
                                 task: task,
                                 sectionName: store.sectionName(for: task.sectionId),
                                 todayKey: store.todayKey,
-                                isBooking: store.bookingTaskIDs.contains(task.id),
-                                googleCalendarConnected: store.settings?.googleCalendarConnected ?? false,
                                 flat: true,
                                 onOpen: { onOpenTask(task) },
-                                onToggleDone: { Task { await store.toggleDone(id: task.id, done: true) } },
-                                onBook: { Task { await store.bookTask(id: task.id) } }
+                                onToggleDone: { Task { await store.toggleDone(id: task.id, done: true) } }
                             )
                         }
                         if todayTasks.isEmpty {

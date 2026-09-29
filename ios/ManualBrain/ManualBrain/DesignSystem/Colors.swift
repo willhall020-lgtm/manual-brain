@@ -89,8 +89,6 @@ extension Color {
     static let dangerStrong = mbRedStrong
     static let dangerSurface = mbRedTint
     static let textOverdue = mbRed
-    static let surfaceBooked = mbLimeTint
-    static let textBooked = mbOlive
 
     static let iconRest = mbG400
     static let iconHover = mbInk
