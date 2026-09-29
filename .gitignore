@@ -9,3 +9,7 @@ npm-debug.log*
 next-env.d.ts
 .vercel
 .env*
+
+# iOS build output and per-user Xcode state
+ios/ManualBrain/build/
+xcuserdata/
