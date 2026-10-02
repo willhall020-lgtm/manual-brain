@@ -18,6 +18,7 @@ struct TaskDetailSheet: View {
     @State private var timeOfDay: TimeOfDay?
     @State private var repeatFrequency: RepeatFrequency?
     @State private var assignedTo = ""
+    @State private var descriptionText = ""
     @State private var showDatePicker = false
     @State private var confirmingDelete = false
 
@@ -31,6 +32,8 @@ struct TaskDetailSheet: View {
                     .padding(.top, 4)
                     .padding(.bottom, 8)
                     .overlay(Rectangle().fill(Color.accentFocus).frame(height: 2), alignment: .bottom)
+
+                DescriptionField(text: $descriptionText)
 
                 Button {
                     Task {
@@ -179,6 +182,7 @@ struct TaskDetailSheet: View {
             timeOfDay = task.timeOfDay.flatMap(TimeOfDay.init(rawValue:))
             repeatFrequency = task.repeatFrequency.flatMap(RepeatFrequency.init(rawValue:))
             assignedTo = task.assignedTo ?? ""
+            descriptionText = task.description ?? ""
         }
         .sheet(isPresented: $showDatePicker) {
             DatePickerSheet(dateKey: $dueDate)
@@ -205,7 +209,7 @@ struct TaskDetailSheet: View {
             await store.saveTask(
                 id: task.id, name: text, sectionId: sectionId, dueDate: dueDate,
                 durationMinutes: minutes, timeOfDay: timeOfDay, repeatFrequency: repeatFrequency,
-                assignedTo: assignedTo)
+                assignedTo: assignedTo, description: descriptionText)
             dismiss()
         }
     }

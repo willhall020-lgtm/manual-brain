@@ -33,6 +33,7 @@ struct AddTaskSheet: View {
     @State private var timeOfDay: TimeOfDay?
     @State private var repeatFrequency: RepeatFrequency?
     @State private var assignedTo = ""
+    @State private var descriptionText = ""
     @State private var showDatePicker = false
 
     var body: some View {
@@ -45,6 +46,8 @@ struct AddTaskSheet: View {
                     .padding(.top, 4)
                     .padding(.bottom, 8)
                     .overlay(Rectangle().fill(Color.accentFocus).frame(height: 2), alignment: .bottom)
+
+                DescriptionField(text: $descriptionText)
 
                 fieldGroup("which list?") {
                     FlowLayout(spacing: 6) {
@@ -175,7 +178,8 @@ struct AddTaskSheet: View {
         Task {
             let added = await store.addTask(
                 name: text, sectionId: sectionId, dueDate: dueDate, durationMinutes: minutes,
-                timeOfDay: timeOfDay, repeatFrequency: repeatFrequency, assignedTo: assignedTo)
+                timeOfDay: timeOfDay, repeatFrequency: repeatFrequency, assignedTo: assignedTo,
+                description: descriptionText)
             guard inline else {
                 dismiss()
                 return
@@ -187,6 +191,7 @@ struct AddTaskSheet: View {
                 timeOfDay = nil
                 repeatFrequency = nil
                 assignedTo = ""
+                descriptionText = ""
             }
         }
     }
