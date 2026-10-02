@@ -6,10 +6,12 @@ import TimeOfDayPicker from "./TimeOfDayPicker";
 import type { TimeOfDay } from "@/lib/time-of-day";
 import type { RepeatFrequency } from "@/lib/repeat";
 import { KNOWN_ASSIGNEES_LIST_ID } from "@/components/AssigneeInput";
+import DraftDescriptionInput from "@/components/DraftDescriptionInput";
 
 interface Props {
   open: boolean;
   text: string;
+  description: string;
   dueDate: string | null;
   todayKey: string;
   duration: string;
@@ -19,6 +21,7 @@ interface Props {
   onOpen: () => void;
   onCancel: () => void;
   onTextChange: (v: string) => void;
+  onDescriptionChange: (v: string) => void;
   onDurationChange: (v: string) => void;
   onDueDateChange: (v: string | null) => void;
   onTimeOfDayChange: (v: TimeOfDay | null) => void;
@@ -31,6 +34,7 @@ interface Props {
 export default function TaskAddBox({
   open,
   text,
+  description,
   dueDate,
   todayKey,
   duration,
@@ -40,6 +44,7 @@ export default function TaskAddBox({
   onOpen,
   onCancel,
   onTextChange,
+  onDescriptionChange,
   onDurationChange,
   onDueDateChange,
   onTimeOfDayChange,
@@ -106,6 +111,7 @@ export default function TaskAddBox({
           padding: 1,
         }}
       />
+      <DraftDescriptionInput value={description} onChange={onDescriptionChange} onAdd={onAdd} onCancel={onCancel} />
       <div style={{ height: 1, background: "#EDEDE7" }} />
 
       <div style={{ display: "flex", flexDirection: "column", gap: 7 }}>
@@ -183,7 +189,7 @@ export default function TaskAddBox({
 
       <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
         <span style={{ flex: 1, minWidth: 0, fontSize: 10.5, fontWeight: 600, color: "#B0B0A7" }}>
-          Enter to add · Esc to close
+          Enter to add (⌘↵ from the description) · Esc to close
         </span>
         <button
           onClick={onCancel}
