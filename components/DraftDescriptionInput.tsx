@@ -19,15 +19,17 @@ interface Props {
 export default function DraftDescriptionInput({ value, onChange, onAdd, onCancel }: Props) {
   const ref = useRef<HTMLTextAreaElement>(null);
 
-  // Grow to fit the content rather than scrolling inside a fixed box
-  // (capped, so a very long note scrolls instead). Keyed on value, not
+  // Starts three lines tall (rows) and grows to fit the content rather
+  // than scrolling inside a fixed box (capped, so a very long note
+  // scrolls instead). +2 for the 1px border, since box-sizing is
+  // border-box and scrollHeight excludes it. Keyed on value, not
   // onChange, so it also shrinks back when a successful add clears the
   // draft while the box stays open.
   useLayoutEffect(() => {
     const el = ref.current;
     if (!el) return;
     el.style.height = "auto";
-    el.style.height = `${Math.min(el.scrollHeight, 200)}px`;
+    el.style.height = `${Math.min(el.scrollHeight + 2, 240)}px`;
   }, [value]);
 
   return (
@@ -43,21 +45,21 @@ export default function DraftDescriptionInput({ value, onChange, onAdd, onCancel
         if (e.key === "Escape") onCancel();
       }}
       placeholder="Description (optional)"
-      rows={1}
+      rows={3}
       style={{
         display: "block",
         width: "100%",
         resize: "none",
-        border: 0,
+        border: "1px solid #EDEDE7",
+        borderRadius: 10,
         outline: "none",
-        background: "transparent",
+        background: "#FBFBF8",
         fontFamily: "inherit",
         fontSize: 13,
         fontWeight: 500,
         lineHeight: 1.45,
         color: "#5C5C55",
-        padding: 1,
-        marginTop: -6,
+        padding: "8px 10px",
       }}
     />
   );
