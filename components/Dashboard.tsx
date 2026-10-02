@@ -29,6 +29,7 @@ interface Draft {
   timeOfDay: TimeOfDay | null;
   repeatFrequency: RepeatFrequency | null; // only meaningful alongside dueDate
   assignedTo: string; // free-text name, empty string means unassigned
+  description: string; // free text, empty string means none
 }
 const emptyDraft = (todayKey: string): Draft => ({
   text: "",
@@ -37,6 +38,7 @@ const emptyDraft = (todayKey: string): Draft => ({
   timeOfDay: null,
   repeatFrequency: null,
   assignedTo: "",
+  description: "",
 });
 
 const WEEKDAYS = [
@@ -172,6 +174,7 @@ export default function Dashboard({
     // badge the create actually ignored.
     const repeatFrequency = d.dueDate ? d.repeatFrequency : null;
     const assignedTo = d.assignedTo.trim() || null;
+    const description = d.description.trim() || null;
 
     setTasks((prev) => [
       ...prev,
@@ -186,7 +189,7 @@ export default function Dashboard({
         timeOfDay: d.timeOfDay,
         repeatFrequency,
         assignedTo,
-        description: null,
+        description,
       },
     ]);
     setDrafts((prev) => ({ ...prev, [key]: emptyDraft(todayKey) }));
@@ -203,6 +206,7 @@ export default function Dashboard({
           timeOfDay: d.timeOfDay ?? undefined,
           repeatFrequency: repeatFrequency ?? undefined,
           assignedTo: assignedTo ?? undefined,
+          description: description ?? undefined,
         }),
       });
       if (!res.ok) throw new Error();
@@ -665,6 +669,7 @@ export default function Dashboard({
                     <QuickAddBox
                       open={activeAdd === "quick"}
                       text={draft("quick").text}
+                      description={draft("quick").description}
                       dueDate={draft("quick").dueDate}
                       todayKey={todayKey}
                       duration={draft("quick").duration}
@@ -676,6 +681,7 @@ export default function Dashboard({
                       onOpen={() => setActiveAdd("quick")}
                       onCancel={() => setActiveAdd(null)}
                       onTextChange={(v) => setDraft("quick", { text: v })}
+                      onDescriptionChange={(v) => setDraft("quick", { description: v })}
                       onDurationChange={(v) => setDraft("quick", { duration: v })}
                       onDueDateChange={(v) => setDraft("quick", { dueDate: v })}
                       onTimeOfDayChange={(v) => setDraft("quick", { timeOfDay: v })}
@@ -877,6 +883,7 @@ export default function Dashboard({
                     <TaskAddBox
                       open={activeAdd === `sec:${activeSection.id}`}
                       text={draft(`sec:${activeSection.id}`).text}
+                      description={draft(`sec:${activeSection.id}`).description}
                       dueDate={draft(`sec:${activeSection.id}`).dueDate}
                       todayKey={todayKey}
                       duration={draft(`sec:${activeSection.id}`).duration}
@@ -886,6 +893,7 @@ export default function Dashboard({
                       onOpen={() => setActiveAdd(`sec:${activeSection.id}`)}
                       onCancel={() => setActiveAdd(null)}
                       onTextChange={(v) => setDraft(`sec:${activeSection.id}`, { text: v })}
+                      onDescriptionChange={(v) => setDraft(`sec:${activeSection.id}`, { description: v })}
                       onDurationChange={(v) => setDraft(`sec:${activeSection.id}`, { duration: v })}
                       onDueDateChange={(v) => setDraft(`sec:${activeSection.id}`, { dueDate: v })}
                       onTimeOfDayChange={(v) => setDraft(`sec:${activeSection.id}`, { timeOfDay: v })}

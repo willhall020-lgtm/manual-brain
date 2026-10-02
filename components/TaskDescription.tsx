@@ -3,8 +3,9 @@
 import { useState } from "react";
 
 // A task's free-text notes, shown on their own line under the task row.
-// Collapsed to a single clamped line by default; tapping it expands to the
-// full text (and back). While the row is editing it becomes a textarea —
+// Collapsed to a single clamped line by default; the ▾ beside it expands to
+// the full text (and back). Clicking the text itself edits it, like every
+// other field on the row. While the row is editing it becomes a textarea —
 // same uncontrolled, commit-on-blur pattern as AssigneeInput, except Enter
 // inserts a newline instead of committing, since notes can be multi-line.
 //
@@ -22,6 +23,9 @@ interface Props {
 
 export default function TaskDescription({ description, editing, onCommit }: Props) {
   const [expanded, setExpanded] = useState(false);
+  // Set when the row's edit mode was opened by clicking this description,
+  // so the textarea takes focus instead of the name input.
+  const [focusOnEdit, setFocusOnEdit] = useState(false);
 
   // Grow the textarea to fit its content (wrapped lines included) rather
   // than guessing a row count — capped so a very long note scrolls instead.
@@ -51,7 +55,17 @@ export default function TaskDescription({ description, editing, onCommit }: Prop
           ref={fit}
           onInput={(e) => fit(e.currentTarget)}
           defaultValue={description ?? ""}
-          onBlur={(e) => commit(e.target.value)}
+          // Both this and the name input autoFocus when edit mode opens;
+          // this one mounts later, so it wins whenever it's set.
+          autoFocus={focusOnEdit}
+          onFocus={(e) => {
+            const end = e.currentTarget.value.length;
+            e.currentTarget.setSelectionRange(end, end);
+          }}
+          onBlur={(e) => {
+            setFocusOnEdit(false);
+            commit(e.target.value);
+          }}
           onKeyDown={(e) => {
             if (e.key === "Escape") e.currentTarget.blur();
           }}
@@ -80,54 +94,53 @@ export default function TaskDescription({ description, editing, onCommit }: Prop
   if (!description) return null;
 
   return (
-    <div className="mb-taskrow-desc" style={lineStyle}>
+    <div
+      className="mb-taskrow-desc"
+      style={{ ...lineStyle, display: "flex", alignItems: "flex-start", gap: 6, color: "#7C7C73", fontSize: 13, fontWeight: 500, lineHeight: 1.45 }}
+    >
+      <span
+        // No handler of its own beyond the focus flag: the click bubbles up
+        // to the row's tap-to-edit catch-all, same as the other fields.
+        onClick={() => setFocusOnEdit(true)}
+        style={{
+          flex: 1,
+          minWidth: 0,
+          cursor: "pointer",
+          whiteSpace: expanded ? "pre-wrap" : "normal",
+          overflowWrap: "anywhere",
+          ...(expanded
+            ? {}
+            : { display: "-webkit-box", WebkitLineClamp: 1, WebkitBoxOrient: "vertical", overflow: "hidden" }),
+        }}
+      >
+        {description}
+      </span>
       <button
         onClick={(e) => {
-          // Stop the row's tap-to-edit catch-all from also firing — a tap
-          // here means "show me more", not "edit this task".
+          // Stop the row's tap-to-edit catch-all from also firing — this
+          // one means "show me more", not "edit this task".
           e.stopPropagation();
           setExpanded((v) => !v);
         }}
         title={expanded ? "Collapse description" : "Expand description"}
         aria-expanded={expanded}
+        className="mb-iconbtn"
         style={{
-          display: "flex",
-          alignItems: "flex-start",
-          gap: 6,
-          width: "100%",
+          flex: "none",
+          width: 22,
+          height: 19,
           padding: 0,
           border: 0,
+          borderRadius: 6,
           background: "transparent",
-          textAlign: "left",
-          color: "#7C7C73",
-          fontSize: 13,
-          fontWeight: 500,
-          lineHeight: 1.45,
+          color: "#B0B0A7",
+          fontSize: 10,
+          lineHeight: "19px",
         }}
       >
         <span
-          style={{
-            flex: 1,
-            minWidth: 0,
-            whiteSpace: expanded ? "pre-wrap" : "normal",
-            overflowWrap: "anywhere",
-            ...(expanded
-              ? {}
-              : { display: "-webkit-box", WebkitLineClamp: 1, WebkitBoxOrient: "vertical", overflow: "hidden" }),
-          }}
-        >
-          {description}
-        </span>
-        <span
           aria-hidden
-          style={{
-            flex: "none",
-            fontSize: 10,
-            lineHeight: "19px",
-            color: "#B0B0A7",
-            transform: expanded ? "rotate(180deg)" : "none",
-            transition: "transform .15s",
-          }}
+          style={{ display: "inline-block", transform: expanded ? "rotate(180deg)" : "none", transition: "transform .15s" }}
         >
           ▾
         </span>
