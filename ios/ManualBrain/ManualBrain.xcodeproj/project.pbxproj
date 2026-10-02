@@ -57,7 +57,7 @@
 		05DCDB5C7BCD137280510BC7 /* DonePanelView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DonePanelView.swift; sourceTree = "<group>"; };
 		0EBF37EB00715A74E9F962D8 /* AppStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppStore.swift; sourceTree = "<group>"; };
 		17B26163187A49FD2B53D631 /* APIClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APIClient.swift; sourceTree = "<group>"; };
-		1C7D290B7B9260C6C1E82183 /* ManualBrain.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ManualBrain.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		1C7D290B7B9260C6C1E82183 /* ManualBrain.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = ManualBrain.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		1D1E56719A8E92E897F2C6D4 /* AgendaListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AgendaListView.swift; sourceTree = "<group>"; };
 		20EA5227130C3DFD32447DF7 /* Typography.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Typography.swift; sourceTree = "<group>"; };
 		21FE819F849221E3E38F7A3B /* TaskDetailSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TaskDetailSheet.swift; sourceTree = "<group>"; };
@@ -263,6 +263,11 @@
 			attributes = {
 				BuildIndependentTargetsInParallel = YES;
 				LastUpgradeCheck = 1430;
+				TargetAttributes = {
+					32E3F3C8429696B117C04AB5 = {
+						DevelopmentTeam = WJ3ZL8A7H3;
+					};
+				};
 			};
 			buildConfigurationList = 1A112A1FA1E3AB878628012E /* Build configuration list for PBXProject "ManualBrain" */;
 			developmentRegion = en;
@@ -382,7 +387,7 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
-				DEVELOPMENT_TEAM = "";
+				DEVELOPMENT_TEAM = WJ3ZL8A7H3;
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_PREVIEWS = YES;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
@@ -412,7 +417,6 @@
 				CODE_SIGN_ENTITLEMENTS = ManualBrain/ManualBrain.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				CURRENT_PROJECT_VERSION = 4;
-				DEVELOPMENT_TEAM = WJ3ZL8A7H3;
 				INFOPLIST_FILE = ManualBrain/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -461,7 +465,7 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
 				DEBUG_INFORMATION_FORMAT = dwarf;
-				DEVELOPMENT_TEAM = "";
+				DEVELOPMENT_TEAM = WJ3ZL8A7H3;
 				ENABLE_PREVIEWS = YES;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
@@ -498,7 +502,6 @@
 				CODE_SIGN_ENTITLEMENTS = ManualBrain/ManualBrain.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				CURRENT_PROJECT_VERSION = 4;
-				DEVELOPMENT_TEAM = WJ3ZL8A7H3;
 				INFOPLIST_FILE = ManualBrain/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
