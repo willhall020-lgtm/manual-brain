@@ -12,6 +12,7 @@ export interface Task {
   timeOfDay: TimeOfDay | null; // preferred rough slot for booking, or null for no preference
   repeatFrequency: RepeatFrequency | null; // only meaningful alongside dueDate
   assignedTo: string | null; // free-text name of who this is assigned to, or null for unassigned
+  description: string | null; // free-text notes, or null for none
 }
 
 export interface Section {

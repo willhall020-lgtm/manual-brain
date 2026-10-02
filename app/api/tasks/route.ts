@@ -53,6 +53,10 @@ export async function POST(req: Request) {
     const assignedTo =
       typeof body?.assignedTo === "string" && body.assignedTo.trim() ? body.assignedTo.trim() : null;
 
+    // Optional free-text notes — same courtesy-field treatment again.
+    const description =
+      typeof body?.description === "string" && body.description.trim() ? body.description.trim() : null;
+
     const db = sql();
     const [{ next_pos }] = (await db`
       SELECT COALESCE(MAX(position), -1) + 1 AS next_pos
@@ -61,12 +65,12 @@ export async function POST(req: Request) {
 
     const id = "task_" + crypto.randomUUID().slice(0, 8);
     await db`
-      INSERT INTO tasks (id, section_id, name, due_date, position, duration_minutes, time_of_day, repeat_frequency, assigned_to)
-      VALUES (${id}, ${sectionId}, ${name}, ${dueDate}, ${next_pos}, ${durationMinutes}, ${timeOfDay}, ${repeatFrequency}, ${assignedTo})
+      INSERT INTO tasks (id, section_id, name, due_date, position, duration_minutes, time_of_day, repeat_frequency, assigned_to, description)
+      VALUES (${id}, ${sectionId}, ${name}, ${dueDate}, ${next_pos}, ${durationMinutes}, ${timeOfDay}, ${repeatFrequency}, ${assignedTo}, ${description})
     `;
 
     return NextResponse.json(
-      { id, sectionId, name, dueDate, doneAt: null, durationMinutes, timeOfDay, repeatFrequency, assignedTo },
+      { id, sectionId, name, dueDate, doneAt: null, durationMinutes, timeOfDay, repeatFrequency, assignedTo, description },
       { status: 201 }
     );
   } catch (err) {

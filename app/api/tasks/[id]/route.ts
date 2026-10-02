@@ -151,11 +151,22 @@ export async function PATCH(
       await db`UPDATE tasks SET assigned_to = ${assignedTo} WHERE id = ${id}`;
     }
 
+    if (body?.description !== undefined) {
+      // Same shape as assignedTo above: null clears it, any string is
+      // accepted as free text, and trimmed-to-blank counts as null.
+      if (body.description !== null && typeof body.description !== "string") {
+        return NextResponse.json({ error: "description must be a string or null" }, { status: 400 });
+      }
+      const description =
+        typeof body.description === "string" && body.description.trim() ? body.description.trim() : null;
+      await db`UPDATE tasks SET description = ${description} WHERE id = ${id}`;
+    }
+
     // due_date::text — see lib/data.ts's getState() for why: the neon()
     // client turns a bare `date` column into a JS Date and shifts it by
     // the local UTC offset in the process, corrupting the calendar day.
     const rows = (await db`
-      SELECT id, section_id, name, due_date::text AS due_date, done_at, calendar_event_id, duration_minutes, time_of_day, repeat_frequency, assigned_to
+      SELECT id, section_id, name, due_date::text AS due_date, done_at, calendar_event_id, duration_minutes, time_of_day, repeat_frequency, assigned_to, description
       FROM tasks WHERE id = ${id}
     `) as {
       id: string;
@@ -168,6 +179,7 @@ export async function PATCH(
       time_of_day: string | null;
       repeat_frequency: string | null;
       assigned_to: string | null;
+      description: string | null;
     }[];
 
     if (!rows.length) {
@@ -185,6 +197,7 @@ export async function PATCH(
       timeOfDay: isTimeOfDay(t.time_of_day) ? t.time_of_day : null,
       repeatFrequency: isRepeatFrequency(t.repeat_frequency) ? t.repeat_frequency : null,
       assignedTo: t.assigned_to,
+      description: t.description,
     });
   } catch (err) {
     console.error(err);

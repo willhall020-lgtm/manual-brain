@@ -5,10 +5,14 @@ import { runChatLoop } from "@/lib/chat-loop";
 import { isGoogleCalendarConnected } from "@/lib/google-auth";
 import { isTimeOfDay } from "@/lib/time-of-day";
 
-// The "BOOK" button on a Today task (TodayTaskRow → BookButton) — a
-// one-task shortcut into the same tool-use loop the chat and morning cron
+// One-task shortcut into the same tool-use loop the chat and morning cron
 // use, so it gets the same judgment (planning rules, duration, conflict
 // check) rather than a separate naive "just pick 9am" code path.
+//
+// Neither client calls this any more — the per-task "book" pill was
+// dropped from iOS (build 4) and then the web; booking now goes through
+// the chat or the morning cron. Kept so older iOS builds still in
+// TestFlight don't break; safe to delete once they're gone.
 
 export const dynamic = "force-dynamic";
 

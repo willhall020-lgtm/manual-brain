@@ -123,4 +123,9 @@ a:hover {
   .mb-taskrow-name {
     flex-basis: 100% !important;
   }
+  /* The name no longer sits beside the done button at this width, so the
+     description's indent (which lines it up under the name) goes too. */
+  .mb-taskrow-desc {
+    padding-left: 0 !important;
+  }
 }

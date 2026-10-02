@@ -5,6 +5,7 @@ import DueDatePicker from "./DueDatePicker";
 import TimeOfDayPicker from "./TimeOfDayPicker";
 import type { TimeOfDay } from "@/lib/time-of-day";
 import type { RepeatFrequency } from "@/lib/repeat";
+import { KNOWN_ASSIGNEES_LIST_ID } from "@/components/AssigneeInput";
 
 interface Props {
   open: boolean;
@@ -165,6 +166,7 @@ export default function TaskAddBox({
           value={assignedTo}
           onChange={(e) => onAssignedToChange(e.target.value)}
           onKeyDown={onKeyDown}
+          list={KNOWN_ASSIGNEES_LIST_ID}
           placeholder="e.g. Instinct"
           style={{
             width: 140,
