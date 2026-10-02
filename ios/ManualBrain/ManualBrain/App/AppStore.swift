@@ -165,7 +165,8 @@ final class AppStore: ObservableObject {
     @discardableResult
     func addTask(
         name: String, sectionId: String, dueDate: String?, durationMinutes: Int?,
-        timeOfDay: TimeOfDay?, repeatFrequency: RepeatFrequency?, assignedTo: String? = nil
+        timeOfDay: TimeOfDay?, repeatFrequency: RepeatFrequency?, assignedTo: String? = nil,
+        description: String? = nil
     ) async -> Bool {
         let trimmed = name.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmed.isEmpty, !sectionId.isEmpty else { return false }
@@ -175,7 +176,8 @@ final class AppStore: ObservableObject {
                     sectionId: sectionId, name: trimmed, dueDate: dueDate,
                     durationMinutes: durationMinutes, timeOfDay: timeOfDay?.rawValue,
                     repeatFrequency: dueDate != nil ? repeatFrequency?.rawValue : nil,
-                    assignedTo: Self.cleanAssignee(assignedTo)))
+                    assignedTo: Self.cleanAssignee(assignedTo),
+                    description: Self.cleanDescription(description)))
             tasks.append(created)
             return true
         } catch {
@@ -190,7 +192,8 @@ final class AppStore: ObservableObject {
     /// same cascade the server enforces either way).
     func saveTask(
         id: String, name: String, sectionId: String, dueDate: String?, durationMinutes: Int?,
-        timeOfDay: TimeOfDay?, repeatFrequency: RepeatFrequency?, assignedTo: String?
+        timeOfDay: TimeOfDay?, repeatFrequency: RepeatFrequency?, assignedTo: String?,
+        description: String?
     ) async {
         let trimmed = name.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmed.isEmpty else { return }
@@ -204,7 +207,8 @@ final class AppStore: ObservableObject {
                     durationMinutes: .some(durationMinutes),
                     timeOfDay: .some(timeOfDay?.rawValue),
                     repeatFrequency: .some(dueDate != nil ? repeatFrequency?.rawValue : nil),
-                    assignedTo: .some(Self.cleanAssignee(assignedTo))))
+                    assignedTo: .some(Self.cleanAssignee(assignedTo)),
+                    description: .some(Self.cleanDescription(description))))
             if let index = tasks.firstIndex(where: { $0.id == id }) {
                 tasks[index] = updated
             }
@@ -215,6 +219,13 @@ final class AppStore: ObservableObject {
 
     /// Trimmed-to-blank means unassigned — same rule the server applies.
     static func cleanAssignee(_ raw: String?) -> String? {
+        let trimmed = raw?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+        return trimmed.isEmpty ? nil : trimmed
+    }
+
+    /// Same trimmed-to-blank-means-none rule as cleanAssignee, but keeps
+    /// inner newlines — a description can be several lines.
+    static func cleanDescription(_ raw: String?) -> String? {
         let trimmed = raw?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
         return trimmed.isEmpty ? nil : trimmed
     }

@@ -38,6 +38,9 @@ struct MobileTaskRowView: View {
                         .mbLowercase()
                         .foregroundStyle(Color.textBody)
                         .multilineTextAlignment(.leading)
+                    if let description = task.description, !description.isEmpty {
+                        TaskDescriptionLine(description: description)
+                    }
                     if let sectionName, !sectionName.isEmpty {
                         Text(sectionName)
                             .font(MBFont.eyebrowSmallBold)

@@ -15,6 +15,7 @@
 		31A9D6F0D2EF7C66A351BB44 /* SettingsScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 23DCA2F79DF4F46335B0459B /* SettingsScreen.swift */; };
 		357641A40AE489313DEDCD7D /* TaskMetaRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = C2552B10B4F6E0EEAD131C5B /* TaskMetaRow.swift */; };
 		3951BC990D795EA521FC86F9 /* JSONValue.swift in Sources */ = {isa = PBXBuildFile; fileRef = 24CDAE0203DCCE656A201107 /* JSONValue.swift */; };
+		398CDD5D5650A4223CBB7BE2 /* TaskDescriptionViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF55C0B81E81E0679F9EAA14 /* TaskDescriptionViews.swift */; };
 		3AE37251B17633A7499887FC /* MobileTaskRowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AF7EFAC0A8FB80A4A83F4179 /* MobileTaskRowView.swift */; };
 		403F705895313BA94CFEA120 /* TaskDetailSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 21FE819F849221E3E38F7A3B /* TaskDetailSheet.swift */; };
 		46DE4BAABD31422EFE4A0E51 /* Archivo-Bold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 720079AFC8D242959CBF3234 /* Archivo-Bold.ttf */; };
@@ -88,6 +89,7 @@
 		AC073AED737C81825345E97D /* ChatComponents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatComponents.swift; sourceTree = "<group>"; };
 		AF7EFAC0A8FB80A4A83F4179 /* MobileTaskRowView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MobileTaskRowView.swift; sourceTree = "<group>"; };
 		B52CCE30CE0E66163B7AED02 /* ErrorBanner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ErrorBanner.swift; sourceTree = "<group>"; };
+		BF55C0B81E81E0679F9EAA14 /* TaskDescriptionViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TaskDescriptionViews.swift; sourceTree = "<group>"; };
 		C1BA5B76E367A9E212CA6C74 /* Archivo-Medium.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Archivo-Medium.ttf"; sourceTree = "<group>"; };
 		C2552B10B4F6E0EEAD131C5B /* TaskMetaRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TaskMetaRow.swift; sourceTree = "<group>"; };
 		C631AAF74C4AD9E1DBF31D81 /* Models.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Models.swift; sourceTree = "<group>"; };
@@ -126,6 +128,7 @@
 				F317F626E6C53E15CF7748D5 /* ScreenHeader.swift */,
 				C92347EFD90A0D79F119F99B /* SettingsRowView.swift */,
 				A92EC092494C797FB36958D5 /* TabBarView.swift */,
+				BF55C0B81E81E0679F9EAA14 /* TaskDescriptionViews.swift */,
 				C2552B10B4F6E0EEAD131C5B /* TaskMetaRow.swift */,
 				48929BDBA86225AB054554B6 /* TodayBlockView.swift */,
 			);
@@ -339,6 +342,7 @@
 				1BD6F51F7892757A588E57D9 /* SettingsRowView.swift in Sources */,
 				31A9D6F0D2EF7C66A351BB44 /* SettingsScreen.swift in Sources */,
 				FE92FCB51C722F2274DA6F06 /* TabBarView.swift in Sources */,
+				398CDD5D5650A4223CBB7BE2 /* TaskDescriptionViews.swift in Sources */,
 				403F705895313BA94CFEA120 /* TaskDetailSheet.swift in Sources */,
 				A2DB6BF322FFB7C9985A9064 /* TaskFields.swift in Sources */,
 				357641A40AE489313DEDCD7D /* TaskMetaRow.swift in Sources */,
@@ -416,7 +420,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_ENTITLEMENTS = ManualBrain/ManualBrain.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
-				CURRENT_PROJECT_VERSION = 4;
+				CURRENT_PROJECT_VERSION = 6;
 				INFOPLIST_FILE = ManualBrain/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -501,7 +505,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_ENTITLEMENTS = ManualBrain/ManualBrain.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
-				CURRENT_PROJECT_VERSION = 4;
+				CURRENT_PROJECT_VERSION = 6;
 				INFOPLIST_FILE = ManualBrain/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
