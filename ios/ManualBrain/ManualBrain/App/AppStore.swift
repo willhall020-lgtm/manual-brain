@@ -41,13 +41,11 @@ final class AppStore: ObservableObject {
 
     @Published var sections: [Section] = []
     @Published var tasks: [APITask] = []
-    @Published var isLoadingState = false
     @Published var actionError: String?
 
     @Published var calendar: CalendarResponse?
     @Published var settings: SettingsResponse?
 
-    @Published var bookingTaskIDs: Set<String> = []
 
     // MARK: - Chat
 
@@ -118,8 +116,6 @@ final class AppStore: ObservableObject {
     // MARK: - State loading
 
     func refreshAll() async {
-        isLoadingState = true
-        defer { isLoadingState = false }
         async let stateTask: Void = loadState()
         async let calendarTask: Void = loadCalendar()
         async let settingsTask: Void = loadSettings()
@@ -135,6 +131,8 @@ final class AppStore: ObservableObject {
             authState = .loggedIn
         } catch APIError.unauthorized(_) {
             authState = .loggedOut
+        } catch is CancellationError {
+            // Superseded or torn down mid-flight — the next load will land.
         } catch {
             actionError = error.localizedDescription
         }
@@ -163,21 +161,26 @@ final class AppStore: ObservableObject {
 
     // MARK: - Task mutations
 
+    /// Returns whether the task was saved, so the "add" tab knows to clear its form.
+    @discardableResult
     func addTask(
         name: String, sectionId: String, dueDate: String?, durationMinutes: Int?,
-        timeOfDay: TimeOfDay?, repeatFrequency: RepeatFrequency?
-    ) async {
+        timeOfDay: TimeOfDay?, repeatFrequency: RepeatFrequency?, assignedTo: String? = nil
+    ) async -> Bool {
         let trimmed = name.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !trimmed.isEmpty, !sectionId.isEmpty else { return }
+        guard !trimmed.isEmpty, !sectionId.isEmpty else { return false }
         do {
             let created = try await client.createTask(
                 CreateTaskRequest(
                     sectionId: sectionId, name: trimmed, dueDate: dueDate,
                     durationMinutes: durationMinutes, timeOfDay: timeOfDay?.rawValue,
-                    repeatFrequency: dueDate != nil ? repeatFrequency?.rawValue : nil))
+                    repeatFrequency: dueDate != nil ? repeatFrequency?.rawValue : nil,
+                    assignedTo: Self.cleanAssignee(assignedTo)))
             tasks.append(created)
+            return true
         } catch {
             actionError = "couldn't save that task — try again."
+            return false
         }
     }
 
@@ -187,7 +190,7 @@ final class AppStore: ObservableObject {
     /// same cascade the server enforces either way).
     func saveTask(
         id: String, name: String, sectionId: String, dueDate: String?, durationMinutes: Int?,
-        timeOfDay: TimeOfDay?, repeatFrequency: RepeatFrequency?
+        timeOfDay: TimeOfDay?, repeatFrequency: RepeatFrequency?, assignedTo: String?
     ) async {
         let trimmed = name.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmed.isEmpty else { return }
@@ -200,13 +203,34 @@ final class AppStore: ObservableObject {
                     dueDate: .some(dueDate),
                     durationMinutes: .some(durationMinutes),
                     timeOfDay: .some(timeOfDay?.rawValue),
-                    repeatFrequency: .some(dueDate != nil ? repeatFrequency?.rawValue : nil)))
+                    repeatFrequency: .some(dueDate != nil ? repeatFrequency?.rawValue : nil),
+                    assignedTo: .some(Self.cleanAssignee(assignedTo))))
             if let index = tasks.firstIndex(where: { $0.id == id }) {
                 tasks[index] = updated
             }
         } catch {
             actionError = "couldn't save that task — try again."
         }
+    }
+
+    /// Trimmed-to-blank means unassigned — same rule the server applies.
+    static func cleanAssignee(_ raw: String?) -> String? {
+        let trimmed = raw?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+        return trimmed.isEmpty ? nil : trimmed
+    }
+
+    /// Everyone tasks have been assigned to so far, most-used first — the
+    /// add/edit sheets offer these as one-tap picks next to the free-text field.
+    var knownAssignees: [String] {
+        var counts: [String: Int] = [:]
+        var display: [String: String] = [:]
+        for name in tasks.compactMap({ Self.cleanAssignee($0.assignedTo) }) {
+            let key = name.lowercased()
+            counts[key, default: 0] += 1
+            display[key] = display[key] ?? name
+        }
+        return counts.sorted { $0.value != $1.value ? $0.value > $1.value : $0.key < $1.key }
+            .compactMap { display[$0.key] }
     }
 
     func toggleDone(id: String, done: Bool) async {
@@ -227,22 +251,6 @@ final class AppStore: ObservableObject {
             tasks.removeAll { $0.id == id }
         } catch {
             actionError = "couldn't delete that — try again."
-        }
-    }
-
-    func bookTask(id: String) async {
-        guard !bookingTaskIDs.contains(id) else { return }
-        bookingTaskIDs.insert(id)
-        defer { bookingTaskIDs.remove(id) }
-        do {
-            let result = try await client.bookTask(id: id)
-            if result.ok, let index = tasks.firstIndex(where: { $0.id == id }) {
-                tasks[index].calendarEventId = result.calendarEventId
-            } else if !result.ok {
-                actionError = result.message ?? "couldn't find a time to book that — try the chat instead."
-            }
-        } catch {
-            actionError = error.localizedDescription
         }
     }
 

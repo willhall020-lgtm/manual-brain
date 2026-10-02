@@ -14,6 +14,7 @@ struct CheckCircle: View {
                 .background(Circle().fill(Color.surfaceCard))
                 .frame(width: size, height: size)
         }
+        .buttonStyle(.plain)
         .frame(width: MBHitTarget.minimum, height: MBHitTarget.minimum)
         .contentShape(Rectangle())
     }

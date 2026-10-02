@@ -32,6 +32,7 @@ extension Color {
     static let mbBlueHover = Color(hex: 0x1B22B4)
     static let mbBlueTint = Color(hex: 0xE3E5FD)
     static let mbBlueTintBorder = Color(hex: 0xD2D6FB)
+    static let mbBlueSoft = Color(hex: 0xC6C9FA)
 
     static let mbRed = Color(hex: 0xC4372B)
     static let mbRedStrong = Color(hex: 0xB3261E)
@@ -41,15 +42,19 @@ extension Color {
     static let mbN050 = Color(hex: 0xFBFBF8)
     static let mbN200 = Color(hex: 0xF1F1EC)
     static let mbN350 = Color(hex: 0xEEEEEA)
+    static let mbN450 = Color(hex: 0xEAEAE4)
+    static let mbN500 = Color(hex: 0xE9E9E3)
     static let mbN550 = Color(hex: 0xE6E6E0)
     static let mbN600 = Color(hex: 0xE4E4DE)
     static let mbN700 = Color(hex: 0xDFDFD8)
     static let mbN750 = Color(hex: 0xDCDCD5)
+    static let mbN800 = Color(hex: 0xD6D6CE)
     static let mbN850 = Color(hex: 0xCFCFC6)
     static let mbN900 = Color(hex: 0xC7C7BE)
     static let mbN950 = Color(hex: 0xC4C4BB)
 
     static let mbG100 = Color(hex: 0xB0B0A7) // --text-faint   2.18:1 — decorative/dimmed only
+    static let mbG300 = Color(hex: 0xA5A59D) // --text-placeholder
     static let mbG400 = Color(hex: 0xA3A39A) // --icon-rest    2.54:1 — rest-state glyphs
     static let mbG500 = Color(hex: 0x9A9A91) // --text-done    2.84:1 — struck-through done text
     static let mbG600 = Color(hex: 0x93938A) // --text-subtle  3.10:1 — tertiary metadata
@@ -71,6 +76,7 @@ extension Color {
     static let textFaint = mbG100
     static let textDone = mbG500
     static let textOnLime = mbLimeInk
+    static let textPlaceholder = mbG300
 
     static let borderCard = mbN550
     static let borderStrong = mbInk
@@ -83,8 +89,6 @@ extension Color {
     static let dangerStrong = mbRedStrong
     static let dangerSurface = mbRedTint
     static let textOverdue = mbRed
-    static let surfaceBooked = mbLimeTint
-    static let textBooked = mbOlive
 
     static let iconRest = mbG400
     static let iconHover = mbInk

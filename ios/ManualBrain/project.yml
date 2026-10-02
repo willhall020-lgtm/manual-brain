@@ -13,7 +13,7 @@ settings:
   base:
     SWIFT_VERSION: "5.0"
     ENABLE_PREVIEWS: "YES"
-    DEVELOPMENT_TEAM: "" # fill in your own Apple Developer Team ID before archiving
+    DEVELOPMENT_TEAM: WJ3ZL8A7H3 # needed to archive; scripts/ship-ios.sh regenerates the project from this file
 
 targets:
   ManualBrain:
@@ -28,7 +28,7 @@ targets:
         ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
         SUPPORTS_MACCATALYST: "NO"
         MARKETING_VERSION: "1.0"
-        CURRENT_PROJECT_VERSION: "1"
+        CURRENT_PROJECT_VERSION: "4"
     info:
       path: ManualBrain/Info.plist
       properties:
@@ -36,6 +36,13 @@ targets:
         UISupportedInterfaceOrientations:
           - UIInterfaceOrientationPortrait
         CFBundleDisplayName: manual brain
+        # App Store validation wants this top-level key, not just the copy
+        # actool nests under CFBundleIcons.
+        CFBundleIconName: AppIcon
+        # Follow the build settings above so bumping CURRENT_PROJECT_VERSION
+        # is all a new TestFlight upload needs.
+        CFBundleVersion: $(CURRENT_PROJECT_VERSION)
+        CFBundleShortVersionString: $(MARKETING_VERSION)
         ITSAppUsesNonExemptEncryption: false
         NSAppTransportSecurity:
           NSAllowsArbitraryLoads: false

@@ -18,7 +18,11 @@ struct TodayScreen: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            ScreenHeader(dateLabel: DueDate.weekdayDateLabel())
+            ScreenHeader(
+                dateLabel: DueDate.weekdayDateLabel(),
+                meta: TaskFieldFormat.count(store.activeTasks.count, noun: "task")
+                    + " · \(store.doneTasks.count) done"
+            )
             ScrollView {
                 VStack(spacing: MBSpace.gapStack) {
                     TodayBlockView(count: todayTasks.count) {
@@ -27,12 +31,9 @@ struct TodayScreen: View {
                                 task: task,
                                 sectionName: store.sectionName(for: task.sectionId),
                                 todayKey: store.todayKey,
-                                isBooking: store.bookingTaskIDs.contains(task.id),
-                                googleCalendarConnected: store.settings?.googleCalendarConnected ?? false,
                                 flat: true,
                                 onOpen: { onOpenTask(task) },
-                                onToggleDone: { Task { await store.toggleDone(id: task.id, done: true) } },
-                                onBook: { Task { await store.bookTask(id: task.id) } }
+                                onToggleDone: { Task { await store.toggleDone(id: task.id, done: true) } }
                             )
                         }
                         if todayTasks.isEmpty {
@@ -49,13 +50,14 @@ struct TodayScreen: View {
                     )
 
                     AgendaListView(
-                        label: "today's calendar",
+                        label: "calendar",
                         events: (store.calendar?.events ?? []).filter { $0.day == "today" },
                         configured: store.calendar?.configured ?? false,
                         loadError: store.calendar?.error ?? false
                     )
                 }
                 .padding(.horizontal, MBSpace.screenPadding)
+                .padding(.top, MBSpace.gapStack)
                 .padding(.bottom, 26)
             }
         }

@@ -11,6 +11,8 @@ struct ListDetailScreen: View {
     var onAddTask: () -> Void
 
     @State private var confirmingDelete = false
+    @State private var renaming = false
+    @State private var renameDraft = ""
 
     private var section: Section? { store.sections.first(where: { $0.id == sectionId }) }
     private var tasks: [APITask] {
@@ -34,38 +36,73 @@ struct ListDetailScreen: View {
                 onBack: onBack
             )
             ScrollView {
-                VStack(spacing: MBSpace.gapListRow) {
-                    ForEach(tasks) { task in
-                        MobileTaskRowView(
-                            task: task,
-                            sectionName: nil,
-                            todayKey: store.todayKey,
-                            isBooking: store.bookingTaskIDs.contains(task.id),
-                            googleCalendarConnected: store.settings?.googleCalendarConnected ?? false,
-                            flat: false,
-                            onOpen: { onOpenTask(task) },
-                            onToggleDone: { Task { await store.toggleDone(id: task.id, done: true) } },
-                            onBook: { Task { await store.bookTask(id: task.id) } }
-                        )
+                VStack(spacing: 12) {
+                    // screens.jsx's ListDetailScreen: every row, the empty
+                    // state and the add strip live in one sunken panel.
+                    VStack(spacing: MBSpace.gapListRow) {
+                        ForEach(tasks) { task in
+                            MobileTaskRowView(
+                                task: task,
+                                sectionName: nil,
+                                todayKey: store.todayKey,
+                                flat: false,
+                                onOpen: { onOpenTask(task) },
+                                onToggleDone: { Task { await store.toggleDone(id: task.id, done: true) } }
+                            )
+                        }
+                        if tasks.isEmpty {
+                            EmptyStateCard(text: "this list is empty. nice.", style: .sunken)
+                        }
+                        AddStripButton(label: "add task", action: onAddTask)
                     }
-                    if tasks.isEmpty {
-                        EmptyStateCard(text: "this list is empty. nice.", dashed: true)
-                    }
-                    AddStripButton(label: "add task", action: onAddTask)
+                    .padding(10)
+                    .background(Color.surfaceSunken)
+                    .clipShape(RoundedRectangle(cornerRadius: MBRadius.panel, style: .continuous))
 
-                    Button("delete this list", role: .destructive) {
-                        confirmingDelete = true
+                    // Rename (Dashboard.tsx's click-to-rename title) and
+                    // delete sit together, well away from the task rows.
+                    HStack(spacing: 18) {
+                        Button {
+                            renameDraft = section?.name ?? ""
+                            renaming = true
+                        } label: {
+                            Text("rename this list")
+                                .font(MBFont.metaSmBold)
+                                .foregroundStyle(Color.textSubtle)
+                                .padding(.horizontal, 2)
+                                .frame(minHeight: MBHitTarget.minimum)
+                                .contentShape(Rectangle())
+                        }
+                        .buttonStyle(.plain)
+                        Button {
+                            confirmingDelete = true
+                        } label: {
+                            Text("delete this list")
+                                .font(MBFont.metaSmBold)
+                                .foregroundStyle(Color.danger)
+                                .padding(.horizontal, 2)
+                                .frame(minHeight: MBHitTarget.minimum)
+                                .contentShape(Rectangle())
+                        }
+                        .buttonStyle(.plain)
+                        Spacer(minLength: 0)
                     }
-                    .font(MBFont.metaBold)
-                    .foregroundStyle(Color.danger)
-                    .frame(minHeight: MBHitTarget.minimum)
-                    .padding(.top, 8)
                 }
                 .padding(.horizontal, MBSpace.screenPadding)
+                .padding(.top, 12)
                 .padding(.bottom, 26)
             }
         }
         .background(Color.bgPage)
+        .alert("rename list", isPresented: $renaming) {
+            TextField("list name", text: $renameDraft)
+            Button("save") {
+                let name = renameDraft.trimmingCharacters(in: .whitespacesAndNewlines)
+                guard !name.isEmpty, name != section?.name else { return }
+                Task { await store.renameSection(id: sectionId, name: name) }
+            }
+            Button("cancel", role: .cancel) {}
+        }
         .confirmationDialog(
             "delete \"\(section?.name ?? "this list")\" and all its tasks? this can't be undone.",
             isPresented: $confirmingDelete, titleVisibility: .visible

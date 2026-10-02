@@ -20,6 +20,7 @@ export async function GET() {
         timeOfDay: t.timeOfDay,
         repeatFrequency: t.repeatFrequency,
         assignedTo: t.assignedTo,
+        description: t.description,
       });
     }
     return NextResponse.json({ sections: Array.from(bySectionId.values()) });

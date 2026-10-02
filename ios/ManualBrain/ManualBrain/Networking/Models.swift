@@ -21,9 +21,10 @@ struct APITask: Codable, Identifiable, Equatable, Hashable {
     var durationMinutes: Int?
     var timeOfDay: String?
     var repeatFrequency: String?
+    /// Free-text assignee, e.g. "Instinct" for the chat's morning run to pick up.
+    var assignedTo: String?
 
     var isDone: Bool { doneAt != nil }
-    var isBooked: Bool { calendarEventId != nil }
 }
 
 // GET /api/state's shape: sections, each carrying its own tasks (without a
@@ -37,6 +38,7 @@ struct TaskInSection: Codable {
     let durationMinutes: Int?
     let timeOfDay: String?
     let repeatFrequency: String?
+    let assignedTo: String?
 }
 
 struct SectionWithTasks: Codable {
@@ -61,7 +63,7 @@ struct StateResponse: Codable {
                         id: t.id, sectionId: s.id, name: t.name, dueDate: t.dueDate,
                         doneAt: t.doneAt, calendarEventId: t.calendarEventId,
                         durationMinutes: t.durationMinutes, timeOfDay: t.timeOfDay,
-                        repeatFrequency: t.repeatFrequency))
+                        repeatFrequency: t.repeatFrequency, assignedTo: t.assignedTo))
             }
         }
         return (sections, tasks)
@@ -95,12 +97,6 @@ struct SettingsResponse: Codable {
     let defaultPlanningRules: String
 }
 
-struct BookResponse: Codable {
-    let ok: Bool
-    let message: String?
-    let calendarEventId: String?
-}
-
 struct OKResponse: Codable {
     let ok: Bool
 }
@@ -118,6 +114,7 @@ struct CreateTaskRequest: Encodable {
     var durationMinutes: Int?
     var timeOfDay: String?
     var repeatFrequency: String?
+    var assignedTo: String?
 }
 
 /// One PATCH covers every editable field at once — /api/tasks/[id] treats
@@ -131,10 +128,11 @@ struct UpdateTaskRequest: Encodable {
     var durationMinutes: Int?? = nil
     var timeOfDay: String?? = nil
     var repeatFrequency: String?? = nil
+    var assignedTo: String?? = nil
     var done: Bool? = nil
 
     enum CodingKeys: String, CodingKey {
-        case name, sectionId, dueDate, durationMinutes, timeOfDay, repeatFrequency, done
+        case name, sectionId, dueDate, durationMinutes, timeOfDay, repeatFrequency, assignedTo, done
     }
 
     // A double-optional (String??) round-trips three states through this
@@ -151,6 +149,7 @@ struct UpdateTaskRequest: Encodable {
         if let durationMinutes { try c.encode(durationMinutes, forKey: .durationMinutes) }
         if let timeOfDay { try c.encode(timeOfDay, forKey: .timeOfDay) }
         if let repeatFrequency { try c.encode(repeatFrequency, forKey: .repeatFrequency) }
+        if let assignedTo { try c.encode(assignedTo, forKey: .assignedTo) }
         if let done { try c.encode(done, forKey: .done) }
     }
 }

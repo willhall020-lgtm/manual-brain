@@ -9,7 +9,7 @@ prototype from the
 [Manual Brain Design System](https://github.com/willhall020-lgtm/manual-brain)
 project's Claude Design export (see that bundle's `README.md` and
 `chats/chat1.md` + `chats/chat2.md` for the full design brief and how it
-evolved) — five tabs: **chat · today · tomorrow · lists · settings**, built
+evolved) — five tabs: **add · today · tomorrow · lists · settings** (the prototype's chat tab was later swapped for a dedicated add-task tab), built
 from that design system's tokens, component vocabulary and copy rules, and
 grounded in this repo's real data model rather than the prototype's own
 in-browser mock state.

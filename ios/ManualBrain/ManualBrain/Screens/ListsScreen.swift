@@ -8,6 +8,7 @@ struct ListsScreen: View {
 
     @State private var addingList = false
     @State private var newListName = ""
+    @FocusState private var nameFocused: Bool
 
     var body: some View {
         VStack(spacing: 0) {
@@ -16,7 +17,7 @@ struct ListsScreen: View {
                 meta: TaskFieldFormat.count(store.activeTasks.count, noun: "task") + " open"
             )
             ScrollView {
-                VStack(spacing: MBSpace.gapListRow) {
+                VStack(spacing: 10) {
                     ForEach(store.sections) { section in
                         let sectionTasks = store.activeTasks.filter { $0.sectionId == section.id }
                         let dueCount = sectionTasks.filter { DueDate.isDueOrOverdue($0.dueDate, todayKey: store.todayKey) }.count
@@ -26,47 +27,72 @@ struct ListsScreen: View {
                         )
                     }
 
-                    if addingList {
-                        HStack(spacing: 10) {
-                            TextField("list name", text: $newListName)
-                                .font(MBFont.body)
-                                .submitLabel(.done)
-                                .onSubmit(commitAddList)
-                            Button("add") { commitAddList() }
-                                .font(MBFont.metaBold)
-                        }
-                        .padding(16)
-                        .background(Color.surfaceCard)
-                        .clipShape(RoundedRectangle(cornerRadius: MBRadius.card, style: .continuous))
-                        .overlay(
-                            RoundedRectangle(cornerRadius: MBRadius.card, style: .continuous)
-                                .stroke(Color.mbInk, lineWidth: 1.5)
-                        )
-                    } else {
-                        Button {
-                            addingList = true
-                        } label: {
-                            HStack {
-                                Text("\(MBGlyph.add) add a list")
-                                    .font(MBFont.bodyMedium)
-                                    .mbLowercase()
-                            }
-                            .foregroundStyle(Color.textSubtle)
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                            .padding(16)
-                            .frame(minHeight: 72)
-                        }
-                        .background(
-                            RoundedRectangle(cornerRadius: MBRadius.card, style: .continuous)
-                                .strokeBorder(Color.borderDashed, style: StrokeStyle(lineWidth: 1.5, dash: [5, 4]))
-                        )
-                    }
+                    addListCard
                 }
                 .padding(.horizontal, MBSpace.screenPadding)
+                .padding(.top, 12)
                 .padding(.bottom, 26)
             }
         }
         .background(Color.bgPage)
+    }
+
+    /// components/layout/AddListCard.jsx — a tall dashed ghost card with its
+    /// label sat bottom-left; tapped, it becomes a white ink-bordered card
+    /// with an underlined name field and an ink "create list" pill.
+    @ViewBuilder
+    private var addListCard: some View {
+        let shape = RoundedRectangle(cornerRadius: MBRadius.card, style: .continuous)
+        if addingList {
+            VStack(alignment: .leading, spacing: 12) {
+                TextField("list name", text: $newListName)
+                    .font(Brand.font(size: 16, weight: .black))
+                    .mbTracking(-0.02, fontSize: 16)
+                    .focused($nameFocused)
+                    .submitLabel(.done)
+                    .onSubmit(commitAddList)
+                    .padding(.vertical, 2)
+                    .overlay(alignment: .bottom) {
+                        Rectangle().fill(Color.accentFocus).frame(height: 2).offset(y: 4)
+                    }
+                Spacer(minLength: 0)
+                HStack(spacing: 10) {
+                    SecondaryTextButton(label: "cancel") {
+                        addingList = false
+                        newListName = ""
+                    }
+                    Button(action: commitAddList) {
+                        Text("create list")
+                            .font(Brand.font(size: 11, weight: .black))
+                            .mbTracking(0.05, fontSize: 11)
+                            .foregroundStyle(.white)
+                            .frame(maxWidth: .infinity)
+                            .frame(minHeight: MBHitTarget.minimum)
+                            .background(Capsule().fill(Color.mbInk))
+                    }
+                    .buttonStyle(.plain)
+                }
+            }
+            .padding(16)
+            .frame(maxWidth: .infinity, minHeight: 126, alignment: .topLeading)
+            .background(Color.surfaceCard)
+            .clipShape(shape)
+            .overlay(shape.strokeBorder(Color.borderStrong, lineWidth: 1.5))
+            .onAppear { nameFocused = true }
+        } else {
+            Button {
+                addingList = true
+            } label: {
+                Text("\(MBGlyph.add) add a list")
+                    .font(MBFont.bodyBold)
+                    .foregroundStyle(Color.textSubtle)
+                    .padding(16)
+                    .frame(maxWidth: .infinity, minHeight: 126, alignment: .bottomLeading)
+                    .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+            .overlay(shape.strokeBorder(Color.borderDashed, style: StrokeStyle(lineWidth: 1.5, dash: [5, 4])))
+        }
     }
 
     private func commitAddList() {

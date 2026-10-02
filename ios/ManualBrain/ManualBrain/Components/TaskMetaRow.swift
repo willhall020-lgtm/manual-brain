@@ -1,15 +1,12 @@
 import SwiftUI
 
 /// The scheduling metadata line under a task's title — due date, duration,
-/// time of day, repeat, book state — in their canonical order, mirroring
+/// time of day, repeat, assignee — in their canonical order, mirroring
 /// components/tasks/TaskMeta.jsx exactly (including which pieces are
 /// mutually exclusive with "not shown at all").
 struct TaskMetaRow: View {
     var task: APITask
     var todayKey: String
-    var isBooking: Bool
-    var googleCalendarConnected: Bool
-    var onBook: () -> Void
 
     private var overdue: Bool {
         guard let due = task.dueDate else { return false }
@@ -19,7 +16,7 @@ struct TaskMetaRow: View {
     var body: some View {
         let hasAnything =
             task.dueDate != nil || task.durationMinutes != nil || task.timeOfDay != nil
-            || task.repeatFrequency != nil
+            || task.repeatFrequency != nil || task.assignedTo != nil
 
         if hasAnything {
             // FlowLayout, not HStack: the web version marks every one of
@@ -59,42 +56,17 @@ struct TaskMetaRow: View {
                         .lineLimit(1)
                         .fixedSize()
                 }
-                if googleCalendarConnected {
-                    BookPill(booked: task.isBooked, busy: isBooking, action: onBook)
+                if let assignee = task.assignedTo, !assignee.isEmpty {
+                    // AssigneeInput.tsx's resting label.
+                    Text("@\(assignee)")
+                        .font(MBFont.micro)
+                        .mbTracking(0.02, fontSize: 10.5)
+                        .foregroundStyle(Color.textSubtle)
+                        .lineLimit(1)
+                        .fixedSize()
                 }
             }
             .mbLowercase()
         }
-    }
-}
-
-/// components/tasks/TaskMeta.jsx's BookButton — a pill that hands the task
-/// to the chat's scheduling loop (POST /api/tasks/:id/book) rather than a
-/// separate "pick a time" UI of its own.
-///
-/// The web version solves "44pt tap target, zero layout cost" inside its
-/// wrapping meta row with a `.mb-hit` pseudo-element overlay (readme.md
-/// § Touch targets). SwiftUI has no equivalent that doesn't also reserve
-/// the extra space in a wrapping HStack, so this keeps the pill's own
-/// generous padding but doesn't force a full 44pt frame here — a known,
-/// documented simplification (see ios/README.md) rather than a silent one.
-struct BookPill: View {
-    var booked: Bool
-    var busy: Bool
-    var action: () -> Void
-
-    var body: some View {
-        Button(action: action) {
-            Text(booked ? "booked" : (busy ? "booking…" : "book"))
-                .font(MBFont.micro)
-                .mbTracking(0.05, fontSize: 10.5)
-                .foregroundStyle(booked ? Color.textBooked : .white)
-                .lineLimit(1)
-                .fixedSize()
-                .padding(.horizontal, 12)
-                .padding(.vertical, 8)
-        }
-        .background(Capsule().fill(booked ? Color.surfaceBooked : Color.mbInk))
-        .disabled(booked || busy)
     }
 }

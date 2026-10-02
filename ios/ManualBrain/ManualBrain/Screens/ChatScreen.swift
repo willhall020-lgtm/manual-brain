@@ -8,10 +8,11 @@ struct ChatScreen: View {
     @EnvironmentObject private var store: AppStore
     @State private var draft = ""
 
+    // chat.jsx's SUGGESTIONS, verbatim.
     private let starters = [
-        "what's due today?",
+        "what should i start with?",
         "what's slipping?",
-        "add something to my list",
+        "clear my today",
     ]
 
     var body: some View {

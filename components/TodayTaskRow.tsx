@@ -5,7 +5,7 @@ import DurationInput from "@/components/DurationInput";
 import DueDatePicker from "@/components/DueDatePicker";
 import TimeOfDayPicker from "@/components/TimeOfDayPicker";
 import AssigneeInput from "@/components/AssigneeInput";
-import BookButton from "@/components/BookButton";
+import TaskDescription from "@/components/TaskDescription";
 import type { TimeOfDay } from "@/lib/time-of-day";
 import type { RepeatFrequency } from "@/lib/repeat";
 
@@ -18,8 +18,7 @@ interface Props {
   timeOfDay: TimeOfDay | null;
   repeatFrequency: RepeatFrequency | null;
   assignedTo: string | null;
-  booked: boolean;
-  booking: boolean;
+  description: string | null;
   editing: boolean;
   editVal: string;
   onDone: () => void;
@@ -33,7 +32,7 @@ interface Props {
   onTimeOfDayChange: (v: TimeOfDay | null) => void;
   onRepeatChange: (v: RepeatFrequency | null) => void;
   onAssigneeCommit: (assignedTo: string | null) => void;
-  onBook: () => void;
+  onDescriptionCommit: (description: string | null) => void;
 }
 
 export default function TodayTaskRow({
@@ -45,8 +44,7 @@ export default function TodayTaskRow({
   timeOfDay,
   repeatFrequency,
   assignedTo,
-  booked,
-  booking,
+  description,
   editing,
   editVal,
   onDone,
@@ -60,15 +58,17 @@ export default function TodayTaskRow({
   onTimeOfDayChange,
   onRepeatChange,
   onAssigneeCommit,
-  onBook,
+  onDescriptionCommit,
 }: Props) {
   return (
     <div
       className="mb-taskrow"
       style={{
         display: "flex",
+        flexWrap: "wrap",
         alignItems: "center",
-        gap: 11,
+        columnGap: 11,
+        rowGap: 8,
         background: "#FFFFFF",
         borderRadius: 14,
         padding: "12px 12px 12px 13px",
@@ -167,8 +167,8 @@ export default function TodayTaskRow({
         <DurationInput minutes={durationMinutes} editing={editing} onCommit={onDurationCommit} />
         <TimeOfDayPicker value={timeOfDay} editing={editing} onChange={onTimeOfDayChange} />
         <AssigneeInput assignedTo={assignedTo} editing={editing} onCommit={onAssigneeCommit} />
+        <TaskDescription description={description} editing={editing} onCommit={onDescriptionCommit} />
       </div>
-      <BookButton booked={booked} booking={booking} onBook={onBook} />
       <div style={{ flex: "none", display: "flex", alignItems: "center", gap: 2 }}>
         <button
           onClick={onEdit}

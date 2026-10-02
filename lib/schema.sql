@@ -45,8 +45,11 @@ ALTER TABLE tasks ADD COLUMN IF NOT EXISTS duration_minutes integer;
 -- backfill maps the one bucket with an unambiguous date (Today) across;
 -- everything else is genuinely ambiguous (which day in "this month"?) so
 -- it's left for the user to set for real rather than guessed at.
+--
+-- That backfill has already run and is deliberately no longer here: it
+-- isn't idempotent. New tasks still get urgency's 'Today' default, so
+-- re-running it on every migrate gave every no-due-date task today's date.
 ALTER TABLE tasks ADD COLUMN IF NOT EXISTS due_date date;
-UPDATE tasks SET due_date = CURRENT_DATE WHERE urgency = 'Today' AND due_date IS NULL;
 
 -- Optional, user-set preference for roughly when in the day a task should
 -- be booked ('morning' / 'afternoon' / 'evening', or null for no
@@ -67,6 +70,12 @@ ALTER TABLE tasks ADD COLUMN IF NOT EXISTS repeat_frequency text;
 -- assignees: this is a single-user app with no real accounts, so a plain
 -- name is enough.
 ALTER TABLE tasks ADD COLUMN IF NOT EXISTS assigned_to text;
+
+-- Optional free-text notes on a task — longer detail than fits in the
+-- name (links, steps, context). Shown collapsed under the task row and
+-- expanded on tap; surfaced to the chat (list_tasks) too so it has the
+-- same context the user does when booking or picking a task up.
+ALTER TABLE tasks ADD COLUMN IF NOT EXISTS description text;
 
 CREATE INDEX IF NOT EXISTS tasks_section_id_idx ON tasks (section_id);
 CREATE INDEX IF NOT EXISTS tasks_done_at_idx ON tasks (done_at);

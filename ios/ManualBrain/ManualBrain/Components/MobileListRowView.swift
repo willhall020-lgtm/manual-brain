@@ -20,7 +20,7 @@ struct MobileListRowView: View {
                         .foregroundStyle(Color.textBody)
                     HStack(spacing: 7) {
                         Text(TaskFieldFormat.count(taskCount, noun: "task"))
-                            .font(MBFont.metaSm)
+                            .font(MBFont.metaSmBold)
                             .foregroundStyle(Color.textMuted)
                         if dueCount > 0 {
                             Text("\(dueCount) due")
@@ -35,14 +35,15 @@ struct MobileListRowView: View {
                 }
                 Spacer(minLength: 0)
                 Text(MBGlyph.openList)
-                    .font(.system(size: 16, weight: .bold))
+                    .font(MBFont.glyph16)
                     .foregroundStyle(Color.mbN950)
             }
             .padding(.horizontal, 16)
             .padding(.vertical, 15)
+            .frame(minHeight: 72)
+            .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
-        .frame(minHeight: 72)
         .background(Color.surfaceCard)
         .clipShape(RoundedRectangle(cornerRadius: MBRadius.card, style: .continuous))
         .overlay(

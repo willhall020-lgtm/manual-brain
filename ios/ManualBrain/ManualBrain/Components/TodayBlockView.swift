@@ -33,8 +33,9 @@ struct TodayBlockView<Content: View>: View {
     }
 }
 
-/// components/mobile's MAddStrip — the dashed "add" affordance, lime-tinted
-/// on the Today block, plain everywhere else.
+/// ui_kits/ios/parts.jsx's MAddStrip — the dashed "add" affordance at the
+/// bottom of a task group, lime-tinted on the Today block, grey elsewhere.
+/// Left-aligned, like the task rows above it.
 struct AddStripButton: View {
     var label: String
     var tone: Tone = .plain
@@ -44,45 +45,57 @@ struct AddStripButton: View {
 
     var body: some View {
         Button(action: action) {
-            HStack(spacing: 8) {
+            HStack(spacing: 9) {
                 Text(MBGlyph.add)
-                    .font(.system(size: 13, weight: .bold))
+                    .font(MBFont.addStripGlyph)
                 Text(label)
-                    .font(MBFont.bodySm)
+                    .font(MBFont.addStrip)
                     .mbLowercase()
             }
-            .foregroundStyle(tone == .lime ? Color.mbLimeInk : Color.textSubtle)
-            .frame(maxWidth: .infinity)
-            .frame(minHeight: MBHitTarget.minimum)
+            .foregroundStyle(tone == .lime ? Color.textOnLime : Color.textSubtle)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(.horizontal, 13)
+            .padding(.vertical, 14)
+            .frame(minHeight: 48)
+            .contentShape(Rectangle())
         }
+        .buttonStyle(.plain)
         .background(
             RoundedRectangle(cornerRadius: MBRadius.row, style: .continuous)
                 .strokeBorder(
                     tone == .lime ? Color.mbLimeDashed : Color.borderDashed,
-                    style: StrokeStyle(lineWidth: 1.5, dash: [4, 3])
+                    style: StrokeStyle(lineWidth: 1, dash: [4, 3])
                 )
         )
     }
 }
 
+/// The three empty states the ios kit's screens.jsx draws inline:
+/// `.card` — white, borderless (inside the lime Today block);
+/// `.dashed` — white with a dashed border (Tomorrow, calendar);
+/// `.sunken` — no fill, darker dashed border (inside a list's sunken container).
 struct EmptyStateCard: View {
     var text: String
-    var dashed: Bool = false
+    var style: Style = .card
+
+    enum Style { case card, dashed, sunken }
 
     var body: some View {
         Text(text)
-            .font(MBFont.bodyMedium)
+            .font(style == .card ? MBFont.body : MBFont.field)
             .mbLowercase()
-            .foregroundStyle(Color.textSubtle)
+            .foregroundStyle(style == .card ? Color.textSubtle : Color.iconRest)
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(16)
-            .background(Color.surfaceCard)
+            .background(style == .sunken ? Color.clear : Color.surfaceCard)
             .clipShape(RoundedRectangle(cornerRadius: MBRadius.row, style: .continuous))
             .overlay(
                 Group {
-                    if dashed {
+                    if style != .card {
                         RoundedRectangle(cornerRadius: MBRadius.row, style: .continuous)
-                            .strokeBorder(Color.borderDashed, style: StrokeStyle(lineWidth: 1, dash: [4, 3]))
+                            .strokeBorder(
+                                style == .sunken ? Color.mbN800 : Color.borderDashed,
+                                style: StrokeStyle(lineWidth: 1, dash: [4, 3]))
                     }
                 }
             )

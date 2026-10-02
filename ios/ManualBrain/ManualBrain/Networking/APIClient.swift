@@ -71,6 +71,12 @@ actor APIClient {
         let response: URLResponse
         do {
             (data, response) = try await session.data(for: request)
+        } catch let error as URLError where error.code == .cancelled {
+            // The caller's task was cancelled (e.g. SwiftUI tearing down a
+            // pull-to-refresh) — not a network failure, so don't report one.
+            throw CancellationError()
+        } catch is CancellationError {
+            throw CancellationError()
         } catch {
             throw APIError.invalidResponse
         }
@@ -131,10 +137,6 @@ actor APIClient {
         _ = try await send("/api/tasks/\(id)", method: "DELETE")
     }
 
-    func bookTask(id: String) async throws -> BookResponse {
-        try await send("/api/tasks/\(id)/book", method: "POST", EmptyBody())
-    }
-
     // MARK: - Sections
 
     func createSection(name: String) async throws -> Section {
@@ -172,7 +174,3 @@ actor APIClient {
         try await send("/api/chat", method: "POST", ChatRequest(messages: messages))
     }
 }
-
-/// A handful of endpoints (logout, book) take no body — `Encodable` still
-/// needs something to serialize, so this is a standing empty JSON object.
-private struct EmptyBody: Encodable {}

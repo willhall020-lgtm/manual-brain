@@ -26,22 +26,19 @@ struct TomorrowScreen: View {
             )
             ScrollView {
                 VStack(spacing: MBSpace.gapStack) {
-                    VStack(spacing: MBSpace.gapListRow) {
+                    VStack(spacing: 10) {
                         ForEach(tomorrowTasks) { task in
                             MobileTaskRowView(
                                 task: task,
                                 sectionName: store.sectionName(for: task.sectionId),
                                 todayKey: store.todayKey,
-                                isBooking: store.bookingTaskIDs.contains(task.id),
-                                googleCalendarConnected: store.settings?.googleCalendarConnected ?? false,
                                 flat: false,
                                 onOpen: { onOpenTask(task) },
-                                onToggleDone: { Task { await store.toggleDone(id: task.id, done: true) } },
-                                onBook: { Task { await store.bookTask(id: task.id) } }
+                                onToggleDone: { Task { await store.toggleDone(id: task.id, done: true) } }
                             )
                         }
                         if tomorrowTasks.isEmpty {
-                            EmptyStateCard(text: "nothing lined up. tomorrow is open.", dashed: true)
+                            EmptyStateCard(text: "nothing lined up. tomorrow is open.", style: .dashed)
                         }
                     }
 
@@ -54,6 +51,7 @@ struct TomorrowScreen: View {
                     )
                 }
                 .padding(.horizontal, MBSpace.screenPadding)
+                .padding(.top, MBSpace.gapStack)
                 .padding(.bottom, 26)
             }
         }

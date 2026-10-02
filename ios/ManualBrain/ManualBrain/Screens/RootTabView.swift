@@ -25,8 +25,8 @@ struct RootTabView: View {
 
             ZStack {
                 switch selection {
-                case .chat:
-                    ChatScreen()
+                case .add:
+                    AddScreen()
                 case .today:
                     TodayScreen(
                         onOpenTask: { editingTask = $0 },
@@ -63,7 +63,6 @@ struct RootTabView: View {
             ))
         }
         .background(Color.bgPage)
-        .ignoresSafeArea(.container, edges: .bottom)
         .sheet(item: $addSheet) { context in
             AddTaskSheet(
                 preselectedSectionId: context.preselectedSectionId,
@@ -73,7 +72,40 @@ struct RootTabView: View {
         .sheet(item: $editingTask) { task in
             TaskDetailSheet(task: task)
         }
-        .task { await store.refreshAll() }
-        .refreshable { await store.refreshAll() }
+        .task {
+            await store.refreshAll()
+            #if DEBUG
+            applyQALaunchArguments()
+            #endif
+        }
+        // Run the reload in its own task: SwiftUI cancels a refreshable's
+        // task if the screen redraws mid-refresh (which the reload itself
+        // causes), and that cancelled every request as "couldn't reach".
+        .refreshable { await Task { await store.refreshAll() }.value }
     }
+
+    #if DEBUG
+    /// Debug-only deep links for screenshot QA from the terminal, e.g.
+    /// `xcrun simctl launch booted xyz.manualbrain.ios -MBTab lists -MBListIndex 0`
+    /// or `-MBSheet add` / `-MBSheet edit`. Launch arguments land in
+    /// UserDefaults' argument domain, so nothing here persists.
+    private func applyQALaunchArguments() {
+        let defaults = UserDefaults.standard
+        if let raw = defaults.string(forKey: "MBTab"), let tab = AppTab(rawValue: raw) {
+            selection = tab
+        }
+        if let index = defaults.string(forKey: "MBListIndex").flatMap(Int.init), store.sections.indices.contains(index) {
+            selection = .lists
+            listDetailSectionId = store.sections[index].id
+        }
+        switch defaults.string(forKey: "MBSheet") {
+        case "add":
+            addSheet = AddSheetContext(preselectedSectionId: nil, defaultDueDate: store.todayKey)
+        case "edit":
+            editingTask = store.activeTasks.first
+        default:
+            break
+        }
+    }
+    #endif
 }

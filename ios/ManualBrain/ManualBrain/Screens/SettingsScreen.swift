@@ -14,8 +14,10 @@ import UIKit
 struct SettingsScreen: View {
     @EnvironmentObject private var store: AppStore
     @State private var rulesDraft: String = ""
-    @State private var rulesDirty = false
     @State private var showLogoutConfirm = false
+
+    /// Derived, not tracked: setting the draft on appear must not count as an edit.
+    private var rulesDirty: Bool { rulesDraft != (store.settings?.planningRules ?? "") }
 
     var body: some View {
         VStack(spacing: 0) {
@@ -45,13 +47,16 @@ struct SettingsScreen: View {
                                     openGoogleConnect()
                                 } label: {
                                     Text(store.settings?.googleCalendarConnected == true ? "reconnect" : "connect")
-                                        .font(MBFont.micro)
-                                        .mbTracking(0.04, fontSize: 11.5)
+                                        .font(MBFont.microBlack)
+                                        .mbTracking(0.05, fontSize: 10.5)
                                         .foregroundStyle(.white)
                                         .padding(.horizontal, 14)
-                                        .padding(.vertical, 8)
+                                        .frame(minHeight: 34)
+                                        .background(Capsule().fill(Color.mbInk))
+                                        .padding(.vertical, 5)
+                                        .contentShape(Rectangle())
                                 }
-                                .background(Capsule().fill(Color.mbInk))
+                                .buttonStyle(.plain)
                             } else {
                                 Text("not set up on the server yet.")
                                     .font(MBFont.metaSm)
@@ -62,53 +67,73 @@ struct SettingsScreen: View {
 
                     SettingsRowView(label: "planning rules", description: "how the chat decides what to book and when — read by the model, not parsed, so write it however makes sense to you.") {
                         VStack(alignment: .leading, spacing: 8) {
+                            // AddSheet.jsx's `field` style: sunken-white input,
+                            // 1px control border, 10pt radius. TextEditor paints
+                            // its own opaque background unless it's hidden.
                             TextEditor(text: $rulesDraft)
-                                .font(MBFont.bodyMedium)
+                                .font(MBFont.field)
+                                .foregroundStyle(Color.textBody)
+                                .scrollContentBackground(.hidden)
                                 .frame(minHeight: 140)
-                                .padding(8)
+                                .padding(.horizontal, 7)
+                                .padding(.vertical, 4)
                                 .background(Color.surfaceInput)
                                 .clipShape(RoundedRectangle(cornerRadius: MBRadius.input, style: .continuous))
-                                .onChange(of: rulesDraft) { rulesDirty = true }
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: MBRadius.input, style: .continuous)
+                                        .stroke(Color.borderControl, lineWidth: 1)
+                                )
                             HStack {
-                                Button("reset to default") {
+                                SecondaryTextButton(label: "reset to default") {
                                     rulesDraft = store.settings?.defaultPlanningRules ?? ""
-                                    rulesDirty = true
                                 }
-                                .font(MBFont.metaSm)
-                                .foregroundStyle(Color.textSubtle)
                                 Spacer()
-                                Button("save") {
+                                // AddButton.jsx: grey until there's something to save.
+                                Button {
                                     Task {
                                         await store.savePlanningRules(rulesDraft)
-                                        rulesDirty = false
                                     }
+                                } label: {
+                                    Text("save")
+                                        .font(Brand.font(size: 11, weight: .black))
+                                        .mbTracking(0.05, fontSize: 11)
+                                        .foregroundStyle(rulesDirty ? .white : Color.iconRest)
+                                        .padding(.horizontal, 18)
+                                        .frame(minHeight: 34)
+                                        .background(Capsule().fill(rulesDirty ? Color.mbInk : Color.mbN600))
+                                        .padding(.vertical, 5)
+                                        .contentShape(Rectangle())
                                 }
-                                .font(MBFont.metaBold)
-                                .foregroundStyle(rulesDirty ? Color.mbInk : Color.textFaint)
+                                .buttonStyle(.plain)
                                 .disabled(!rulesDirty)
                             }
                         }
                     }
 
-                    Button("log out") {
+                    Button {
                         showLogoutConfirm = true
+                    } label: {
+                        Text("log out")
+                            .font(MBFont.metaSmBold)
+                            .foregroundStyle(Color.textBody)
+                            .frame(maxWidth: .infinity)
+                            .frame(minHeight: 48)
+                            .overlay(Capsule().strokeBorder(Color.mbN750, lineWidth: 1.5))
+                            .contentShape(Capsule())
                     }
-                    .font(MBFont.metaBold)
-                    .mbLowercase()
-                    .foregroundStyle(Color.textBody)
-                    .frame(maxWidth: .infinity)
-                    .frame(minHeight: 48)
-                    .overlay(Capsule().stroke(Color.mbN750, lineWidth: 1.5))
+                    .buttonStyle(.plain)
                     .padding(.top, 4)
                 }
                 .padding(.horizontal, MBSpace.screenPadding)
+                .padding(.top, 14)
                 .padding(.bottom, 26)
             }
         }
         .background(Color.bgPage)
         .onAppear { rulesDraft = store.settings?.planningRules ?? "" }
-        .onChange(of: store.settings?.planningRules) { _, newValue in
-            if !rulesDirty { rulesDraft = newValue ?? "" }
+        .onChange(of: store.settings?.planningRules) { oldValue, newValue in
+            // Only follow the server's copy while there are no local edits.
+            if rulesDraft == (oldValue ?? "") { rulesDraft = newValue ?? "" }
         }
         .confirmationDialog("log out of manual brain?", isPresented: $showLogoutConfirm, titleVisibility: .visible) {
             Button("log out", role: .destructive) { Task { await store.logout() } }

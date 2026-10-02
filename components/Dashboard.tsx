@@ -10,6 +10,7 @@ import TaskAddBox from "@/components/TaskAddBox";
 import DonePanel from "@/components/DonePanel";
 import CalendarPanel from "@/components/CalendarPanel";
 import ChatPanel from "@/components/ChatPanel";
+import { KnownAssigneesList, knownAssignees } from "@/components/AssigneeInput";
 import { dateKey, isDueOrOverdue } from "@/lib/due-date";
 import type { Section, StateResponse, Task } from "@/lib/types";
 import type { CalendarEvent } from "@/lib/gcal";
@@ -108,7 +109,6 @@ export default function Dashboard({
   const [editingSectionName, setEditingSectionName] = useState(false);
   const [sectionNameVal, setSectionNameVal] = useState("");
   const [actionError, setActionError] = useState<string | null>(null);
-  const [bookingIds, setBookingIds] = useState<Set<string>>(new Set());
 
   // A plain counter (not Math.random/Date.now) for optimistic temp ids —
   // swapped for the server's real id once a create request resolves.
@@ -141,6 +141,7 @@ export default function Dashboard({
           timeOfDay: t.timeOfDay,
           repeatFrequency: t.repeatFrequency,
           assignedTo: t.assignedTo,
+          description: t.description,
         });
       }
     }
@@ -185,6 +186,7 @@ export default function Dashboard({
         timeOfDay: d.timeOfDay,
         repeatFrequency,
         assignedTo,
+        description: null,
       },
     ]);
     setDrafts((prev) => ({ ...prev, [key]: emptyDraft(todayKey) }));
@@ -329,26 +331,19 @@ export default function Dashboard({
     }
   }
 
-  async function bookTask(id: string) {
-    if (bookingIds.has(id)) return;
-    setBookingIds((prev) => new Set(prev).add(id));
+  async function setTaskDescription(id: string, description: string | null) {
+    const prev = tasks.find((t) => t.id === id)?.description ?? null;
+    patchTaskLocal(id, { description });
     try {
-      const res = await fetch(`/api/tasks/${id}/book`, { method: "POST" });
-      const body = await res.json().catch(() => null);
-      if (!res.ok) throw new Error(body?.error || "Booking failed.");
-      if (!body.ok) {
-        setActionError(body.message || "Couldn't find a time to book that — try the chat instead.");
-      } else {
-        patchTaskLocal(id, { calendarEventId: body.calendarEventId });
-      }
-    } catch (err) {
-      setActionError(err instanceof Error ? err.message : "Couldn't book that — try again.");
-    } finally {
-      setBookingIds((prev) => {
-        const next = new Set(prev);
-        next.delete(id);
-        return next;
+      const res = await fetch(`/api/tasks/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ description }),
       });
+      if (!res.ok) throw new Error();
+    } catch {
+      patchTaskLocal(id, { description: prev });
+      setActionError("Couldn't save that description — try again.");
     }
   }
 
@@ -422,7 +417,7 @@ export default function Dashboard({
     // for the wrong day, and worse, it'd otherwise still look "scheduled"
     // and get silently skipped by the next booking run. The API deletes
     // the actual stale calendar event; this just mirrors that locally so
-    // the BOOK button reappears immediately instead of after a refetch.
+    // local state matches without waiting for a refetch.
     const patch: Partial<Task> = dueDate === null ? { dueDate, repeatFrequency: null } : { dueDate };
     if (prevCalendarEventId && dueDate !== prevDueDate) {
       patch.calendarEventId = null;
@@ -535,6 +530,8 @@ export default function Dashboard({
     [activeTasks, activeSection]
   );
 
+  const assigneeNames = useMemo(() => knownAssignees(tasks.map((t) => t.assignedTo)), [tasks]);
+
   const activeCount = activeTasks.length;
   const doneCount = doneTasks.length;
   const dateLabel = `${WEEKDAYS[today.getDay()]} ${today.getDate()} ${MONTHS[today.getMonth()]}`;
@@ -592,6 +589,8 @@ export default function Dashboard({
         </div>
       </div>
 
+      <KnownAssigneesList names={assigneeNames} />
+
       {actionError && (
         <button
           onClick={() => setActionError(null)}
@@ -638,8 +637,7 @@ export default function Dashboard({
                       timeOfDay={t.timeOfDay}
                       repeatFrequency={t.repeatFrequency}
                       assignedTo={t.assignedTo}
-                      booked={!!t.calendarEventId}
-                      booking={bookingIds.has(t.id)}
+                      description={t.description}
                       editing={editing === t.id}
                       editVal={editVal}
                       onDone={() => markDone(t.id)}
@@ -651,7 +649,7 @@ export default function Dashboard({
                       onTimeOfDayChange={(v) => setTaskTimeOfDay(t.id, v)}
                       onRepeatChange={(v) => setTaskRepeat(t.id, v)}
                       onAssigneeCommit={(v) => setTaskAssignee(t.id, v)}
-                      onBook={() => bookTask(t.id)}
+                      onDescriptionCommit={(v) => setTaskDescription(t.id, v)}
                       onEditKeyDown={makeEditKeyHandler(saveEdit)}
                       onEditBlur={saveEdit}
                     />
@@ -851,6 +849,7 @@ export default function Dashboard({
                       timeOfDay={t.timeOfDay}
                       repeatFrequency={t.repeatFrequency}
                       assignedTo={t.assignedTo}
+                      description={t.description}
                       editing={editing === t.id}
                       editVal={editVal}
                       onDone={() => markDone(t.id)}
@@ -864,6 +863,7 @@ export default function Dashboard({
                       onTimeOfDayChange={(v) => setTaskTimeOfDay(t.id, v)}
                       onRepeatChange={(v) => setTaskRepeat(t.id, v)}
                       onAssigneeCommit={(v) => setTaskAssignee(t.id, v)}
+                      onDescriptionCommit={(v) => setTaskDescription(t.id, v)}
                     />
                   ))}
 
